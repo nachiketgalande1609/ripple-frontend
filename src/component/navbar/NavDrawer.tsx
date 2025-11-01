@@ -279,9 +279,9 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                                             sx={{
                                                                 transition: "opacity 0.3s ease-in-out, visibility 0.9s ease-in-out",
                                                                 opacity: open ? 1 : 0,
-                                                                fontSize: isLarge ? "45px" : "35px",
+                                                                fontSize: isLarge ? "2.3rem" : "35px",
                                                             }}
-                                                            className="lily-script-one-regular"
+                                                            className="brand-text"
                                                         >
                                                             Ripple
                                                         </Typography>
