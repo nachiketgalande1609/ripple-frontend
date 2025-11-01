@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { TextField, Button, Container, Typography, Box, Alert, Link, useMediaQuery, CircularProgress } from "@mui/material";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { loginUser, googleLogin, trackTraffic } from "../services/api";
+// import { GoogleLogin } from "@react-oauth/google";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { loginUser, trackTraffic } from "../services/api";
+// import { googleLogin } from "../services/api";
+
 import { useNavigate } from "react-router-dom";
 import { useGlobalStore } from "../store/store";
 import socket from "../services/socket";
@@ -74,25 +77,25 @@ const LoginPage: React.FC = () => {
         }
     };
 
-    const handleGoogleLogin = async (credentialResponse: any) => {
-        try {
-            const response = await googleLogin({ token: credentialResponse.credential });
+    // const handleGoogleLogin = async (credentialResponse: any) => {
+    //     try {
+    //         const response = await googleLogin({ token: credentialResponse.credential });
 
-            if (response.success) {
-                const { token, user } = response.data;
+    //         if (response.success) {
+    //             const { token, user } = response.data;
 
-                localStorage.setItem("token", token);
-                localStorage.setItem("user", JSON.stringify(user));
-                setUser(user);
-                navigate("/");
-            } else {
-                setError(response.error || "Google login failed!");
-            }
-        } catch (err: any) {
-            console.log(err);
-            setError(err.response?.data?.error || "Google login failed!");
-        }
-    };
+    //             localStorage.setItem("token", token);
+    //             localStorage.setItem("user", JSON.stringify(user));
+    //             setUser(user);
+    //             navigate("/");
+    //         } else {
+    //             setError(response.error || "Google login failed!");
+    //         }
+    //     } catch (err: any) {
+    //         console.log(err);
+    //         setError(err.response?.data?.error || "Google login failed!");
+    //     }
+    // };
 
     return (
         <GoogleOAuthProvider clientId={"702353220748-2lmc03lb4tcfnuqds67h8bbupmb1aa0q.apps.googleusercontent.com"}>

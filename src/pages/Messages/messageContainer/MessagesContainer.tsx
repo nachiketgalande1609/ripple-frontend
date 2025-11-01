@@ -29,14 +29,13 @@ import {
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import BlurBackgroundImage from "../../../static/blur.jpg";
 
-import MessageDetailsDrawer from "./MessageDetailsDrawer";
-import MessageOptionsDialog from "./MessageOptionsDialog";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faComments } from "@fortawesome/free-solid-svg-icons";
 
-import TypingIndicator from "../../../component/TypingIndicator"; // Import the TypingIndicator component
+import TypingIndicator from "../../../component/TypingIndicator";
 import { getMessagesDataForSelectedUser } from "../../../services/api";
+import MessageDetailsDrawer from "./MessageDetailsDrawer";
+import MessageOptionsDialog from "./MessageOptionsDialog";
 
 interface MessagesContainerProps {
     selectedUser: User | null;

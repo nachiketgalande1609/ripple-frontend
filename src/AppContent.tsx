@@ -15,7 +15,6 @@ import NotFoundPage from "./pages/NotFoundPage";
 import SearchPage from "./pages/SearchPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import Messages from "./pages/messages/Messages";
 import Notifications from "./pages/notifications/Notifications";
 import SettingsPage from "./pages/SettingsPage";
 import { getNotificationsCount } from "./services/api";
@@ -27,6 +26,7 @@ import HangUpTone from "./static/hangup.mp3";
 import VerifyAccount from "./pages/VerifyAccount";
 import ResetPassword from "./pages/ResetPassword";
 import { useNotifications } from "@toolpad/core/useNotifications";
+import Messages from "./pages/Messages/Messages";
 
 const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
 
