@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Box, LinearProgress, Badge } from "@mui/material";
 import { getFollowingUsers } from "../../../services/api";
 import { timeAgo } from "../../../utils/utils";
+import BlankProfileImage from "../../../static/profile_blank.png";
 
 type MessagesUserListProps = {
     users: User[];
@@ -84,12 +85,7 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({ users, onlineUsers,
                                     onClick={() => handleUserClick(user.id)}
                                 >
                                     <ListItemAvatar sx={{ position: "relative" }}>
-                                        <Avatar
-                                            src={
-                                                user.profile_picture ||
-                                                "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                            }
-                                        />
+                                        <Avatar src={user.profile_picture || BlankProfileImage} />
                                         {isOnline && (
                                             <Box
                                                 sx={{

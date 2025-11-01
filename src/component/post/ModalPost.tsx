@@ -16,6 +16,7 @@ import {
     Skeleton,
     CircularProgress,
 } from "@mui/material";
+import BlankProfileImage from "../../static/profile_blank.png";
 import { FavoriteBorder, Favorite, MoreVert, MoreHoriz, Close } from "@mui/icons-material";
 import { deletePost, likePost, addComment, updatePost, deleteComment, toggleLikeComment, getUserPostDetails } from "../../services/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -432,10 +433,7 @@ const ModalPost: React.FC<PostProps> = ({ postId, fetchPosts, borderRadius, isMo
                                         }}
                                     >
                                         <Avatar
-                                            src={
-                                                post?.profile_picture ||
-                                                "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                            }
+                                            src={post?.profile_picture || BlankProfileImage}
                                             alt={post?.username}
                                             sx={{ width: isMobile ? 42 : 52, height: isMobile ? 42 : 52 }}
                                         />
@@ -576,10 +574,7 @@ const ModalPost: React.FC<PostProps> = ({ postId, fetchPosts, borderRadius, isMo
                                                             onMouseLeave={() => setHoveredCommentId(null)}
                                                         >
                                                             <Avatar
-                                                                src={
-                                                                    comment.commenter_profile_picture ||
-                                                                    "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                                                }
+                                                                src={comment.commenter_profile_picture || BlankProfileImage}
                                                                 alt={comment.commenter_username}
                                                                 sx={{ width: isMobile ? 30 : 40, height: isMobile ? 30 : 40 }}
                                                             />

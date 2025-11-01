@@ -17,7 +17,7 @@ import {
     useTheme,
     CircularProgress,
 } from "@mui/material";
-
+import BlankProfileImage from "../../static/profile_blank.png";
 import { FavoriteBorder, Favorite, MoreVert, BookmarkBorderOutlined, Bookmark, LocationOn, Close } from "@mui/icons-material";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -454,7 +454,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                 <Grid container spacing={2} alignItems="flex-start">
                     <Grid item>
                         <Avatar
-                            src={post.profile_picture || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"}
+                            src={post.profile_picture || BlankProfileImage}
                             alt={post.username}
                             sx={{ width: 52, height: 52, cursor: "pointer" }}
                             onClick={() => navigate(`/profile/${post.user_id}`)}
@@ -746,10 +746,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                 }}
                                 onClick={() => handleUserClick(user)}
                             >
-                                <Avatar
-                                    src={user.profile_picture || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"}
-                                    sx={{ width: 40, height: 40, mr: 2 }}
-                                />
+                                <Avatar src={user.profile_picture || BlankProfileImage} sx={{ width: 40, height: 40, mr: 2 }} />
                                 <Typography sx={{ fontSize: "0.9rem" }}>{user.username}</Typography>
                             </Box>
                         ))

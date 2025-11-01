@@ -19,6 +19,7 @@ import { useDebounce } from "../utils/utils";
 import { getSearchResults, getSearchHistory, addToSearchHistory, deleteSearchHistoryItem } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
+import BlankProfileImage from "../static/profile_blank.png";
 
 import InputAdornment from "@mui/material/InputAdornment";
 
@@ -197,12 +198,7 @@ export default function SearchPage() {
                                         }}
                                     >
                                         <ListItemAvatar>
-                                            <Avatar
-                                                src={
-                                                    user.profile_picture ||
-                                                    "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                                }
-                                            />
+                                            <Avatar src={user.profile_picture || BlankProfileImage} />
                                         </ListItemAvatar>
                                         <ListItemText primary={user.username} secondary={user.email} />
                                     </ListItemButton>
@@ -227,12 +223,7 @@ export default function SearchPage() {
                                         }}
                                     >
                                         <ListItemAvatar>
-                                            <Avatar
-                                                src={
-                                                    item.profile_picture ||
-                                                    "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                                }
-                                            />
+                                            <Avatar src={item.profile_picture || BlankProfileImage} />
                                         </ListItemAvatar>
                                         <ListItemText primary={item.username} secondary={item.email} />
                                         <IconButton

@@ -36,6 +36,7 @@ import TypingIndicator from "../../../component/TypingIndicator";
 import { getMessagesDataForSelectedUser } from "../../../services/api";
 import MessageDetailsDrawer from "./MessageDetailsDrawer";
 import MessageOptionsDialog from "./MessageOptionsDialog";
+import BlankProfileImage from "../../../static/profile_blank.png";
 
 interface MessagesContainerProps {
     selectedUser: User | null;
@@ -527,10 +528,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                             >
                                                                 <Box
                                                                     component="img"
-                                                                    src={
-                                                                        msg.post.owner.profile_picture ||
-                                                                        "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                                                    }
+                                                                    src={msg.post.owner.profile_picture || BlankProfileImage}
                                                                     alt="Owner Profile"
                                                                     sx={{
                                                                         width: "32px",

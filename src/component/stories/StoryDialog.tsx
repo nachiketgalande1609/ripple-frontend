@@ -17,6 +17,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { timeAgo } from "../../utils/utils";
 import socket from "../../services/socket";
+import BlankProfileImage from "../../static/profile_blank.png";
 
 interface Story {
     story_id: number;
@@ -212,10 +213,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                         }}
                     >
                         <Avatar
-                            src={
-                                stories[selectedStoryIndex].profile_picture ||
-                                "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                            }
+                            src={stories[selectedStoryIndex].profile_picture || BlankProfileImage}
                             sx={isMobile ? { width: 60, height: 60 } : { width: 50, height: 50 }}
                         />
                         <Typography color="white" sx={{ fontSize: isMobile ? "1rem" : "0.85rem" }}>
@@ -460,10 +458,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                 {selectedUserStories[currentIndex].viewers.map((viewer, index) => (
                                     <Stack key={index} direction="row" spacing={1.5} alignItems="center" sx={{ marginBottom: 1 }}>
                                         <Avatar
-                                            src={
-                                                viewer.viewer_profile_picture ||
-                                                "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                            }
+                                            src={viewer.viewer_profile_picture || BlankProfileImage}
                                             sx={{ width: isMobile ? "45px" : "50px", height: isMobile ? "45px" : "50px", cursor: "pointer" }}
                                             alt={viewer.viewer_username}
                                             onClick={() => navigate(`/profile/${viewer.viewer_id}`)}

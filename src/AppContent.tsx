@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Box, Button, LinearProgress, Modal, Stack, Typography } from "@mui/material";
 
+import BlankProfileImage from "./static/profile_blank.png";
+
 import { useGlobalStore } from "./store/store";
 
 import socket from "./services/socket";
@@ -587,7 +589,7 @@ const AppContent = () => {
                     }}
                 >
                     <img
-                        src={incomingCall?.callerProfilePicture || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"}
+                        src={incomingCall?.callerProfilePicture || BlankProfileImage}
                         alt="Caller Profile"
                         style={{
                             width: 100,

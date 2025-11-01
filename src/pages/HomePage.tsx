@@ -5,7 +5,8 @@ import StoryDialog from "../component/stories/StoryDialog";
 import UploadStoryDialog from "../component/stories/UploadStoryDialog";
 import { useEffect, useState } from "react";
 import { getPosts } from "../services/api";
-import { getStories } from "../services/api"; // Import getStories function
+import { getStories } from "../services/api";
+import BlankProfileImage from "../static/profile_blank.png";
 
 const HomePage = () => {
     const [posts, setPosts] = useState<any[]>([]);
@@ -119,7 +120,7 @@ const HomePage = () => {
                     }}
                 >
                     <Avatar
-                        src={currentUser?.profile_picture_url || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"}
+                        src={currentUser?.profile_picture_url || BlankProfileImage}
                         onClick={() => {
                             selfStories.length > 0 ? (setSelectedStoryIndex(0), setOpenStoryDialog(true)) : setOpenUploadDialog(true);
                         }}
@@ -211,10 +212,7 @@ const HomePage = () => {
                                         }}
                                     >
                                         <Avatar
-                                            src={
-                                                userStory.profile_picture ||
-                                                "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                            }
+                                            src={userStory.profile_picture || BlankProfileImage}
                                             onClick={() => {
                                                 // Calculate correct index accounting for self stories
                                                 const actualIndex = selfStories.length + index;

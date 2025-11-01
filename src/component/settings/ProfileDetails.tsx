@@ -11,6 +11,7 @@ import { useNotifications } from "@toolpad/core/useNotifications";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { SentimentSatisfiedAlt as EmojiIcon, CameraAlt as CameraAltIcon } from "@mui/icons-material";
 import Popover from "@mui/material/Popover";
+import BlankProfileImage from "../../static/profile_blank.png";
 
 interface Profile {
     username: string;
@@ -184,11 +185,7 @@ const ProfileDetails = () => {
             >
                 <Box sx={{ position: "relative", mb: 3 }}>
                     <Avatar
-                        src={
-                            user?.profile_picture_url
-                                ? `${user.profile_picture_url}?t=${new Date().getTime()}`
-                                : "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                        }
+                        src={user?.profile_picture_url ? `${user.profile_picture_url}?t=${new Date().getTime()}` : BlankProfileImage}
                         sx={{ width: 120, height: 120, marginBottom: 2, border: "4px solid #fff" }}
                     />
                     <IconButton

@@ -8,6 +8,7 @@ import bg3 from "../../static/bg3.png";
 import bg4 from "../../static/bg4.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faVideoCamera } from "@fortawesome/free-solid-svg-icons";
+import BlankProfileImage from "../../static/profile_blank.png";
 
 type Message = {
     message_id: number;
@@ -100,7 +101,7 @@ const MessagesTopBar: React.FC<messagesTopBarProps> = ({ selectedUser, chatTheme
                 )}
                 <Avatar
                     sx={{ width: "40px", height: "40px", mr: 1, cursor: "pointer", ml: isMobile ? "20px" : null }}
-                    src={selectedUser?.profile_picture || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"}
+                    src={selectedUser?.profile_picture || BlankProfileImage}
                     onClick={() => navigate(`/profile/${selectedUser?.id}`)}
                 />
                 <Typography

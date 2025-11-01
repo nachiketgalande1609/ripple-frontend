@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Menu, MenuItem, Avatar, TextField, Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import BlankProfileImage from "../../static/profile_blank.png";
 
 interface User {
     id: number;
@@ -92,10 +93,7 @@ const NewChatUsersList = ({ anchorEl, open, setAnchorEl, usersList }: NewChatUse
             {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
                     <MenuItem key={user.id} onClick={() => handleUserClick(user)} sx={{ p: "10px 12px" }}>
-                        <Avatar
-                            src={user.profile_picture || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"}
-                            sx={{ mr: 2 }}
-                        />
+                        <Avatar src={user.profile_picture || BlankProfileImage} sx={{ mr: 2 }} />
                         <Typography sx={{ fontSize: "0.9rem" }}>{user.username}</Typography>
                     </MenuItem>
                 ))

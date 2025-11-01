@@ -3,6 +3,7 @@ import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Box, 
 import { PersonAdd as PersonAddIcon } from "@mui/icons-material";
 import { getFollowingUsers } from "../../services/api";
 import NewChatUsersList from "./NewChatUsersList";
+import BlankProfileImage from "../../static/profile_blank.png";
 import { timeAgo } from "../../utils/utils";
 
 type MessagesDrawerProps = {
@@ -111,13 +112,7 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({ users, onlineUsers, sel
                                     }}
                                 >
                                     <ListItemAvatar sx={{ position: "relative" }}>
-                                        <Avatar
-                                            sx={{ width: "50px", height: "50px", mr: "12px" }}
-                                            src={
-                                                user.profile_picture ||
-                                                "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                            }
-                                        />
+                                        <Avatar sx={{ width: "50px", height: "50px", mr: "12px" }} src={user.profile_picture || BlankProfileImage} />
                                         {isOnline && (
                                             <Box
                                                 sx={{

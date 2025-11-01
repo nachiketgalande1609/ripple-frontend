@@ -6,6 +6,7 @@ import Logo from "../../static/logo-transparent.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faComment } from "@fortawesome/free-regular-svg-icons";
 import { faComment as faCommentSolid, faSearch } from "@fortawesome/free-solid-svg-icons";
+import BlankProfileImage from "../../static/profile_blank.png";
 
 import { faSignIn } from "@fortawesome/free-solid-svg-icons";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
@@ -61,6 +62,8 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const handleClose = () => setModalOpen(false);
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;
     const [openDialog, setOpenDialog] = useState(false);
+
+    console.log("xxx", currentUser);
 
     const isLarge = useMediaQuery("(min-width:1281px)");
 
@@ -139,7 +142,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                   title: "Profile",
                   icon: (
                       <img
-                          src={currentUser?.profile_picture_url || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"}
+                          src={currentUser?.profile_picture_url || BlankProfileImage}
                           alt="Profile"
                           style={{
                               width: isLarge ? "33px" : "28px",
@@ -152,7 +155,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                   ),
                   filledIcon: (
                       <img
-                          src={currentUser?.profile_picture_url || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"}
+                          src={currentUser?.profile_picture_url || BlankProfileImage}
                           alt="Profile"
                           style={{
                               width: isLarge ? "33px" : "28px",

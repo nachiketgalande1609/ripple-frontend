@@ -9,6 +9,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import MoreOptionsDialog from "./MoreOptionsDialog";
 import { useGlobalStore } from "../../store/store";
 import FollowButton from "./FollowButton";
+import BlankProfileImage from "../../static/profile_blank.png";
 
 interface Profile {
     username: string;
@@ -202,10 +203,7 @@ const ProfilePage = () => {
 
                             <Grid item xs={12} sm={12} md={3} lg={2} sx={{ display: "flex", justifyContent: "center" }}>
                                 <Avatar
-                                    src={
-                                        profileData?.profile_picture ||
-                                        "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                    }
+                                    src={profileData?.profile_picture || BlankProfileImage}
                                     sx={{
                                         width: { xs: 100, sm: 110, md: 120, lg: 140 },
                                         height: { xs: 100, sm: 110, md: 120, lg: 140 },

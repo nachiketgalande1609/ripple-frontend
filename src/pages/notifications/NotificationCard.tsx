@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { timeAgo } from "../../utils/utils";
+import BlankProfileImage from "../../static/profile_blank.png";
 
 // Define the Notification interface separately
 interface Notification {
@@ -72,7 +73,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
             >
                 <ListItemAvatar>
                     <Avatar
-                        src={notification.profile_picture || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"}
+                        src={notification.profile_picture || BlankProfileImage}
                         alt={notification.username}
                         sx={{ height: isMobile ? "50px" : "58px", width: isMobile ? "50px" : "58px", mr: 2 }}
                     />

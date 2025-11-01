@@ -10,6 +10,7 @@ import Popover from "@mui/material/Popover";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { toggleLikeComment } from "../../services/api";
+import BlankProfileImage from "../../static/profile_blank.png";
 
 interface ScrollableCommentsDrawerProps {
     drawerOpen: boolean;
@@ -168,7 +169,7 @@ export default function ScrollableCommentsDrawer({
                 }}
             >
                 <Box sx={{ display: "flex", gap: 1.0, mb: 2, alignItems: "center" }}>
-                    <Avatar src={avatarUrl || "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"} />
+                    <Avatar src={avatarUrl || BlankProfileImage} />
                     <Box
                         sx={{
                             padding: "8px",
@@ -196,12 +197,7 @@ export default function ScrollableCommentsDrawer({
                             onMouseEnter={() => setHoveredCommentId(comment.id)}
                             onMouseLeave={() => setHoveredCommentId(null)}
                         >
-                            <Avatar
-                                src={
-                                    comment.commenter_profile_picture ||
-                                    "https://static-00.iconduck.com/assets.00/profile-major-icon-512x512-xosjbbdq.png"
-                                }
-                            />
+                            <Avatar src={comment.commenter_profile_picture || BlankProfileImage} />
                             <Box
                                 sx={{
                                     backgroundColor: "#202327",
