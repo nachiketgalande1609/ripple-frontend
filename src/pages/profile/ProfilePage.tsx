@@ -284,30 +284,6 @@ const ProfilePage = () => {
 
     return (
         <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
-            {/* Sticky Header */}
-            <Box
-                sx={{
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 10,
-                    bgcolor: alpha(theme.palette.background.default, 0.95),
-                    backdropFilter: "blur(8px)",
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                }}
-            >
-                <Container maxWidth="lg">
-                    <Stack direction="row" alignItems="center" spacing={2} sx={{ py: 1 }}>
-                        <IconButton onClick={() => navigate(-1)} size="small">
-                            <ArrowBack />
-                        </IconButton>
-                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                            {profileData?.username}
-                        </Typography>
-                    </Stack>
-                </Container>
-            </Box>
-
             <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3 } }}>
                 {/* Profile Header - Compact Design */}
                 <Paper
@@ -497,7 +473,6 @@ const ProfilePage = () => {
                         }}
                     >
                         <Tab icon={<GridOn sx={{ fontSize: 18 }} />} iconPosition="start" label="Posts" />
-                        <Tab icon={<Instagram sx={{ fontSize: 18 }} />} iconPosition="start" label="Reels" disabled />
                         <Tab icon={<Favorite sx={{ fontSize: 18 }} />} iconPosition="start" label="Saved" disabled={!isOwnProfile} />
                     </Tabs>
                 </Box>
@@ -615,7 +590,7 @@ const ProfilePage = () => {
                     )}
                 </TabPanel>
 
-                <TabPanel value={tabValue} index={2}>
+                <TabPanel value={tabValue} index={1}>
                     {fetchingSavedPosts ? (
                         <Grid container spacing={1}>
                             {[...Array(6)].map((_, i) => (
