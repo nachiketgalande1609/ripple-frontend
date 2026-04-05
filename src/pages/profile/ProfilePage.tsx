@@ -37,11 +37,9 @@ import {
     GridOn,
     Favorite,
     Comment,
-    ArrowBack,
     Verified,
     CalendarToday,
     Link as LinkIcon,
-    Email,
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import MoreOptionsDialog from "./MoreOptionsDialog";

@@ -231,7 +231,7 @@ const ModalPost: React.FC<PostProps> = ({ postId, fetchPosts, borderRadius, isMo
         setPost({
             ...post,
             comments: post?.comments.map((comment) =>
-                comment.id === commentId ? { ...comment, liked_by_user: newLikedStatus, likes_count: newLikeCount } : comment
+                comment.id === commentId ? { ...comment, liked_by_user: newLikedStatus, likes_count: newLikeCount } : comment,
             ),
         });
 
@@ -245,7 +245,7 @@ const ModalPost: React.FC<PostProps> = ({ postId, fetchPosts, borderRadius, isMo
                 comments: post?.comments.map((comment) =>
                     comment.id === commentId
                         ? { ...comment, liked_by_user: commentToUpdate.liked_by_user, likes_count: commentToUpdate.likes_count }
-                        : comment
+                        : comment,
                 ),
             });
 
