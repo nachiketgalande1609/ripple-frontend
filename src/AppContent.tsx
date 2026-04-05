@@ -21,7 +21,6 @@ import Notifications from "./pages/notifications/Notifications";
 import SettingsPage from "./pages/SettingsPage";
 import { getNotificationsCount } from "./services/api";
 import NavDrawer from "./component/navbar/NavDrawer";
-import SavedPage from "./pages/SavedPage";
 import VideoCallModal from "./component/VideoCallModal";
 import Ringtone from "./static/ringtone.mp3";
 import HangUpTone from "./static/hangup.mp3";
@@ -511,14 +510,6 @@ const AppContent = () => {
                         element={
                             <PrivateRoute>
                                 <SearchPage />
-                            </PrivateRoute>
-                        }
-                    />
-                    <Route
-                        path="/saved"
-                        element={
-                            <PrivateRoute>
-                                <SavedPage />
                             </PrivateRoute>
                         }
                     />

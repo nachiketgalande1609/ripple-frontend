@@ -1,5 +1,18 @@
-import { Typography, Box, Drawer, IconButton, useMediaQuery, useTheme } from "@mui/material";
-import { Done as DoneIcon, DoneAll as DoneAllIcon, Close as CloseIcon } from "@mui/icons-material";
+import {
+    Typography,
+    Box,
+    Drawer,
+    IconButton,
+    useMediaQuery,
+    useTheme,
+    Divider,
+    Avatar,
+} from "@mui/material";
+import {
+    Done as DoneIcon,
+    DoneAll as DoneAllIcon,
+    Close as CloseIcon,
+} from "@mui/icons-material";
 
 type Message = {
     message_id: number;
@@ -45,9 +58,120 @@ interface MessageDetailsDrawerProps {
     selectedMessage?: Message | null;
 }
 
-export default function MessageDetailsDrawer({ drawerOpen, setDrawerOpen, selectedMessage }: MessageDetailsDrawerProps) {
+function formatDate(isoString: string) {
+    const date = new Date(isoString);
+    const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+    return { dateStr, timeStr };
+}
+
+type StatusRowProps = {
+    icon: React.ReactNode;
+    label: string;
+    iconColor: string;
+    timestamp: string;
+    isLast?: boolean;
+};
+
+function StatusRow({ icon, label, iconColor, timestamp, isLast }: StatusRowProps) {
+    const { dateStr, timeStr } = formatDate(timestamp);
+
+    return (
+        <Box sx={{ display: "flex", gap: 2, position: "relative" }}>
+            {/* Timeline line */}
+            {!isLast && (
+                <Box
+                    sx={{
+                        position: "absolute",
+                        left: "15px",
+                        top: "32px",
+                        bottom: "-16px",
+                        width: "2px",
+                        background: "linear-gradient(to bottom, #000000, transparent)",
+                    }}
+                />
+            )}
+
+            {/* Icon circle */}
+            <Box
+                sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    backgroundColor: "#1a1a1a",
+                    border: `1.5px solid ${iconColor}30`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    zIndex: 1,
+                }}
+            >
+                {icon}
+            </Box>
+
+            {/* Content */}
+            <Box sx={{ pb: 3, flex: 1 }}>
+                <Typography
+                    sx={{
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        color: "#fff",
+                        letterSpacing: "0.02em",
+                        mb: 0.25,
+                    }}
+                >
+                    {label}
+                </Typography>
+                <Typography
+                    sx={{
+                        fontSize: "11px",
+                        color: "#666",
+                        fontVariantNumeric: "tabular-nums",
+                    }}
+                >
+                    {dateStr} · {timeStr}
+                </Typography>
+            </Box>
+        </Box>
+    );
+}
+
+export default function MessageDetailsDrawer({
+    drawerOpen,
+    setDrawerOpen,
+    selectedMessage,
+}: MessageDetailsDrawerProps) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+    const statuses = [
+        selectedMessage?.timestamp
+            ? {
+                  label: "Sent",
+                  iconColor: "#888",
+                  timestamp: selectedMessage.timestamp,
+                  icon: <DoneIcon sx={{ color: "#888", fontSize: 15 }} />,
+              }
+            : null,
+        selectedMessage?.delivered_timestamp
+            ? {
+                  label: "Delivered",
+                  iconColor: "#aaa",
+                  timestamp: selectedMessage.delivered_timestamp,
+                  icon: <DoneAllIcon sx={{ color: "#aaa", fontSize: 15 }} />,
+              }
+            : null,
+        selectedMessage?.read_timestamp
+            ? {
+                  label: "Read",
+                  iconColor: "#38acff",
+                  timestamp: selectedMessage.read_timestamp,
+                  icon: <DoneAllIcon sx={{ color: "#38acff", fontSize: 15 }} />,
+              }
+            : null,
+    ].filter(Boolean) as { label: string; iconColor: string; timestamp: string; icon: React.ReactNode }[];
+
     return (
         <Drawer
             anchor="right"
@@ -55,122 +179,152 @@ export default function MessageDetailsDrawer({ drawerOpen, setDrawerOpen, select
             onClose={() => setDrawerOpen(false)}
             PaperProps={{
                 sx: {
-                    width: isMobile ? "50vw" : "300px",
-                    padding: 2,
+                    width: isMobile ? "80vw" : "300px",
+                    backgroundColor: "#000000",
                     color: "white",
-                    backgroundColor: "black",
+                    borderLeft: "1px solid #1f1f1f",
+                    display: "flex",
+                    flexDirection: "column",
                 },
             }}
         >
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                <Typography variant="h6">Message Details</Typography>
-                <IconButton onClick={() => setDrawerOpen(false)}>
-                    <CloseIcon />
+            {/* Header */}
+            <Box
+                sx={{
+                    px: 2.5,
+                    py: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    borderBottom: "1px solid #1a1a1a",
+                }}
+            >
+                <Typography
+                    sx={{
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        color: "#aaa",
+                    }}
+                >
+                    Message Info
+                </Typography>
+                <IconButton
+                    onClick={() => setDrawerOpen(false)}
+                    size="small"
+                    sx={{
+                        color: "#555",
+                        "&:hover": { color: "#fff", backgroundColor: "#1f1f1f" },
+                        borderRadius: "8px",
+                    }}
+                >
+                    <CloseIcon fontSize="small" />
                 </IconButton>
             </Box>
-            {selectedMessage?.timestamp && (
-                <Box sx={{ border: "1px solid #505050", padding: "10px", borderRadius: "10px", mb: 1, display: "flex" }}>
-                    <Box sx={{ paddingRight: "10px" }}>
-                        <DoneIcon sx={{ color: "#ffffff", fontSize: "18px", top: "2px", position: "relative" }} />
-                    </Box>
-                    <Box>
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                color: "#ffffff",
-                                mb: 1,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "5px",
-                            }}
-                        >
-                            <strong>Sent</strong>
-                        </Typography>
-                        <Typography sx={{ fontSize: "12px" }}>
-                            {new Date(selectedMessage.timestamp).toLocaleDateString("en-GB", {
-                                day: "numeric",
-                                month: "short",
-                            })}
-                            ,
-                            {new Date(selectedMessage.timestamp).toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                                hour12: true,
-                            })}
-                        </Typography>
-                    </Box>
+
+            {/* Message preview */}
+            {selectedMessage?.message_text && (
+                <Box
+                    sx={{
+                        mx: 2.5,
+                        mt: 2.5,
+                        mb: 1,
+                        px: 2,
+                        py: 1.5,
+                        backgroundColor: "#141414",
+                        borderRadius: "12px",
+                        borderLeft: "2px solid #2a2a2a",
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            fontSize: "13px",
+                            color: "#888",
+                            lineHeight: 1.5,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                        }}
+                    >
+                        {selectedMessage.message_text}
+                    </Typography>
                 </Box>
             )}
 
-            {selectedMessage?.delivered_timestamp && (
-                <Box sx={{ border: "1px solid #505050", padding: "10px", borderRadius: "10px", mb: 1, display: "flex" }}>
-                    <Box sx={{ paddingRight: "10px" }}>
-                        <DoneAllIcon sx={{ color: "#ffffff", fontSize: "18px", top: "2px", position: "relative" }} />
-                    </Box>
-                    <Box>
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                color: "#ffffff",
-                                mb: 1,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "5px",
-                            }}
-                        >
-                            <strong>Delivered</strong>
-                        </Typography>
-                        <Typography sx={{ fontSize: "12px" }}>
-                            {new Date(selectedMessage.delivered_timestamp).toLocaleDateString("en-GB", {
-                                day: "numeric",
-                                month: "short",
-                            })}
-                            ,
-                            {new Date(selectedMessage.delivered_timestamp).toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                                hour12: true,
-                            })}
-                        </Typography>
-                    </Box>
-                </Box>
-            )}
+            {/* Status section label */}
+            <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5 }}>
+                <Typography
+                    sx={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: "#444",
+                    }}
+                >
+                    Delivery Status
+                </Typography>
+            </Box>
 
-            {selectedMessage?.read_timestamp && (
-                <Box sx={{ border: "1px solid #505050", padding: "10px", borderRadius: "10px", mb: 1, display: "flex" }}>
-                    <Box sx={{ paddingRight: "10px" }}>
-                        <DoneAllIcon sx={{ color: "#38acff", fontSize: "18px", top: "2px", position: "relative" }} />
-                    </Box>
-                    <Box>
+            {/* Timeline */}
+            <Box sx={{ px: 2.5, pt: 0.5 }}>
+                {statuses.length > 0 ? (
+                    statuses.map((s, i) => (
+                        <StatusRow
+                            key={s.label}
+                            {...s}
+                            isLast={i === statuses.length - 1}
+                        />
+                    ))
+                ) : (
+                    <Typography sx={{ fontSize: "13px", color: "#444", py: 1 }}>
+                        No status available.
+                    </Typography>
+                )}
+            </Box>
+
+            {/* Reactions */}
+            {selectedMessage?.reactions && selectedMessage.reactions.length > 0 && (
+                <>
+                    <Divider sx={{ borderColor: "#1a1a1a", mx: 2.5, mt: 1 }} />
+                    <Box sx={{ px: 2.5, pt: 2, pb: 1.5 }}>
                         <Typography
-                            variant="body2"
                             sx={{
-                                color: "#ffffff",
-                                mb: 1,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "5px",
+                                fontSize: "11px",
+                                fontWeight: 600,
+                                letterSpacing: "0.08em",
+                                textTransform: "uppercase",
+                                color: "#444",
+                                mb: 1.5,
                             }}
                         >
-                            <div>
-                                <strong>Read</strong>
-                                <br />
-                            </div>
+                            Reactions
                         </Typography>
-                        <Typography sx={{ fontSize: "12px" }}>
-                            {new Date(selectedMessage.read_timestamp).toLocaleDateString("en-GB", {
-                                day: "numeric",
-                                month: "short",
-                            })}
-                            ,
-                            {new Date(selectedMessage.read_timestamp).toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                                hour12: true,
-                            })}
-                        </Typography>
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+                            {selectedMessage.reactions.map((r) => (
+                                <Box
+                                    key={r.user_id}
+                                    sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                                >
+                                    <Avatar
+                                        src={r.profile_picture}
+                                        sx={{ width: 28, height: 28, fontSize: 12 }}
+                                    >
+                                        {r.username?.[0]?.toUpperCase()}
+                                    </Avatar>
+                                    <Typography sx={{ fontSize: "13px", color: "#ccc", flex: 1 }}>
+                                        {r.username}
+                                    </Typography>
+                                    <Typography sx={{ fontSize: "18px", lineHeight: 1 }}>
+                                        {r.reaction}
+                                    </Typography>
+                                </Box>
+                            ))}
+                        </Box>
                     </Box>
-                </Box>
+                </>
             )}
         </Drawer>
     );

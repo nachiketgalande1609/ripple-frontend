@@ -10,12 +10,12 @@ import {
     useMediaQuery,
     useTheme,
     CircularProgress,
+    Chip,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { timeAgo } from "../../utils/utils";
 import BlankProfileImage from "../../static/profile_blank.png";
 
-// Define the Notification interface separately
 interface Notification {
     id: number;
     type: string;
@@ -31,7 +31,6 @@ interface Notification {
     request_id: number;
 }
 
-// Define props correctly
 interface NotificationCardProps {
     notification: Notification;
     onFollowBack: (userId: string) => void;
@@ -55,68 +54,116 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
         navigate(`/profile/${notification.sender_id}`);
     };
 
+    const timeLabel = timeAgo(notification.created_at);
+
     return (
-        <Paper key={notification.id} sx={{ mb: 1, boxShadow: 2, borderRadius: "20px" }}>
+        <Paper
+            key={notification.id}
+            elevation={0}
+            sx={{
+                mb: 1,
+                borderRadius: "14px",
+                border: "1px solid rgba(255,255,255,0.06)",
+                backgroundColor: "#1a1d21",
+                overflow: "hidden",
+                transition: "background-color 0.15s ease",
+                "&:hover": {
+                    backgroundColor: "#1f2328",
+                },
+            }}
+        >
             <ListItem
                 component="div"
                 onClick={handleNotificationClick}
                 sx={{
                     cursor: "pointer",
-                    padding: isMobile ? "14px" : "16px",
+                    px: isMobile ? 1.5 : 2,
+                    py: isMobile ? 1.25 : 1.5,
                     display: "flex",
                     alignItems: "center",
-                    height: isMobile ? "80px" : "90px",
-                    justifyContent: "space-between",
-                    backgroundColor: "#202327",
-                    borderRadius: "20px",
+                    gap: 1.5,
                 }}
             >
-                <ListItemAvatar>
+                {/* Avatar */}
+                <ListItemAvatar sx={{ minWidth: "unset" }}>
                     <Avatar
                         src={notification.profile_picture || BlankProfileImage}
                         alt={notification.username}
-                        sx={{ height: isMobile ? "50px" : "58px", width: isMobile ? "50px" : "58px", mr: 2 }}
+                        sx={{
+                            height: isMobile ? 44 : 50,
+                            width: isMobile ? 44 : 50,
+                            border: "2px solid rgba(255,255,255,0.08)",
+                        }}
                     />
                 </ListItemAvatar>
+
+                {/* Text */}
                 <ListItemText
+                    disableTypography
                     primary={
-                        <Typography sx={{ fontSize: isMobile ? "0.85rem" : "1rem" }}>
-                            {notification.username} {notification.message}
+                        <Typography
+                            sx={{
+                                fontSize: isMobile ? "0.84rem" : "0.93rem",
+                                color: "#e8eaed",
+                                lineHeight: 1.4,
+                            }}
+                        >
+                            <span style={{ fontWeight: 600 }}>{notification.username}</span>{" "}
+                            <span style={{ color: "#9aa0a6" }}>{notification.message}</span>
                         </Typography>
                     }
                     secondary={
-                        <Typography color="gray" sx={{ fontSize: isMobile ? "0.7rem" : "0.8rem" }}>
-                            {timeAgo(notification.created_at) === "Just Now"
-                                ? timeAgo(notification.created_at)
-                                : `${timeAgo(notification.created_at)} ago`}
+                        <Typography
+                            sx={{
+                                fontSize: isMobile ? "0.7rem" : "0.75rem",
+                                color: "#5f6368",
+                                mt: 0.4,
+                            }}
+                        >
+                            {timeLabel === "Just Now" ? timeLabel : `${timeLabel} ago`}
                         </Typography>
                     }
-                    sx={{ flexGrow: 1 }}
+                    sx={{ flexGrow: 1, my: 0 }}
                 />
+
+                {/* Follow back button */}
                 {notification.type === "follow" && (
                     <Button
-                        variant="contained"
+                        variant="outlined"
                         size="small"
                         onClick={(e) => {
                             e.stopPropagation();
                             if (notification.request_status !== "pending") onFollowBack(notification.sender_id);
                         }}
-                        disabled={notification.request_status === "pending"}
+                        disabled={notification.request_status === "pending" || notification.request_status === "accepted"}
                         sx={{
-                            ml: 2,
-                            borderRadius: "10px",
-                            backgroundColor: "#ffffff",
-                            ":disabled": {
-                                backgroundColor: "#202327",
-                                color: "#000000",
+                            borderRadius: "8px",
+                            fontSize: "0.75rem",
+                            fontWeight: 600,
+                            textTransform: "none",
+                            px: 1.5,
+                            py: 0.5,
+                            flexShrink: 0,
+                            borderColor: notification.request_status === "accepted" ? "transparent" : "rgba(255,255,255,0.2)",
+                            color: notification.request_status === "accepted" ? "#5f6368" : "#e8eaed",
+                            backgroundColor: notification.request_status === "accepted" ? "transparent" : "rgba(255,255,255,0.06)",
+                            "&:hover:not(:disabled)": {
+                                backgroundColor: "rgba(255,255,255,0.12)",
+                                borderColor: "rgba(255,255,255,0.3)",
+                            },
+                            "&:disabled": {
+                                borderColor: "transparent",
+                                color: "#5f6368",
                             },
                         }}
                     >
                         {notification.request_status === "accepted" ? "Following" : "Follow Back"}
                     </Button>
                 )}
+
+                {/* Follow request accept/reject */}
                 {notification.type === "follow_request" && (
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                    <Box sx={{ display: "flex", gap: 0.75, flexShrink: 0 }}>
                         {notification.request_status === "pending" ? (
                             <>
                                 <Button
@@ -128,16 +175,27 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                                         onFollowRequestResponse(notification.request_id, "accepted");
                                     }}
                                     sx={{
-                                        borderRadius: "10px",
-                                        backgroundColor: "#ffffff",
-                                        height: "30.75px",
-                                        width: "72px",
+                                        borderRadius: "8px",
+                                        textTransform: "none",
+                                        fontSize: "0.75rem",
+                                        fontWeight: 600,
+                                        px: 1.5,
+                                        py: 0.5,
+                                        minWidth: 68,
+                                        backgroundColor: "#e8eaed",
+                                        color: "#111",
+                                        "&:hover": { backgroundColor: "#f1f3f4" },
+                                        "&:disabled": { backgroundColor: "rgba(255,255,255,0.08)", color: "#5f6368" },
                                     }}
                                 >
-                                    {followRequestAcceptLoading ? <CircularProgress size={16} sx={{ color: "#ffffff" }} /> : "Accept"}
+                                    {followRequestAcceptLoading ? (
+                                        <CircularProgress size={14} sx={{ color: "#555" }} />
+                                    ) : (
+                                        "Accept"
+                                    )}
                                 </Button>
                                 <Button
-                                    variant="contained"
+                                    variant="outlined"
                                     size="small"
                                     disabled={followRequestRejectLoading}
                                     onClick={(e) => {
@@ -145,45 +203,71 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                                         onFollowRequestResponse(notification.request_id, "rejected");
                                     }}
                                     sx={{
-                                        borderRadius: "10px",
-                                        backgroundColor: "#ffffff",
-                                        height: "30.75px",
-                                        width: "72px",
+                                        borderRadius: "8px",
+                                        textTransform: "none",
+                                        fontSize: "0.75rem",
+                                        fontWeight: 600,
+                                        px: 1.5,
+                                        py: 0.5,
+                                        minWidth: 68,
+                                        borderColor: "rgba(255,255,255,0.15)",
+                                        color: "#9aa0a6",
+                                        "&:hover": {
+                                            borderColor: "rgba(255,255,255,0.25)",
+                                            backgroundColor: "rgba(255,255,255,0.05)",
+                                        },
+                                        "&:disabled": { borderColor: "transparent", color: "#5f6368" },
                                     }}
                                 >
-                                    {followRequestRejectLoading ? <CircularProgress size={16} sx={{ color: "#ffffff" }} /> : "Reject"}
+                                    {followRequestRejectLoading ? (
+                                        <CircularProgress size={14} sx={{ color: "#555" }} />
+                                    ) : (
+                                        "Decline"
+                                    )}
                                 </Button>
                             </>
                         ) : (
-                            <Button
-                                variant="contained"
+                            <Chip
+                                label={
+                                    notification.request_status === "accepted"
+                                        ? "Accepted"
+                                        : notification.request_status === "rejected"
+                                          ? "Declined"
+                                          : null
+                                }
                                 size="small"
-                                disabled
                                 sx={{
-                                    ml: 2,
-                                    borderRadius: "10px",
-                                    backgroundColor: "#ffffff",
-                                    ":disabled": {
-                                        backgroundColor: "#000000",
-                                        color: "#505050",
-                                    },
+                                    backgroundColor: "rgba(255,255,255,0.05)",
+                                    color: "#5f6368",
+                                    fontSize: "0.72rem",
+                                    height: 26,
+                                    border: "1px solid rgba(255,255,255,0.08)",
                                 }}
-                            >
-                                {notification.request_status === "accepted"
-                                    ? "Accepted"
-                                    : notification.request_status === "rejected"
-                                      ? "Rejected"
-                                      : null}
-                            </Button>
+                            />
                         )}
                     </Box>
                 )}
+
+                {/* Post thumbnail for like/comment */}
                 {(notification.type === "like" || notification.type === "comment") && notification.file_url && (
-                    <Box sx={{ ml: 2, display: "flex", justifyContent: "flex-end", width: "80px" }}>
+                    <Box
+                        sx={{
+                            flexShrink: 0,
+                            ml: 0.5,
+                            borderRadius: "8px",
+                            overflow: "hidden",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                        }}
+                    >
                         <img
                             src={notification.file_url}
-                            alt="Post image"
-                            style={{ width: "58px", height: "58px", objectFit: "cover", borderRadius: "8px" }}
+                            alt="Post"
+                            style={{
+                                width: isMobile ? 44 : 50,
+                                height: isMobile ? 44 : 50,
+                                objectFit: "cover",
+                                display: "block",
+                            }}
                         />
                     </Box>
                 )}

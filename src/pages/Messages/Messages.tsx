@@ -528,7 +528,7 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     };
 
     return (
-        <Box sx={{ display: "flex", height: "100vh" }}>
+        <Box sx={{ display: "flex", height: "98.5dvh" }}>
             {isMobile ? (
                 !selectedUser ? (
                     <MessagesUserList users={users} onlineUsers={onlineUsers} handleUserClick={handleUserClick} />
@@ -555,7 +555,7 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
                                 sx={{
                                     position: "absolute",
                                     left: 5,
-                                    top: 15,
+                                    top: 21,
                                     zIndex: 2000,
                                     visibility: drawerOpen ? "hidden" : "visible",
                                 }}

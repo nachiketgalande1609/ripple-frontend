@@ -1,5 +1,9 @@
-import { Button, CircularProgress } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { CircularProgress } from "@mui/material";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import HourglassTopIcon from "@mui/icons-material/HourglassTop";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
+import { useState } from "react";
 
 interface Profile {
     username: string;
@@ -24,87 +28,137 @@ interface FollowButtonProps {
     handleCancelRequest: () => void;
 }
 
-const FollowButton: React.FC<FollowButtonProps> = ({ isFollowing, profileData, followButtonLoading, handleFollow, handleCancelRequest }) => {
+type ButtonState = "follow" | "pending" | "following";
+
+function getState(isFollowing: boolean, profileData: Profile | null): ButtonState {
+    if (profileData?.is_request_active) return "pending";
+    if (isFollowing && profileData?.follow_status === "accepted") return "following";
+    return "follow";
+}
+
+const stateConfig: Record<
+    ButtonState,
+    {
+        label: string;
+        hoverLabel: string;
+        icon: React.ReactNode;
+        hoverIcon: React.ReactNode;
+        bg: string;
+        color: string;
+        hoverBg: string;
+        hoverColor: string;
+        border: string;
+    }
+> = {
+    follow: {
+        label: "Follow",
+        hoverLabel: "Follow",
+        icon: <PersonAddIcon sx={{ fontSize: 14 }} />,
+        hoverIcon: <PersonAddIcon sx={{ fontSize: 14 }} />,
+        bg: "#ffffff",
+        color: "#0a0a0a",
+        hoverBg: "#e8e8e8",
+        hoverColor: "#0a0a0a",
+        border: "1.5px solid transparent",
+    },
+    pending: {
+        label: "Requested",
+        hoverLabel: "Cancel",
+        icon: <HourglassTopIcon sx={{ fontSize: 14 }} />,
+        hoverIcon: <CloseIcon sx={{ fontSize: 14 }} />,
+        bg: "transparent",
+        color: "#888",
+        hoverBg: "rgba(255,80,80,0.08)",
+        hoverColor: "#ff5050",
+        border: "1.5px solid #2a2a2a",
+    },
+    following: {
+        label: "Following",
+        hoverLabel: "Following",
+        icon: <CheckIcon sx={{ fontSize: 14 }} />,
+        hoverIcon: <CheckIcon sx={{ fontSize: 14 }} />,
+        bg: "transparent",
+        color: "#555",
+        hoverBg: "transparent",
+        hoverColor: "#555",
+        border: "1.5px solid #222",
+    },
+};
+
+const FollowButton: React.FC<FollowButtonProps> = ({
+    isFollowing,
+    profileData,
+    followButtonLoading,
+    handleFollow,
+    handleCancelRequest,
+}) => {
+    const [hovered, setHovered] = useState(false);
+    const state = getState(isFollowing, profileData);
+    const config = stateConfig[state];
+    const isDisabled = state === "following" || followButtonLoading;
+
     const handleClick = () => {
-        if (profileData?.is_request_active) {
-            handleCancelRequest();
-        } else if (!(isFollowing && profileData?.follow_status === "accepted")) {
-            handleFollow();
-        }
+        if (isDisabled) return;
+        if (state === "pending") handleCancelRequest();
+        else handleFollow();
     };
 
-    const label = profileData?.is_request_active
-        ? "Request Pending"
-        : isFollowing && profileData?.follow_status === "accepted"
-          ? "Following"
-          : "Follow";
+    const displayLabel = hovered && state === "pending" ? config.hoverLabel : config.label;
+    const displayIcon = hovered && state === "pending" ? config.hoverIcon : config.icon;
+    const displayColor = hovered && state === "pending" ? config.hoverColor : config.color;
+    const displayBg = hovered && state === "pending" ? config.hoverBg : config.bg;
+    const displayBorder = hovered && state === "pending" ? "1.5px solid rgba(255,80,80,0.25)" : config.border;
 
     return (
-        <Button
+        <button
             onClick={handleClick}
-            disabled={isFollowing && profileData?.follow_status === "accepted"}
-            variant="contained"
-            sx={{
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            disabled={isDisabled}
+            style={{
                 position: "relative",
-                padding: profileData?.is_request_active ? "6px 12px 6px 16px" : "6px 16px",
-                width: profileData?.is_request_active ? "160px" : isFollowing && profileData?.follow_status === "accepted" ? "115px" : "88.46px",
-                mt: 2,
-                borderRadius: "15px",
-                color: profileData?.is_request_active ? "#606060" : "#000000",
-                backgroundColor: profileData?.is_request_active ? "#000000" : "#ffffff",
-                ":disabled": {
-                    backgroundColor: "#000000",
-                    color: "#505050",
-                },
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                justifyContent: "flex-start",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
+                justifyContent: "center",
+                gap: "6px",
+                padding: "7px 16px",
+                minWidth: "100px",
+                marginTop: "16px",
+                borderRadius: "20px",
+                border: displayBorder,
+                background: displayBg,
+                color: displayColor,
+                fontSize: "13px",
+                fontWeight: 500,
+                letterSpacing: "0.01em",
+                cursor: isDisabled ? "default" : "pointer",
+                transition: "all 0.2s ease",
+                outline: "none",
                 whiteSpace: "nowrap",
-                textAlign: "left",
-                transition: "width 0.3s ease-in-out, background-color 0.3s, color 0.3s",
-                "&:hover": {
-                    "@media (hover: hover) and (pointer: fine)": {
-                        "& svg": {
-                            opacity: 1,
-                        },
-                        width: profileData?.is_request_active ? "186.76px" : "88.46px",
-                    },
-                },
+                userSelect: "none",
             }}
         >
-            {/* Spinner overlay */}
-            {followButtonLoading && (
+            {followButtonLoading ? (
                 <CircularProgress
-                    size={18}
-                    sx={{
-                        color: "#606060",
-                        position: "absolute",
-                        left: "50%",
-                        top: "50%",
-                        marginTop: "-9px",
-                        marginLeft: "-9px",
-                    }}
+                    size={14}
+                    sx={{ color: "#555" }}
                 />
-            )}
-
-            {/* Always render label */}
-            <span style={{ opacity: followButtonLoading ? 0 : 1, display: "flex", alignItems: "center" }}>
-                {label}
-                {profileData?.is_request_active && (
-                    <DeleteIcon
-                        sx={{
-                            marginLeft: "8px",
-                            fontSize: "20px",
-                            opacity: 0,
-                            transition: "opacity 0.3s ease-in-out",
-                            flexShrink: 0,
+            ) : (
+                <>
+                    <span
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            transition: "color 0.2s ease",
+                            color: displayColor,
                         }}
-                    />
-                )}
-            </span>
-        </Button>
+                    >
+                        {displayIcon}
+                    </span>
+                    <span style={{ transition: "color 0.2s ease" }}>{displayLabel}</span>
+                </>
+            )}
+        </button>
     );
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { CircularProgress } from "@mui/material";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { loginUser, trackTraffic } from "../services/api";
@@ -7,169 +7,245 @@ import { useGlobalStore } from "../store/store";
 import socket from "../services/socket";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import LineWaves from "../component/LineWaves/LineWaves";
+import Logo from "../static/logo-transparent.png"
 
-// ─── Minimal CSS injected once ────────────────────────────────────────────────
+// ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Figtree:wght@300;400;500;600&display=swap');
 
-  .rpl-root * { box-sizing: border-box; margin: 0; padding: 0; }
+  .ig-root * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .rpl-root {
-    font-family: 'DM Sans', sans-serif;
+  .ig-root {
+    font-family: 'Figtree', sans-serif;
     width: 100%;
     height: 100dvh;
+    display: flex;
+    overflow: hidden;
+    background: #0e0a08;
+  }
+
+  /* ── Left panel — immersive visual ───────────────── */
+  .ig-visual {
+    flex: 1;
     position: relative;
     overflow: hidden;
-    background: #080810;
+    display: none;
   }
 
-  .rpl-bg {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
+  @media (min-width: 860px) {
+    .ig-visual { display: block; }
   }
 
-  /* Subtle radial vignette over the wave bg */
-  .rpl-vignette {
+  /* Warm collage-style background */
+  .ig-visual-bg {
     position: absolute;
     inset: 0;
-    z-index: 1;
-    background: radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, #080810 100%);
+    background:
+      radial-gradient(ellipse 60% 55% at 30% 25%, rgba(255,177,100,0.45) 0%, transparent 65%),
+      radial-gradient(ellipse 55% 60% at 75% 70%, rgba(234,100,120,0.38) 0%, transparent 65%),
+      radial-gradient(ellipse 70% 50% at 55% 45%, rgba(255,130,80,0.22) 0%, transparent 60%),
+      linear-gradient(160deg, #1a0f08 0%, #2a1510 40%, #1e0d14 100%);
+  }
+
+  /* Floating photo-card mockups */
+  .ig-photo-grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 32px;
+    opacity: 0.55;
+  }
+
+  .ig-photo-card {
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ig-photo-card:nth-child(1) { background: linear-gradient(135deg, #f5c07a, #e8866a); grid-row: 1 / 3; }
+  .ig-photo-card:nth-child(2) { background: linear-gradient(135deg, #d4756b, #b5506a); }
+  .ig-photo-card:nth-child(3) { background: linear-gradient(135deg, #e8a87c, #d46b5a); }
+  .ig-photo-card:nth-child(4) { background: linear-gradient(135deg, #c87b8a, #a05070); grid-column: 1 / 3; }
+
+  /* Scatter texture */
+  .ig-photo-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(14, 10, 8, 0.18);
+    mix-blend-mode: multiply;
     pointer-events: none;
   }
 
-  .rpl-center {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 24px;
+  /* Overlay gradient for readability */
+  .ig-visual-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 60%, #0e0a08 100%);
   }
 
-  /* ── Card ──────────────────────────────────────── */
-  .rpl-card {
+  /* Left panel branding */
+  .ig-visual-brand {
+    position: absolute;
+    bottom: 48px;
+    left: 44px;
+    right: 44px;
+  }
+
+  .ig-visual-tagline {
+    font-family: 'Fraunces', serif;
+    font-size: 40px;
+    font-weight: 300;
+    line-height: 1.15;
+    color: rgba(255,255,255,0.92);
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+  }
+
+  .ig-visual-tagline em {
+    font-style: italic;
+    color: #f4a96a;
+  }
+
+  .ig-visual-sub {
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.42);
+    letter-spacing: 0.2px;
+  }
+
+  /* ── Right panel — login form ────────────────────── */
+  .ig-panel {
     width: 100%;
-    max-width: 400px;
-    background: rgba(12, 12, 22, 0.72);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 28px;
-    padding: 48px 44px 40px;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 52px;
     position: relative;
-    overflow: hidden;
-    -webkit-backdrop-filter: blur(28px);
-    backdrop-filter: blur(28px);
-    box-shadow:
-      0 0 0 1px rgba(255,255,255,0.04) inset,
-      0 32px 80px rgba(0,0,0,0.6),
-      0 0 60px rgba(111,76,255,0.06);
+    background: #0e0a08;
   }
 
-  /* Top shimmer line */
-  .rpl-card::before {
+  @media (min-width: 860px) {
+    .ig-panel { width: 460px; flex-shrink: 0; }
+  }
+
+  @media (max-width: 520px) {
+    .ig-panel { padding: 40px 28px; }
+  }
+
+  /* Subtle warm ambient glow behind form */
+  .ig-panel::before {
     content: '';
     position: absolute;
-    top: 0; left: 16px; right: 16px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(234,100,80,0.09) 0%, transparent 70%);
+    pointer-events: none;
   }
 
-  /* ── Wordmark ──────────────────────────────────── */
-  .rpl-wordmark {
+  /* ── Logo / wordmark ────────────────────────────── */
+  .ig-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 32px;
+    gap: 12px;
+    margin-bottom: 44px;
   }
 
-  .rpl-wordmark-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #7B5FFF 0%, #E040FB 100%);
+  .ig-logo-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 4px 16px rgba(123, 95, 255, 0.35);
   }
 
-  .rpl-wordmark-icon svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: #fff;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  .ig-logo-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
-  .rpl-wordmark-name {
-    font-family: 'Instrument Serif', serif;
-    font-size: 22px;
+  .ig-logo-name {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 400;
     color: #fff;
     letter-spacing: -0.3px;
   }
 
-  /* ── Headline ──────────────────────────────────── */
-  .rpl-headline {
-    font-family: 'Instrument Serif', serif;
-    font-size: 32px;
+  /* ── Greeting ────────────────────────────────────── */
+  .ig-greeting {
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #e07a60;
+  }
+
+  .ig-headline {
+    font-family: 'Fraunces', serif;
+    font-size: 34px;
+    font-weight: 300;
     color: #fff;
     line-height: 1.15;
     letter-spacing: -0.5px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
-  .rpl-headline em {
+  .ig-headline em {
     font-style: italic;
-    background: linear-gradient(90deg, #A78BFA, #F472B6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #f5b88a;
   }
 
-  .rpl-subline {
+  .ig-subtext {
     font-size: 14px;
-    color: rgba(255,255,255,0.42);
+    color: rgba(255,255,255,0.38);
     font-weight: 300;
-    margin-bottom: 36px;
-    line-height: 1.5;
+    line-height: 1.6;
+    margin-bottom: 40px;
   }
 
-  /* ── Form Fields ────────────────────────────────── */
-  .rpl-field-group {
+  /* ── Fields ─────────────────────────────────────── */
+  .ig-fields {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    margin-bottom: 8px;
+    gap: 16px;
+    margin-bottom: 4px;
   }
 
-  .rpl-field {
+  .ig-field {
     position: relative;
   }
 
-  .rpl-field label {
+  .ig-field label {
     display: block;
     font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.8px;
+    font-weight: 600;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.35);
-    margin-bottom: 6px;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 8px;
   }
 
-  .rpl-field input {
+  .ig-field input {
     width: 100%;
-    height: 48px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    padding: 0 16px;
+    height: 52px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 0 18px;
     font-size: 15px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-weight: 400;
     color: #fff;
     outline: none;
@@ -177,381 +253,511 @@ const styles = `
     -webkit-appearance: none;
   }
 
-  .rpl-field input::placeholder {
-    color: rgba(255,255,255,0.2);
+  .ig-field input::placeholder {
+    color: rgba(255,255,255,0.18);
   }
 
-  .rpl-field input:hover {
-    border-color: rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.07);
+  .ig-field input:hover {
+    border-color: rgba(244,169,106,0.25);
+    background: rgba(255,255,255,0.06);
   }
 
-  .rpl-field input:focus {
-    border-color: rgba(167,139,250,0.5);
-    background: rgba(167,139,250,0.06);
-    box-shadow: 0 0 0 3px rgba(167,139,250,0.1);
+  .ig-field input:focus {
+    border-color: rgba(244,169,106,0.55);
+    background: rgba(244,169,106,0.05);
+    box-shadow: 0 0 0 4px rgba(244,169,106,0.08);
   }
 
-  /* ── Forgot + Submit row ────────────────────────── */
-  .rpl-actions {
+  /* ── Row: forgot + submit ────────────────────────── */
+  .ig-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 22px;
-    margin-bottom: 22px;
+    margin-top: 28px;
+    margin-bottom: 32px;
   }
 
-  .rpl-forgot {
+  .ig-forgot {
     font-size: 13px;
-    color: rgba(255,255,255,0.35);
+    color: rgba(255,255,255,0.3);
     background: none;
     border: none;
     cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Figtree', sans-serif;
     padding: 0;
     transition: color 0.2s;
   }
 
-  .rpl-forgot:hover {
-    color: rgba(167,139,250,0.85);
-  }
+  .ig-forgot:hover { color: #f4a96a; }
 
-  /* ── Primary Button ─────────────────────────────── */
-  .rpl-btn-primary {
-    height: 48px;
-    padding: 0 28px;
-    border-radius: 12px;
+  /* ── CTA button ──────────────────────────────────── */
+  .ig-btn {
+    height: 52px;
+    padding: 0 32px;
+    border-radius: 14px;
     border: none;
-    background: linear-gradient(135deg, #7B5FFF 0%, #C026D3 100%);
+    background: linear-gradient(135deg, #f4a96a 0%, #e05c7e 100%);
     color: #fff;
     font-size: 15px;
-    font-weight: 500;
-    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-family: 'Figtree', sans-serif;
     cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-    box-shadow: 0 4px 20px rgba(123, 95, 255, 0.35);
-    white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 8px;
+    box-shadow: 0 6px 28px rgba(224,92,126,0.35);
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    white-space: nowrap;
   }
 
-  .rpl-btn-primary:hover:not(:disabled) {
-    opacity: 0.9;
+  .ig-btn:hover:not(:disabled) {
+    opacity: 0.92;
     transform: translateY(-1px);
-    box-shadow: 0 6px 28px rgba(123, 95, 255, 0.45);
+    box-shadow: 0 10px 36px rgba(224,92,126,0.45);
   }
 
-  .rpl-btn-primary:active:not(:disabled) {
-    transform: translateY(0);
-  }
+  .ig-btn:active:not(:disabled) { transform: translateY(0); }
 
-  .rpl-btn-primary:disabled {
-    opacity: 0.35;
+  .ig-btn:disabled {
+    opacity: 0.3;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
   }
 
-  /* ── Divider ────────────────────────────────────── */
-  .rpl-divider {
+  /* ── Social proof strip ──────────────────────────── */
+  .ig-avatars {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 16px;
+    margin-bottom: 32px;
   }
 
-  .rpl-divider-line {
+  .ig-avatar-stack {
+    display: flex;
+  }
+
+  .ig-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #0e0a08;
+    margin-left: -8px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .ig-avatar:first-child { margin-left: 0; }
+  .ig-avatar:nth-child(1) { background: linear-gradient(135deg, #f4a96a, #e05c7e); }
+  .ig-avatar:nth-child(2) { background: linear-gradient(135deg, #e05c7e, #b0366a); }
+  .ig-avatar:nth-child(3) { background: linear-gradient(135deg, #c47a5a, #f4a96a); }
+
+  .ig-social-text {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.32);
+    font-weight: 300;
+    line-height: 1.45;
+  }
+
+  .ig-social-text strong {
+    color: rgba(255,255,255,0.6);
+    font-weight: 500;
+  }
+
+  /* ── Divider ─────────────────────────────────────── */
+  .ig-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .ig-divider-line {
     flex: 1;
     height: 1px;
     background: rgba(255,255,255,0.07);
   }
 
-  .rpl-divider-text {
+  .ig-divider-text {
     font-size: 12px;
-    color: rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.22);
     font-weight: 400;
+    white-space: nowrap;
   }
 
-  /* ── Footer ─────────────────────────────────────── */
-  .rpl-footer {
+  /* ── Footer ──────────────────────────────────────── */
+  .ig-footer {
     text-align: center;
-    font-size: 13.5px;
-    color: rgba(255,255,255,0.35);
-    margin-top: 24px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 300;
   }
 
-  .rpl-footer a {
-    color: rgba(167,139,250,0.9);
+  .ig-footer a {
+    color: #f4a96a;
     font-weight: 500;
     text-decoration: none;
     transition: color 0.2s;
   }
 
-  .rpl-footer a:hover {
-    color: #c4b5fd;
+  .ig-footer a:hover { color: #f5c094; }
+
+  .ig-footer .ig-about {
+    color: rgba(255,255,255,0.22);
+    font-weight: 400;
   }
 
-  /* ── Error ──────────────────────────────────────── */
-  .rpl-error {
+  /* ── Error ───────────────────────────────────────── */
+  .ig-error {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    background: rgba(239,68,68,0.08);
-    border: 1px solid rgba(239,68,68,0.18);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 20px;
+    background: rgba(220, 80, 80, 0.08);
+    border: 1px solid rgba(220,80,80,0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
   }
 
-  .rpl-error-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #f87171;
+  .ig-error-icon {
+    font-size: 14px;
     flex-shrink: 0;
-    margin-top: 5px;
+    margin-top: 1px;
   }
 
-  .rpl-error span {
-    font-size: 13px;
-    color: #fca5a5;
+  .ig-error span {
+    font-size: 13.5px;
+    color: #f9a8a8;
     line-height: 1.5;
-  }
-
-  @media (max-width: 440px) {
-    .rpl-card {
-      padding: 36px 28px 32px;
-      border-radius: 24px;
-    }
-    .rpl-headline { font-size: 27px; }
   }
 `;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const LoginPage: React.FC = () => {
-    const { setUser } = useGlobalStore();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
-    const [mounted, setMounted] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+  const { setUser } = useGlobalStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-    // Inject styles once
-    useEffect(() => {
-        const id = "rpl-styles";
-        if (!document.getElementById(id)) {
-            const el = document.createElement("style");
-            el.id = id;
-            el.textContent = styles;
-            document.head.appendChild(el);
-        }
-        setMounted(true);
-    }, []);
+  useEffect(() => {
+    const id = "ig-styles";
+    if (!document.getElementById(id)) {
+      const el = document.createElement("style");
+      el.id = id;
+      el.textContent = styles;
+      document.head.appendChild(el);
+    }
+    setMounted(true);
+  }, []);
 
-    // Traffic tracking
-    useEffect(() => {
-        const track = async () => {
-            try {
-                const ip = await axios.get("https://api.ipify.org?format=json");
-                const loc = await axios.get(`https://ipinfo.io/${ip.data.ip}/json`);
-                await trackTraffic({
-                    ip: ip.data.ip,
-                    userAgent: navigator.userAgent,
-                    location: loc.data.city || loc.data.country,
-                    referrer: document.referrer,
-                });
-            } catch {}
-        };
-        track();
-    }, []);
-
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-        setLoading(true);
-        try {
-            const response = await loginUser({ email, password });
-            if (response.success) {
-                const { token, user } = response.data;
-                localStorage.setItem("token", token);
-                localStorage.setItem("user", JSON.stringify(user));
-                socket.emit("registerUser", user.id);
-                setUser(user);
-                navigate("/");
-            } else {
-                setError(response.error || "Login failed!");
-                setLoading(false);
-            }
-        } catch (err: any) {
-            setError(err.response?.data?.error || "Login failed!");
-            setLoading(false);
-        }
+  useEffect(() => {
+    const track = async () => {
+      try {
+        const ip = await axios.get("https://api.ipify.org?format=json");
+        const loc = await axios.get(`https://ipinfo.io/${ip.data.ip}/json`);
+        await trackTraffic({
+          ip: ip.data.ip,
+          userAgent: navigator.userAgent,
+          location: loc.data.city || loc.data.country,
+          referrer: document.referrer,
+        });
+      } catch {}
     };
+    track();
+  }, []);
 
-    const containerVariants = {
-        hidden: { opacity: 0, y: 24, scale: 0.97 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-        },
-    };
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const response = await loginUser({ email, password });
+      if (response.success) {
+        const { token, user } = response.data;
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        socket.emit("registerUser", user.id);
+        setUser(user);
+        navigate("/");
+      } else {
+        setError(response.error || "Login failed!");
+        setLoading(false);
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Login failed!");
+      setLoading(false);
+    }
+  };
 
-    const stagger = (i: number) => ({
-        hidden: { opacity: 0, y: 12 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: { delay: 0.1 + i * 0.07, duration: 0.4, ease: "easeOut" },
-        },
-    });
+  const fade = (i: number) => ({
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: 0.08 + i * 0.07,
+        duration: 0.45,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  });
 
-    return (
-        <GoogleOAuthProvider clientId="702353220748-2lmc03lb4tcfnuqds67h8bbupmb1aa0q.apps.googleusercontent.com">
-            <div className="rpl-root">
-                {/* Animated background */}
-                <div className="rpl-bg">
-                    <LineWaves
-                        speed={0.3}
-                        innerLineCount={28}
-                        outerLineCount={32}
-                        warpIntensity={0.8}
-                        rotation={-40}
-                        edgeFadeWidth={0}
-                        colorCycleSpeed={0.8}
-                        brightness={0.15}
-                        color1="#7B5FFF"
-                        color2="#C026D3"
-                        color3="#ffffff"
-                        enableMouseInteraction
-                        mouseInfluence={1.5}
-                    />
+  const panelVariants = {
+    hidden: { opacity: 0, x: 30 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    },
+  };
+
+  const visualVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.9, ease: "easeOut" } },
+  };
+
+  return (
+    <GoogleOAuthProvider clientId="702353220748-2lmc03lb4tcfnuqds67h8bbupmb1aa0q.apps.googleusercontent.com">
+      <div className="ig-root">
+        {/* ── Left: Visual panel ── */}
+        <AnimatePresence>
+          {mounted && (
+            <motion.div
+              className="ig-visual"
+              variants={visualVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <div className="ig-visual-bg" />
+              <div className="ig-photo-grid">
+                <div className="ig-photo-card">
+                  <img
+                    src="https://plus.unsplash.com/premium_photo-1683143646126-df3a3f3739f3?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt=""
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
                 </div>
-                <div className="rpl-vignette" />
-
-                {/* Centered card */}
-                <div className="rpl-center">
-                    <AnimatePresence>
-                        {mounted && (
-                            <motion.div variants={containerVariants} initial="hidden" animate="visible" style={{ width: "100%", maxWidth: 400 }}>
-                                <div className="rpl-card">
-                                    {/* Wordmark */}
-                                    <motion.div variants={stagger(0)} initial="hidden" animate="visible">
-                                        <div className="rpl-wordmark">
-                                            <div className="rpl-wordmark-icon">
-                                                {/* Ripple / wave icon */}
-                                                <svg viewBox="0 0 24 24">
-                                                    <path d="M2 12c2-4 4-6 6-6s4 4 8 4 4-6 6-6" />
-                                                </svg>
-                                            </div>
-                                            <span className="rpl-wordmark-name">Ripple</span>
-                                        </div>
-                                    </motion.div>
-
-                                    {/* Headline */}
-                                    <motion.div variants={stagger(1)} initial="hidden" animate="visible">
-                                        <h1 className="rpl-headline">
-                                            Good to see you
-                                            <br />
-                                            <em>again.</em>
-                                        </h1>
-                                        <p className="rpl-subline">Sign in to pick up where you left off.</p>
-                                    </motion.div>
-
-                                    {/* Error */}
-                                    <AnimatePresence>
-                                        {error && (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                                animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
-                                                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                                transition={{ duration: 0.25 }}
-                                            >
-                                                <div className="rpl-error">
-                                                    <div className="rpl-error-dot" />
-                                                    <span>{error}</span>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-
-                                    {/* Form */}
-                                    <form onSubmit={handleLogin} noValidate>
-                                        <motion.div variants={stagger(3)} initial="hidden" animate="visible">
-                                            <div className="rpl-field-group">
-                                                <div className="rpl-field">
-                                                    <label htmlFor="rpl-email">Email</label>
-                                                    <input
-                                                        id="rpl-email"
-                                                        type="email"
-                                                        placeholder="you@example.com"
-                                                        value={email}
-                                                        autoComplete="email"
-                                                        onChange={(e) => setEmail(e.target.value)}
-                                                    />
-                                                </div>
-                                                <div className="rpl-field">
-                                                    <label htmlFor="rpl-password">Password</label>
-                                                    <input
-                                                        id="rpl-password"
-                                                        type="password"
-                                                        placeholder="••••••••"
-                                                        value={password}
-                                                        autoComplete="current-password"
-                                                        onChange={(e) => setPassword(e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </motion.div>
-
-                                        <motion.div variants={stagger(4)} initial="hidden" animate="visible">
-                                            <div className="rpl-actions">
-                                                <button type="button" className="rpl-forgot" onClick={() => navigate("/reset-password")}>
-                                                    Forgot password?
-                                                </button>
-                                                <button type="submit" className="rpl-btn-primary" disabled={loading || !email || !password}>
-                                                    {loading ? (
-                                                        <CircularProgress size={18} thickness={4} sx={{ color: "#fff" }} />
-                                                    ) : (
-                                                        <>
-                                                            Sign in <span style={{ opacity: 0.7, fontSize: 17, marginLeft: 2 }}>→</span>
-                                                        </>
-                                                    )}
-                                                </button>
-                                            </div>
-                                        </motion.div>
-                                    </form>
-
-                                    {/* Divider */}
-                                    <motion.div variants={stagger(5)} initial="hidden" animate="visible">
-                                        <div className="rpl-divider">
-                                            <div className="rpl-divider-line" />
-                                            <span className="rpl-divider-text">New to Ripple?</span>
-                                            <div className="rpl-divider-line" />
-                                        </div>
-                                    </motion.div>
-
-                                    {/* Sign up footer */}
-                                    <motion.div variants={stagger(6)} initial="hidden" animate="visible">
-                                        <div className="rpl-footer">
-                                            <a href="/register">Create an account</a>
-                                            <span style={{ margin: "0 8px", opacity: 0.25 }}>·</span>
-                                            <a href="/about" style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>
-                                                About Ripple
-                                            </a>
-                                        </div>
-                                    </motion.div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                <div className="ig-photo-card">
+                  <img
+                    src="https://plus.unsplash.com/premium_photo-1682401101972-5dc0756ece88?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt=""
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
                 </div>
-            </div>
-        </GoogleOAuthProvider>
-    );
+                <div className="ig-photo-card">
+                  <img
+                    src="https://plus.unsplash.com/premium_photo-1663051303500-c85bef3f05f6?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt=""
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                </div>
+                <div className="ig-photo-card">
+                  <img
+                    src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt=""
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="ig-visual-overlay" />
+              <div className="ig-visual-brand">
+                <p className="ig-visual-tagline">
+                  Every moment
+                  <br />
+                  <em>worth sharing.</em>
+                </p>
+                <p className="ig-visual-sub">
+                  Connect, create, and be inspired daily.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Right: Form panel ── */}
+        <AnimatePresence>
+          {mounted && (
+            <motion.div
+              className="ig-panel"
+              variants={panelVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {/* Logo */}
+              <motion.div variants={fade(0)} initial="hidden" animate="visible">
+                <div className="ig-logo">
+                  <div className="ig-logo-mark">
+                    <img src={Logo} alt="Ripple logo" />
+                  </div>
+                  <span className="ig-logo-name">Ripple</span>
+                </div>
+              </motion.div>
+
+              {/* Greeting + headline */}
+              <motion.div variants={fade(1)} initial="hidden" animate="visible">
+                <p className="ig-greeting">Welcome back</p>
+                <h1 className="ig-headline">
+                  Sign in to your
+                  <br />
+                  <em>world.</em>
+                </h1>
+                <p className="ig-subtext">
+                  Your feed, your stories, your people — all waiting.
+                </p>
+              </motion.div>
+
+              {/* Social proof */}
+              <motion.div variants={fade(2)} initial="hidden" animate="visible">
+                <div className="ig-avatars">
+                  <div className="ig-avatar-stack">
+                    <div className="ig-avatar">A</div>
+                    <div className="ig-avatar">J</div>
+                    <div className="ig-avatar">M</div>
+                  </div>
+                  <p className="ig-social-text">
+                    <strong>2.4M people</strong> shared moments today
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Error */}
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <div className="ig-error">
+                      <span className="ig-error-icon">⚠</span>
+                      <span>{error}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Form */}
+              <form onSubmit={handleLogin} noValidate>
+                <motion.div
+                  variants={fade(3)}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <div className="ig-fields">
+                    <div className="ig-field">
+                      <label htmlFor="ig-email">Email</label>
+                      <input
+                        id="ig-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        autoComplete="email"
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="ig-field">
+                      <label htmlFor="ig-password">Password</label>
+                      <input
+                        id="ig-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        autoComplete="current-password"
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  variants={fade(4)}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <div className="ig-row">
+                    <button
+                      type="button"
+                      className="ig-forgot"
+                      onClick={() => navigate("/reset-password")}
+                    >
+                      Forgot password?
+                    </button>
+                    <button
+                      type="submit"
+                      className="ig-btn"
+                      disabled={loading || !email || !password}
+                    >
+                      {loading ? (
+                        <CircularProgress
+                          size={18}
+                          thickness={4}
+                          sx={{ color: "#fff" }}
+                        />
+                      ) : (
+                        <>
+                          Sign in{" "}
+                          <span style={{ fontSize: 16, opacity: 0.75 }}>→</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              </form>
+
+              {/* Divider */}
+              <motion.div variants={fade(5)} initial="hidden" animate="visible">
+                <div className="ig-divider">
+                  <div className="ig-divider-line" />
+                  <span className="ig-divider-text">New to Ripple?</span>
+                  <div className="ig-divider-line" />
+                </div>
+              </motion.div>
+
+              {/* Footer */}
+              <motion.div variants={fade(6)} initial="hidden" animate="visible">
+                <div className="ig-footer">
+                  <a href="/register">Create your account</a>
+                  <span style={{ margin: "0 10px", opacity: 0.25 }}>·</span>
+                  <a href="/about" className="ig-about">
+                    About Ripple
+                  </a>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </GoogleOAuthProvider>
+  );
 };
 
 export default LoginPage;
