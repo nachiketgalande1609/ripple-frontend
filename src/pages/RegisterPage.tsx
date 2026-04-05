@@ -1,9 +1,342 @@
 import React, { useState, useEffect } from "react";
-import { TextField, Button, Container, Typography, Box, Alert, Link, useMediaQuery, CircularProgress } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import { registerUser } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
-import Orb from "../component/plasma/Orb";
+import LineWaves from "../component/LineWaves/LineWaves";
 
+// ─── Styles (same sheet as LoginPage — injected once, shared) ─────────────────
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Instrument+Serif:ital@0;1&display=swap');
+
+  .rpl-root * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .rpl-root {
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+    height: 100dvh;
+    position: relative;
+    overflow: hidden;
+    background: #080810;
+  }
+
+  .rpl-bg { position: absolute; inset: 0; z-index: 0; }
+
+  .rpl-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, #080810 100%);
+    pointer-events: none;
+  }
+
+  .rpl-center {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .rpl-card {
+    width: 100%;
+    max-width: 400px;
+    background: rgba(12, 12, 22, 0.72);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 28px;
+    padding: 44px 40px 36px;
+    position: relative;
+    overflow: hidden;
+    -webkit-backdrop-filter: blur(28px);
+    backdrop-filter: blur(28px);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.04) inset,
+      0 32px 80px rgba(0,0,0,0.6),
+      0 0 60px rgba(111,76,255,0.06);
+    margin: auto;
+  }
+
+  .rpl-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 16px; right: 16px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.13), transparent);
+  }
+
+  .rpl-wordmark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .rpl-wordmark-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #7B5FFF, #E040FB);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(123,95,255,0.4);
+    flex-shrink: 0;
+  }
+
+  .rpl-wordmark-icon svg {
+    width: 18px; height: 18px;
+    fill: none; stroke: #fff;
+    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .rpl-wordmark-name {
+    font-family: 'Instrument Serif', serif;
+    font-size: 21px;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .rpl-headline {
+    font-family: 'Instrument Serif', serif;
+    font-size: 31px;
+    color: #fff;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    margin-bottom: 7px;
+  }
+
+  .rpl-headline em {
+    font-style: italic;
+    background: linear-gradient(90deg, #A78BFA, #F472B6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .rpl-subline {
+    font-size: 13.5px;
+    color: rgba(255,255,255,0.38);
+    font-weight: 300;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .rpl-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  /* Two-column row for name fields */
+  .rpl-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+  }
+
+  .rpl-field label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.32);
+    margin-bottom: 6px;
+  }
+
+  .rpl-field input {
+    width: 100%;
+    height: 46px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 12px;
+    padding: 0 15px;
+    font-size: 14.5px;
+    font-family: 'DM Sans', sans-serif;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .rpl-field input::placeholder { color: rgba(255,255,255,0.2); }
+
+  .rpl-field input:hover {
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.07);
+  }
+
+  .rpl-field input:focus {
+    border-color: rgba(167,139,250,0.55);
+    background: rgba(167,139,250,0.07);
+    box-shadow: 0 0 0 3px rgba(167,139,250,0.1);
+  }
+
+  /* Password strength bar */
+  .rpl-strength {
+    margin-top: 6px;
+    display: flex;
+    gap: 4px;
+  }
+
+  .rpl-strength-seg {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.3s;
+  }
+
+  .rpl-strength-seg.weak   { background: #f87171; }
+  .rpl-strength-seg.fair   { background: #fbbf24; }
+  .rpl-strength-seg.good   { background: #a78bfa; }
+  .rpl-strength-seg.strong { background: #34d399; }
+
+  /* Password match indicator */
+  .rpl-match {
+    font-size: 11px;
+    margin-top: 5px;
+    transition: color 0.2s;
+  }
+  .rpl-match.ok  { color: #34d399; }
+  .rpl-match.bad { color: #f87171; }
+
+  /* Submit button — full width on register */
+  .rpl-btn-primary {
+    width: 100%;
+    height: 48px;
+    margin-top: 22px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #7B5FFF 0%, #C026D3 100%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(123,95,255,0.38);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .rpl-btn-primary:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(123,95,255,0.48);
+  }
+
+  .rpl-btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+  .rpl-btn-primary:disabled {
+    opacity: 0.32;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Alerts */
+  .rpl-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+  }
+
+  .rpl-alert.error {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.18);
+  }
+
+  .rpl-alert.success {
+    background: rgba(52,211,153,0.07);
+    border: 1px solid rgba(52,211,153,0.18);
+  }
+
+  .rpl-alert-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  .rpl-alert.error   .rpl-alert-dot { background: #f87171; }
+  .rpl-alert.success .rpl-alert-dot { background: #34d399; }
+
+  .rpl-alert.error   span { font-size: 13px; color: #fca5a5; line-height: 1.5; }
+  .rpl-alert.success span { font-size: 13px; color: #6ee7b7; line-height: 1.5; }
+
+  /* Divider + Footer */
+  .rpl-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0 18px;
+  }
+
+  .rpl-divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
+
+  .rpl-divider-text {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.22);
+  }
+
+  .rpl-footer {
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.32);
+  }
+
+  .rpl-footer a {
+    color: rgba(167,139,250,0.9);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .rpl-footer a:hover { color: #c4b5fd; }
+
+  /* Terms note */
+  .rpl-terms {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.22);
+    text-align: center;
+    margin-top: 14px;
+    line-height: 1.6;
+  }
+
+  .rpl-terms a {
+    color: rgba(167,139,250,0.6);
+    text-decoration: none;
+  }
+
+  .rpl-terms a:hover { color: rgba(167,139,250,0.9); }
+
+  @media (max-width: 440px) {
+    .rpl-card { padding: 36px 28px 32px; border-radius: 24px; }
+    .rpl-headline { font-size: 27px; }
+    .rpl-field-row { grid-template-columns: 1fr; }
+  }
+`;
+
+// ─── Password strength helper ─────────────────────────────────────────────────
+function getStrength(pw: string): 0 | 1 | 2 | 3 | 4 {
+    if (!pw) return 0;
+    let score = 0;
+    if (pw.length >= 6) score++;
+    if (pw.length >= 10) score++;
+    if (/[A-Z]/.test(pw) || /[0-9]/.test(pw)) score++;
+    if (/[^a-zA-Z0-9]/.test(pw)) score++;
+    return Math.min(score, 4) as 0 | 1 | 2 | 3 | 4;
+}
+
+const strengthLabel = ["", "Weak", "Fair", "Good", "Strong"];
+const strengthClass = ["", "weak", "fair", "good", "strong"];
+
+// ─── Component ────────────────────────────────────────────────────────────────
 const RegisterPage: React.FC = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -11,12 +344,22 @@ const RegisterPage: React.FC = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    const [checked, setChecked] = useState(false);
     const [loading, setLoading] = useState(false);
-    const isLarge = useMediaQuery("(min-width:1281px)");
+    const [mounted, setMounted] = useState(false);
+
+    const strength = getStrength(password);
+    const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+    const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 
     useEffect(() => {
-        setChecked(true);
+        const id = "rpl-styles";
+        if (!document.getElementById(id)) {
+            const el = document.createElement("style");
+            el.id = id;
+            el.textContent = styles;
+            document.head.appendChild(el);
+        }
+        setMounted(true);
     }, []);
 
     const handleRegister = async (e: React.FormEvent) => {
@@ -25,19 +368,16 @@ const RegisterPage: React.FC = () => {
         setSuccess(null);
         setLoading(true);
 
-        const validUsername = /^[a-zA-Z0-9_]+$/.test(username);
-        if (!validUsername) {
-            setError("Only letters, numbers, underscores (_) are allowed in username.");
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            setError("Only letters, numbers and underscores are allowed in the username.");
             setLoading(false);
             return;
         }
-
         if (password !== confirmPassword) {
-            setError("Passwords do not match!");
+            setError("Passwords do not match.");
             setLoading(false);
             return;
         }
-
         if (password.length < 6) {
             setError("Password must be at least 6 characters.");
             setLoading(false);
@@ -45,132 +385,87 @@ const RegisterPage: React.FC = () => {
         }
 
         try {
-            const response = await registerUser({
-                email,
-                username,
-                password,
-            });
-
+            const response = await registerUser({ email, username, password });
             if (response.success) {
-                setSuccess("Registration successful! A verification link has been sent to your email.");
+                setSuccess("Account created! Check your email for a verification link.");
                 setUsername("");
                 setEmail("");
                 setPassword("");
                 setConfirmPassword("");
             } else {
-                setError(response.error || "Registration failed!");
+                setError(response.error || "Registration failed.");
             }
         } catch (err: any) {
-            setError(err.response?.data?.error || "Registration failed!");
+            setError(err.response?.data?.error || "Registration failed.");
         } finally {
             setLoading(false);
         }
     };
 
+    const canSubmit = !loading && !!email && !!username && !!password && !!confirmPassword;
+
+    const containerVariants = {
+        hidden: { opacity: 0, y: 24, scale: 0.97 },
+        visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+    };
+
+    const stagger = (i: number) => ({
+        hidden: { opacity: 0, y: 12 },
+        visible: { opacity: 1, y: 0, transition: { delay: 0.1 + i * 0.07, duration: 0.4, ease: "easeOut" } },
+    });
+
     return (
-        <div
-            style={{
-                width: "100%",
-                height: "100dvh",
-                position: "relative",
-                overflow: "hidden",
-            }}
-        >
-            {/* Plasma Background Layer */}
-            <div
-                style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    zIndex: 0,
-                }}
-            >
-                <Orb hoverIntensity={0.5} rotateOnHover={true} hue={0} forceHoverState={false} />
+        <div className="rpl-root">
+            {/* Animated background */}
+            <div className="rpl-bg">
+                <LineWaves
+                    speed={0.3}
+                    innerLineCount={28}
+                    outerLineCount={32}
+                    warpIntensity={0.8}
+                    rotation={-40}
+                    edgeFadeWidth={0}
+                    colorCycleSpeed={0.8}
+                    brightness={0.15}
+                    color1="#7B5FFF"
+                    color2="#C026D3"
+                    color3="#ffffff"
+                    enableMouseInteraction
+                    mouseInfluence={1.5}
+                />
             </div>
+            <div className="rpl-vignette" />
 
-            <Container
-                sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "100svh",
-                }}
-            >
+            <div className="rpl-center">
                 <AnimatePresence>
-                    {checked && (
+                    {mounted && (
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                            style={{ width: "100%", maxWidth: 400, padding: "24px 0" }}
                         >
-                            <Box
-                                sx={{
-                                    textAlign: "center",
-                                    padding: isLarge ? "50px 40px" : "35px 25px",
-                                    borderRadius: "24px",
-                                    position: "relative",
-                                    overflow: "hidden",
-                                    backgroundColor: "rgba(255, 255, 255, 0.08)",
-                                    backdropFilter: "blur(20px)",
-                                    boxShadow: `
-                                        0 8px 32px rgba(0, 0, 0, 0.2),
-                                        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                                        inset 0 -1px 0 rgba(0, 0, 0, 0.1)
-                                    `,
-                                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                                    width: isLarge ? "420px" : "380px",
-                                    boxSizing: "border-box",
-                                }}
-                            >
-                                {/* Glassmorphic border effect */}
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        top: 0,
-                                        left: 0,
-                                        right: 0,
-                                        height: "1px",
-                                        background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)",
-                                    }}
-                                />
-
-                                {/* Title */}
-                                <motion.div
-                                    initial={{ y: -20, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    transition={{ delay: 0.1, duration: 0.5 }}
-                                >
-                                    <Typography
-                                        sx={{
-                                            mb: 2,
-                                            fontSize: isLarge ? "42px" : "36px",
-                                            fontWeight: 700,
-                                            letterSpacing: "-0.5px",
-                                            backgroundImage: "linear-gradient(to right, #7a60ff, #ff8800)",
-                                            WebkitBackgroundClip: "text",
-                                            WebkitTextFillColor: "transparent",
-                                        }}
-                                        className="brand-text"
-                                    >
-                                        Ripple
-                                    </Typography>
+                            <div className="rpl-card">
+                                {/* Wordmark */}
+                                <motion.div variants={stagger(0)} initial="hidden" animate="visible">
+                                    <div className="rpl-wordmark">
+                                        <div className="rpl-wordmark-icon">
+                                            <svg viewBox="0 0 24 24">
+                                                <path d="M2 12 C4 7 6 5 9 5 S13 9 16 9 S20 5 22 5" />
+                                            </svg>
+                                        </div>
+                                        <span className="rpl-wordmark-name">Ripple</span>
+                                    </div>
                                 </motion.div>
 
-                                {/* Subtitle */}
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                                    <Typography
-                                        gutterBottom
-                                        sx={{
-                                            fontSize: isLarge ? "0.95rem" : "0.85rem",
-                                            color: "rgba(255, 255, 255, 0.7)",
-                                            mb: 4,
-                                            fontWeight: 300,
-                                        }}
-                                    >
-                                        Join our community today
-                                    </Typography>
+                                {/* Headline */}
+                                <motion.div variants={stagger(1)} initial="hidden" animate="visible">
+                                    <h1 className="rpl-headline">
+                                        Start something
+                                        <br />
+                                        <em>new.</em>
+                                    </h1>
+                                    <p className="rpl-subline">Create your account — it only takes a minute.</p>
                                 </motion.div>
 
                                 {/* Alerts */}
@@ -180,20 +475,12 @@ const RegisterPage: React.FC = () => {
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: "auto" }}
                                             exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.25 }}
                                         >
-                                            <Alert
-                                                severity="error"
-                                                sx={{
-                                                    mb: 3,
-                                                    backgroundColor: "rgba(239, 68, 68, 0.1)",
-                                                    border: "1px solid rgba(239, 68, 68, 0.2)",
-                                                    color: "#fca5a5",
-                                                    backdropFilter: "blur(10px)",
-                                                    borderRadius: "12px",
-                                                }}
-                                            >
-                                                {error}
-                                            </Alert>
+                                            <div className="rpl-alert error">
+                                                <div className="rpl-alert-dot" />
+                                                <span>{error}</span>
+                                            </div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -204,150 +491,133 @@ const RegisterPage: React.FC = () => {
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: "auto" }}
                                             exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.25 }}
                                         >
-                                            <Alert
-                                                severity="success"
-                                                sx={{
-                                                    mb: 3,
-                                                    backgroundColor: "rgba(34, 197, 94, 0.1)",
-                                                    border: "1px solid rgba(34, 197, 94, 0.2)",
-                                                    color: "#86efac",
-                                                    backdropFilter: "blur(10px)",
-                                                    borderRadius: "12px",
-                                                }}
-                                            >
-                                                {success}
-                                            </Alert>
+                                            <div className="rpl-alert success">
+                                                <div className="rpl-alert-dot" />
+                                                <span>{success}</span>
+                                            </div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
 
-                                <form onSubmit={handleRegister}>
-                                    {/* Form Fields */}
-                                    {["Username", "Email", "Password", "Confirm Password"].map((field, index) => {
-                                        const value = [username, email, password, confirmPassword][index];
-                                        const setValue = [setUsername, setEmail, setPassword, setConfirmPassword][index];
+                                {/* Form */}
+                                <form onSubmit={handleRegister} noValidate>
+                                    <motion.div variants={stagger(2)} initial="hidden" animate="visible">
+                                        <div className="rpl-field-group">
+                                            {/* Username + Email side by side on wider screens */}
+                                            <div className="rpl-field-row">
+                                                <div className="rpl-field">
+                                                    <label htmlFor="rpl-username">Username</label>
+                                                    <input
+                                                        id="rpl-username"
+                                                        type="text"
+                                                        placeholder="john_doe"
+                                                        value={username}
+                                                        autoComplete="username"
+                                                        onChange={(e) => setUsername(e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="rpl-field">
+                                                    <label htmlFor="rpl-email">Email</label>
+                                                    <input
+                                                        id="rpl-email"
+                                                        type="email"
+                                                        placeholder="you@example.com"
+                                                        value={email}
+                                                        autoComplete="email"
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
 
-                                        return (
-                                            <motion.div
-                                                key={field}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.3 + index * 0.1 }}
-                                            >
-                                                <TextField
-                                                    fullWidth
-                                                    placeholder={field}
-                                                    type={field.toLowerCase().includes("password") ? "password" : "text"}
-                                                    variant="standard"
-                                                    margin="normal"
-                                                    value={value}
-                                                    onChange={(e) => setValue(e.target.value)}
-                                                    sx={{
-                                                        mb: 1,
-                                                        "& .MuiInput-root": {
-                                                            "&:before": {
-                                                                borderBottom: "1px solid rgba(255, 255, 255, 0.3)",
-                                                            },
-                                                            "&:hover:not(.Mui-disabled):before": {
-                                                                borderBottom: "1px solid rgba(255, 255, 255, 0.5)",
-                                                            },
-                                                            "&:after": {
-                                                                borderBottom: "2px solid rgba(99, 102, 241, 0.8)",
-                                                            },
-                                                        },
-                                                        "& .MuiInput-input": {
-                                                            color: "#fff",
-                                                            fontSize: isLarge ? "1rem" : "0.9rem",
-                                                            padding: "8px 0",
-                                                            "&::placeholder": {
-                                                                color: "rgba(255, 255, 255, 0.4)",
-                                                                opacity: 1,
-                                                            },
-                                                        },
-                                                        "& .MuiInputLabel-root": {
-                                                            color: "rgba(255, 255, 255, 0.6)",
-                                                        },
-                                                    }}
+                                            {/* Password */}
+                                            <div className="rpl-field">
+                                                <label htmlFor="rpl-password">Password</label>
+                                                <input
+                                                    id="rpl-password"
+                                                    type="password"
+                                                    placeholder="Min. 6 characters"
+                                                    value={password}
+                                                    autoComplete="new-password"
+                                                    onChange={(e) => setPassword(e.target.value)}
                                                 />
-                                            </motion.div>
-                                        );
-                                    })}
+                                                {/* Strength bar */}
+                                                {password.length > 0 && (
+                                                    <div className="rpl-strength">
+                                                        {[1, 2, 3, 4].map((seg) => (
+                                                            <div
+                                                                key={seg}
+                                                                className={`rpl-strength-seg ${seg <= strength ? strengthClass[strength] : ""}`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                    {/* Register Button */}
-                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-                                        <Button
-                                            variant="contained"
-                                            type="submit"
-                                            disabled={loading || !email || !username || !password || !confirmPassword}
-                                            sx={{
-                                                mt: 3,
-                                                mb: 2,
-                                                borderRadius: "14px",
-                                                height: "52px",
-                                                fontSize: isLarge ? "1rem" : "0.9rem",
-                                                fontWeight: 500,
-                                                background: loading ? "rgba(99, 102, 241, 0.4)" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                                color: "#fff",
-                                                textTransform: "none",
-                                                letterSpacing: "0.5px",
-                                                transition: "all 0.3s ease",
-                                                width: "100%",
-                                                boxShadow: "0 4px 15px rgba(99, 102, 241, 0.3)",
-                                                "&:hover": {
-                                                    transform: "translateY(-1px)",
-                                                    boxShadow: "0 6px 20px rgba(99, 102, 241, 0.4)",
-                                                    background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-                                                },
-                                                "&:active": {
-                                                    transform: "translateY(0)",
-                                                },
-                                                "&:disabled": {
-                                                    background: "rgba(255, 255, 255, 0.05)",
-                                                    color: "rgba(255, 255, 255, 0.3)",
-                                                    boxShadow: "none",
-                                                    transform: "none",
-                                                },
-                                            }}
-                                        >
-                                            {loading ? <CircularProgress size={24} thickness={4} sx={{ color: "#fff" }} /> : "Create Account"}
-                                        </Button>
+                                            {/* Confirm Password */}
+                                            <div className="rpl-field">
+                                                <label htmlFor="rpl-confirm">Confirm Password</label>
+                                                <input
+                                                    id="rpl-confirm"
+                                                    type="password"
+                                                    placeholder="Re-enter password"
+                                                    value={confirmPassword}
+                                                    autoComplete="new-password"
+                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                />
+                                                {passwordsMatch && <p className="rpl-match ok">Passwords match</p>}
+                                                {passwordsMismatch && <p className="rpl-match bad">Passwords don't match</p>}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+
+                                    {/* Submit */}
+                                    <motion.div variants={stagger(3)} initial="hidden" animate="visible">
+                                        <button type="submit" className="rpl-btn-primary" disabled={!canSubmit}>
+                                            {loading ? (
+                                                <CircularProgress size={18} thickness={4} sx={{ color: "#fff" }} />
+                                            ) : (
+                                                <>
+                                                    Create account <span style={{ opacity: 0.7, fontSize: 17 }}>→</span>
+                                                </>
+                                            )}
+                                        </button>
                                     </motion.div>
                                 </form>
 
-                                {/* Login Link */}
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-                                    <Typography
-                                        sx={{
-                                            mt: 3,
-                                            color: "rgba(255, 255, 255, 0.6)",
-                                            fontSize: isLarge ? "0.9rem" : "0.8rem",
-                                        }}
-                                    >
-                                        Already have an account?{" "}
-                                        <Link
-                                            href="/login"
-                                            sx={{
-                                                color: "rgba(199, 210, 254, 0.9)",
-                                                fontWeight: 500,
-                                                textDecoration: "none",
-                                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                                WebkitBackgroundClip: "text",
-                                                WebkitTextFillColor: "transparent",
-                                                "&:hover": {
-                                                    textDecoration: "underline",
-                                                },
-                                            }}
-                                        >
-                                            Sign in
-                                        </Link>
-                                    </Typography>
+                                {/* Terms */}
+                                <motion.div variants={stagger(4)} initial="hidden" animate="visible">
+                                    <p className="rpl-terms">
+                                        By signing up you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>
+                                        .
+                                    </p>
                                 </motion.div>
-                            </Box>
+
+                                {/* Divider */}
+                                <motion.div variants={stagger(5)} initial="hidden" animate="visible">
+                                    <div className="rpl-divider">
+                                        <div className="rpl-divider-line" />
+                                        <span className="rpl-divider-text">Have an account?</span>
+                                        <div className="rpl-divider-line" />
+                                    </div>
+                                </motion.div>
+
+                                {/* Footer */}
+                                <motion.div variants={stagger(6)} initial="hidden" animate="visible">
+                                    <div className="rpl-footer">
+                                        <a href="/login">Sign in instead</a>
+                                        <span style={{ margin: "0 8px", opacity: 0.22 }}>·</span>
+                                        <a href="/about" style={{ color: "rgba(255,255,255,0.28)", fontWeight: 400 }}>
+                                            About Ripple
+                                        </a>
+                                    </div>
+                                </motion.div>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </Container>
+            </div>
         </div>
     );
 };
