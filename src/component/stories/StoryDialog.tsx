@@ -176,6 +176,8 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
         });
     };
 
+    console.log(selectedUserStories[currentIndex].media_url);
+
     return (
         <Dialog fullScreen open={open} onClose={handleClose}>
             <DialogContent sx={{ backgroundColor: "black", padding: 0 }}>
@@ -451,8 +453,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                             onMouseDown={handleDrawerToggle}
                             onTouchStart={handleDrawerToggle}
                         />
-
-                        {/* Viewers List */}
+                        {/* Viewers List
                         <Box sx={{ padding: "0 16px 16px 16px", overflow: "auto", flex: 1 }}>
                             <Box sx={{ marginTop: 2 }}>
                                 {selectedUserStories[currentIndex].viewers.map((viewer, index) => (
@@ -472,7 +473,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                     </Stack>
                                 ))}
                             </Box>
-                        </Box>
+                        </Box> */}
                     </Drawer>
                 </Container>
             </DialogContent>
