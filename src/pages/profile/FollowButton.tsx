@@ -13,7 +13,7 @@ interface Profile {
     follow_status: string;
     is_following: boolean;
     is_private: boolean;
-    isMobile: boolean;
+    isMobile?: boolean;
 }
 
 interface FollowButtonProps {
