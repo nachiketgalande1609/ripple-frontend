@@ -19,7 +19,7 @@ import { createPost } from "../../services/api";
 import { useGlobalStore } from "../../store/store";
 import { useNavigate } from "react-router-dom";
 import EmojiPicker, { Theme } from "emoji-picker-react";
-import { SentimentSatisfiedAlt as EmojiIcon, LocationOn, Close, CloudUpload, Image, AddPhotoAlternate } from "@mui/icons-material";
+import { SentimentSatisfiedAlt as EmojiIcon, LocationOn, Close, AddPhotoAlternate } from "@mui/icons-material";
 import Popover from "@mui/material/Popover";
 import { useNotifications } from "@toolpad/core/useNotifications";
 
@@ -44,7 +44,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
     // Reset state when modal closes
     useEffect(() => {

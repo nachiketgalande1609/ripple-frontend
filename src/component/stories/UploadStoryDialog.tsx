@@ -36,7 +36,6 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
     // Reset state when modal closes
     useEffect(() => {

@@ -11,6 +11,7 @@ import socket from "../services/socket";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import Orb from "../component/plasma/Orb";
+import LineWaves from "../component/LineWaves/LineWaves";
 
 const LoginPage: React.FC = () => {
     const { setUser } = useGlobalStore();
@@ -118,7 +119,21 @@ const LoginPage: React.FC = () => {
                         zIndex: 0,
                     }}
                 >
-                    <Orb hoverIntensity={0.5} rotateOnHover={true} hue={0} forceHoverState={false} />
+                    <LineWaves
+                        speed={0.3}
+                        innerLineCount={32}
+                        outerLineCount={36}
+                        warpIntensity={1}
+                        rotation={-45}
+                        edgeFadeWidth={0}
+                        colorCycleSpeed={1}
+                        brightness={0.2}
+                        color1="#ffffff"
+                        color2="#ffffff"
+                        color3="#ffffff"
+                        enableMouseInteraction
+                        mouseInfluence={2}
+                    />
                 </div>
 
                 <Container
