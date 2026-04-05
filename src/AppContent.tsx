@@ -30,12 +30,6 @@ import ResetPassword from "./pages/ResetPassword";
 import { useNotifications } from "@toolpad/core/useNotifications";
 import Messages from "./pages/Messages/Messages";
 
-const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
-
-if (currentUser && currentUser.id) {
-    socket.emit("registerUser", currentUser.id);
-}
-
 type User = {
     id: number;
     username: string;
@@ -47,6 +41,7 @@ type User = {
 };
 
 const AppContent = () => {
+    const currentUser = useRef(localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {}).current;
     const { user, unreadNotificationsCount, setUnreadNotificationsCount, unreadMessagesCount, setUnreadMessagesCount, postUploading } =
         useGlobalStore();
     const [notificationAlert, setNotificationAlert] = useState<string | null>(null);
@@ -81,6 +76,29 @@ const AppContent = () => {
         ],
         iceCandidatePoolSize: 10,
     };
+
+    useEffect(() => {
+        const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : null;
+
+        if (!currentUser?.id) return;
+
+        const register = () => {
+            console.log("Registering user:", currentUser.id, "| socket.id:", socket.id);
+            socket.emit("registerUser", currentUser.id);
+        };
+
+        // Always register immediately if connected
+        if (socket.connected) register();
+
+        // Re-register on every connect AND reconnect
+        socket.on("connect", register);
+        socket.io.on("reconnect", register);
+
+        return () => {
+            socket.off("connect", register);
+            socket.io.off("reconnect", register);
+        };
+    }, []);
 
     // Add this effect to handle initial user interaction
     useEffect(() => {
@@ -332,7 +350,12 @@ const AppContent = () => {
     };
 
     const handleVideoCall = async () => {
-        if (!selectedUser) return;
+        if (!selectedUser) {
+            console.log("No selectedUser!");
+            return;
+        }
+
+        console.log("Calling user:", selectedUser.id, "| currentUser:", currentUser.id);
 
         setCallParticipantId(selectedUser.id);
         setIsVideoModalOpen(true);
@@ -380,6 +403,7 @@ const AppContent = () => {
                 callerUsername: currentUser.username,
                 callerProfilePicture: currentUser.profile_picture_url,
             });
+            console.log("callUser emitted to:", selectedUser.id);
         } catch (err) {
             console.error("Error in handleVideoCall:", err);
         }

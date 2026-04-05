@@ -63,8 +63,6 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;
     const [openDialog, setOpenDialog] = useState(false);
 
-    console.log("xxx", currentUser);
-
     const isLarge = useMediaQuery("(min-width:1281px)");
 
     const DrawerWidth = isLarge ? 240 : 220;
