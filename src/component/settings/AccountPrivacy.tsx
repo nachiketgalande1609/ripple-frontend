@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { Box, Switch, Typography, CircularProgress } from "@mui/material";
 import { updatePrivacy } from "../../services/api";
-import { useNotifications } from "@toolpad/core/useNotifications";
+import { useAppNotifications } from "../../hooks/useNotification";
 
 const AccountPrivacy = () => {
-    const notifications = useNotifications();
+    const notifications = useAppNotifications();
     const [loading, setLoading] = useState(false);
-    const currentUser = localStorage.getItem("user")
-        ? JSON.parse(localStorage.getItem("user") || "")
-        : {};
+    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
     const [isPrivate, setIsPrivate] = useState(currentUser.is_private);
 
     const handleToggle = async () => {
@@ -21,10 +19,7 @@ const AccountPrivacy = () => {
             if (res.success) {
                 currentUser.is_private = newPrivacyStatus;
                 localStorage.setItem("user", JSON.stringify(currentUser));
-                notifications.show(
-                    `Account changed to ${newPrivacyStatus ? "Private" : "Public"}`,
-                    { severity: "success", autoHideDuration: 3000 }
-                );
+                notifications.show(`Account changed to ${newPrivacyStatus ? "Private" : "Public"}`, { severity: "success", autoHideDuration: 3000 });
             }
         } catch (error) {
             console.error("Error updating privacy setting:", error);
@@ -96,9 +91,7 @@ const AccountPrivacy = () => {
                                 width: 38,
                                 height: 38,
                                 borderRadius: "10px",
-                                backgroundColor: isPrivate
-                                    ? "rgba(255,255,255,0.07)"
-                                    : "rgba(255,255,255,0.04)",
+                                backgroundColor: isPrivate ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -130,22 +123,14 @@ const AccountPrivacy = () => {
                                     mt: 0.25,
                                 }}
                             >
-                                {isPrivate
-                                    ? "Only approved followers can see your posts"
-                                    : "Anyone can view your profile and posts"}
+                                {isPrivate ? "Only approved followers can see your posts" : "Anyone can view your profile and posts"}
                             </Typography>
                         </Box>
                     </Box>
 
                     {/* Toggle or spinner */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexShrink: 0 }}>
-                        {loading && (
-                            <CircularProgress
-                                size={14}
-                                thickness={5}
-                                sx={{ color: "rgba(255,255,255,0.3)" }}
-                            />
-                        )}
+                        {loading && <CircularProgress size={14} thickness={5} sx={{ color: "rgba(255,255,255,0.3)" }} />}
                         <Switch
                             checked={isPrivate}
                             onChange={handleToggle}

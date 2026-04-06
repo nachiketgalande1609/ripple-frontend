@@ -19,7 +19,7 @@ import { useDropzone } from "react-dropzone";
 import { uploadProfilePicture } from "../../services/api";
 import { useGlobalStore } from "../../store/store";
 import { updateProfileDetails, getProfile } from "../../services/api";
-import { useNotifications } from "@toolpad/core/useNotifications";
+import { useAppNotifications } from "../../hooks/useNotification";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import {
     SentimentSatisfiedAlt as EmojiIcon,
@@ -87,7 +87,7 @@ const LABEL_SX = {
 
 const ProfileDetails = () => {
     const { setUser } = useGlobalStore();
-    const notifications = useNotifications();
+    const notifications = useAppNotifications();
 
     const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
 

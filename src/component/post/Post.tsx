@@ -21,7 +21,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, getFollowingUsers } from "../../services/api";
 import ScrollableCommentsDrawer from "./ScrollableCommentsDrawer";
 import { useNavigate } from "react-router-dom";
-import { useNotifications } from "@toolpad/core/useNotifications";
+import { useAppNotifications } from "../../hooks/useNotification";
 import ImageDialog from "../ImageDialog";
 import socket from "../../services/socket";
 
@@ -198,7 +198,7 @@ function DialogDivider() {
 /* ─── Component ─────────────────────────────────────────────────── */
 const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const navigate = useNavigate();
-    const notifications = useNotifications();
+    const notifications = useAppNotifications();
 
     const [commentText, setCommentText] = useState("");
     const [comment_count, setCommentCount] = useState(post.comment_count);

@@ -30,7 +30,7 @@ import {
     DeleteOutline as DeleteIcon,
 } from "@mui/icons-material";
 import Popover from "@mui/material/Popover";
-import { useNotifications } from "@toolpad/core/useNotifications";
+import { useAppNotifications } from "../../hooks/useNotification";
 
 interface CreatePostModalProps {
     open: boolean;
@@ -51,7 +51,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
     const [isPreviewHovered, setIsPreviewHovered] = useState(false);
     const [posted, setPosted] = useState(false);
 
-    const notifications = useNotifications();
+    const notifications = useAppNotifications();
     const { user, setPostUploading } = useGlobalStore();
 
     const theme = useTheme();

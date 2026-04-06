@@ -26,7 +26,7 @@ import Ringtone from "./static/ringtone.mp3";
 import HangUpTone from "./static/hangup.mp3";
 import VerifyAccount from "./pages/VerifyAccount";
 import ResetPassword from "./pages/ResetPassword";
-import { useNotifications } from "@toolpad/core/useNotifications";
+import { useAppNotifications } from "./hooks/useNotification";
 import Messages from "./pages/Messages/Messages";
 
 type User = {
@@ -45,7 +45,7 @@ const AppContent = () => {
         useGlobalStore();
     const [notificationAlert, setNotificationAlert] = useState<string | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-    const notifications = useNotifications();
+    const notifications = useAppNotifications();
 
     const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
     const [pc, setPc] = useState<RTCPeerConnection | null>(null);

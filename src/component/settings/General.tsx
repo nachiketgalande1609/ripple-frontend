@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Box, Switch, Typography } from "@mui/material";
-import { useNotifications } from "@toolpad/core/useNotifications";
+import { useAppNotifications } from "../../hooks/useNotification";
 
 const General = () => {
-    const notifications = useNotifications();
+    const notifications = useAppNotifications();
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
     const [themeMode, setThemeMode] = useState(currentUser.theme || "light");
 
@@ -33,17 +33,25 @@ const General = () => {
         >
             {/* Header */}
             <Box>
-                <Typography sx={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: "20px", fontWeight: 700,
-                    color: "#ffffff", letterSpacing: "-0.4px", mb: 0.5,
-                }}>
+                <Typography
+                    sx={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "20px",
+                        fontWeight: 700,
+                        color: "#ffffff",
+                        letterSpacing: "-0.4px",
+                        mb: 0.5,
+                    }}
+                >
                     General
                 </Typography>
-                <Typography sx={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: "13px", color: "rgba(255,255,255,0.35)",
-                }}>
+                <Typography
+                    sx={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "13px",
+                        color: "rgba(255,255,255,0.35)",
+                    }}
+                >
                     Manage your app preferences.
                 </Typography>
             </Box>
@@ -70,7 +78,8 @@ const General = () => {
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                         <Box
                             sx={{
-                                width: 38, height: 38,
+                                width: 38,
+                                height: 38,
                                 borderRadius: "10px",
                                 backgroundColor: "rgba(255,255,255,0.05)",
                                 display: "flex",
@@ -84,17 +93,25 @@ const General = () => {
                             {isDark ? "🌙" : "☀️"}
                         </Box>
                         <Box>
-                            <Typography sx={{
-                                fontFamily: "'DM Sans', sans-serif",
-                                fontSize: "14px", fontWeight: 600, color: "#ffffff",
-                                letterSpacing: "-0.1px",
-                            }}>
+                            <Typography
+                                sx={{
+                                    fontFamily: "'DM Sans', sans-serif",
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                    color: "#ffffff",
+                                    letterSpacing: "-0.1px",
+                                }}
+                            >
                                 {isDark ? "Dark Mode" : "Light Mode"}
                             </Typography>
-                            <Typography sx={{
-                                fontFamily: "'DM Sans', sans-serif",
-                                fontSize: "12px", color: "rgba(255,255,255,0.35)", mt: 0.25,
-                            }}>
+                            <Typography
+                                sx={{
+                                    fontFamily: "'DM Sans', sans-serif",
+                                    fontSize: "12px",
+                                    color: "rgba(255,255,255,0.35)",
+                                    mt: 0.25,
+                                }}
+                            >
                                 {isDark ? "Easy on the eyes in low light" : "Bright and clear for daytime use"}
                             </Typography>
                         </Box>
@@ -107,10 +124,12 @@ const General = () => {
                             flexShrink: 0,
                             "& .MuiSwitch-switchBase.Mui-checked": { color: "#fff" },
                             "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                                backgroundColor: "rgba(255,255,255,0.4)", opacity: 1,
+                                backgroundColor: "rgba(255,255,255,0.4)",
+                                opacity: 1,
                             },
                             "& .MuiSwitch-track": {
-                                backgroundColor: "rgba(255,255,255,0.12)", opacity: 1,
+                                backgroundColor: "rgba(255,255,255,0.12)",
+                                opacity: 1,
                             },
                             "& .MuiSwitch-thumb": { boxShadow: "0 1px 4px rgba(0,0,0,0.5)" },
                         }}
@@ -121,14 +140,19 @@ const General = () => {
                 <Box
                     sx={{
                         borderTop: "1px solid rgba(255,255,255,0.05)",
-                        px: 3, py: 2,
+                        px: 3,
+                        py: 2,
                         backgroundColor: "rgba(255,255,255,0.015)",
                     }}
                 >
-                    <Typography sx={{
-                        fontFamily: "'DM Sans', sans-serif",
-                        fontSize: "12px", color: "rgba(255,255,255,0.25)", lineHeight: 1.6,
-                    }}>
+                    <Typography
+                        sx={{
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontSize: "12px",
+                            color: "rgba(255,255,255,0.25)",
+                            lineHeight: 1.6,
+                        }}
+                    >
                         Your theme preference is saved locally and applied across all sessions on this device.
                     </Typography>
                 </Box>

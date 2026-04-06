@@ -9,7 +9,7 @@ import MessagesContainer from "./messageContainer/MessagesContainer";
 import MessageInput from "./MessageInput";
 import MessagesTopBar from "./MessagesTopBar";
 import MessagesDrawer from "./MessagesDrawer";
-import { useNotifications } from "@toolpad/core/useNotifications";
+import { useAppNotifications } from "../../hooks/useNotification";
 import MessagesUserList from "./mobileView/MessagesUserList";
 import { ChevronLeft } from "@mui/icons-material";
 
@@ -71,7 +71,7 @@ interface MessageProps {
 
 const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelectedUser, handleVideoCall }) => {
     const { userId } = useParams();
-    const notifications = useNotifications();
+    const notifications = useAppNotifications();
     const { unreadMessagesCount, setUnreadMessagesCount } = useGlobalStore();
 
     const navigate = useNavigate();
@@ -353,7 +353,7 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
             const response = await deleteMessage(message.message_id);
             if (response?.success) {
                 setMessages(
-                    (prevMessages: Message[]) => prevMessages.filter((msg) => msg.message_id !== message.message_id) // Remove message from array
+                    (prevMessages: Message[]) => prevMessages.filter((msg) => msg.message_id !== message.message_id), // Remove message from array
                 );
 
                 notifications.show(`Message deleted successfully!`, {
@@ -369,7 +369,7 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     useEffect(() => {
         socket.on("messageSaved", (data: { tempId: number; messageId: number }) => {
             setMessages((prevMessages: Message[]) =>
-                prevMessages.map((msg) => (msg.message_id === data.tempId ? { ...msg, message_id: data.messageId, saved: true } : msg))
+                prevMessages.map((msg) => (msg.message_id === data.tempId ? { ...msg, message_id: data.messageId, saved: true } : msg)),
             );
         });
 
@@ -382,8 +382,8 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
         socket.on("messageDelivered", (data: { messageId: number; deliveredTimestamp: string | null }) => {
             setMessages((prevMessages: Message[]) =>
                 prevMessages.map((msg) =>
-                    msg.message_id === data.messageId ? { ...msg, delivered: true, delivered_timestamp: data.deliveredTimestamp } : msg
-                )
+                    msg.message_id === data.messageId ? { ...msg, delivered: true, delivered_timestamp: data.deliveredTimestamp } : msg,
+                ),
             );
         });
 
@@ -408,8 +408,8 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
             // Mark all unread messages as read in the state
             setMessages((prevMessages) =>
                 prevMessages.map((message) =>
-                    unreadMessages.some((unread) => unread.message_id === message.message_id) ? { ...message, read: true } : message
-                )
+                    unreadMessages.some((unread) => unread.message_id === message.message_id) ? { ...message, read: true } : message,
+                ),
             );
 
             // Update the unread messages count
@@ -432,7 +432,7 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
                     }
 
                     return message;
-                })
+                }),
             );
         });
 
@@ -503,7 +503,7 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
                     ...message,
                     reactions: [...updatedReactions, reaction],
                 };
-            })
+            }),
         );
     });
 
