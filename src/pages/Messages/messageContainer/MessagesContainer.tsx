@@ -489,82 +489,150 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                     {/* ── Shared post ── */}
                                     {msg.post && (
                                         <Box
-                                            onClick={() => {
-                                                if (msg.post?.post_id) {
-                                                    navigate(`/posts/${msg.post.post_id}`);
-                                                }
-                                            }}
                                             sx={{
-                                                backgroundColor: "#1a1d21",
-                                                borderRadius: "12px",
-                                                border: "1px solid rgba(255,255,255,0.08)",
-                                                overflow: "hidden",
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                alignItems: "center",
+                                                justifyContent: self ? "flex-end" : "flex-start",
+                                                position: "relative",
                                                 mb: 0.5,
-                                                cursor: "pointer",
-                                                "&:hover": {
-                                                    backgroundColor: "#22262b",
-                                                },
                                             }}
                                         >
-                                            {msg.post.owner && (
-                                                <Box
-                                                    sx={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        px: 1.25,
-                                                        py: 1,
-                                                        borderBottom: "1px solid rgba(255,255,255,0.07)",
-                                                    }}
-                                                >
-                                                    <Box
-                                                        component="img"
-                                                        src={msg.post.owner.profile_picture || BlankProfileImage}
-                                                        sx={{ width: 28, height: 28, borderRadius: "50%", mr: 1 }}
-                                                    />
-                                                    <Typography sx={{ fontSize: "0.82rem", fontWeight: 500, color: "#e8eaed" }}>
-                                                        {msg.post.owner.username}
-                                                    </Typography>
-                                                </Box>
-                                            )}
+                                            {/* Post card */}
                                             <Box
+                                                id={`msg-${msg.message_id}-post`}
+                                                onClick={() => {
+                                                    if (msg.post?.post_id) {
+                                                        navigate(`/posts/${msg.post.post_id}`);
+                                                    }
+                                                }}
                                                 sx={{
-                                                    position: "relative",
-                                                    display: "flex",
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
-                                                    backgroundImage: `url(${BlurBackgroundImage})`,
-                                                    backgroundSize: "cover",
+                                                    backgroundColor: "#1a1d21",
+                                                    borderRadius: "12px",
+                                                    border: "1px solid rgba(255,255,255,0.08)",
+                                                    overflow: "hidden",
+                                                    cursor: "pointer",
+                                                    "&:hover": {
+                                                        backgroundColor: "#22262b",
+                                                    },
                                                 }}
                                             >
-                                                <CircularProgress sx={{ position: "absolute", color: "#fff" }} size={24} />
-                                                <Box
-                                                    component="img"
-                                                    src={msg.post.file_url}
-                                                    sx={{
-                                                        width: isMobile ? "200px" : "300px",
-                                                        height:
-                                                            msg.post.media_width && msg.post.media_height
-                                                                ? `${(msg.post.media_height / msg.post.media_width) * (isMobile ? 200 : 300)}px`
-                                                                : "auto",
-                                                        objectFit: "cover",
-                                                        visibility: "hidden",
-                                                    }}
-                                                    onLoad={(e) => {
-                                                        const img = e.target as HTMLImageElement;
-                                                        const loader = img.previousSibling as HTMLElement;
-                                                        img.style.visibility = "visible";
-                                                        if (loader) loader.style.display = "none";
-                                                    }}
-                                                />
-                                            </Box>
-                                            {msg.post.content && (
-                                                <Box sx={{ px: 1.25, py: 1 }}>
-                                                    <Typography sx={{ fontSize: "0.82rem", color: "#9aa0a6" }}>
-                                                        <Box component="span" sx={{ fontWeight: 500, color: "#c4c7cc", mr: 0.5 }}>
+                                                {msg.post.owner && (
+                                                    <Box
+                                                        sx={{
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            px: 1.25,
+                                                            py: 1,
+                                                            borderBottom: "1px solid rgba(255,255,255,0.07)",
+                                                        }}
+                                                    >
+                                                        <Box
+                                                            component="img"
+                                                            src={msg.post.owner.profile_picture || BlankProfileImage}
+                                                            sx={{ width: 28, height: 28, borderRadius: "50%", mr: 1 }}
+                                                        />
+                                                        <Typography sx={{ fontSize: "0.82rem", fontWeight: 500, color: "#e8eaed" }}>
                                                             {msg.post.owner.username}
-                                                        </Box>
-                                                        {msg.post.content}
-                                                    </Typography>
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+                                                <Box
+                                                    sx={{
+                                                        position: "relative",
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center",
+                                                        backgroundImage: `url(${BlurBackgroundImage})`,
+                                                        backgroundSize: "cover",
+                                                    }}
+                                                >
+                                                    <CircularProgress sx={{ position: "absolute", color: "#fff" }} size={24} />
+                                                    <Box
+                                                        component="img"
+                                                        src={msg.post.file_url}
+                                                        sx={{
+                                                            width: isMobile ? "200px" : "300px",
+                                                            height:
+                                                                msg.post.media_width && msg.post.media_height
+                                                                    ? `${(msg.post.media_height / msg.post.media_width) * (isMobile ? 200 : 300)}px`
+                                                                    : "auto",
+                                                            objectFit: "cover",
+                                                            visibility: "hidden",
+                                                        }}
+                                                        onLoad={(e) => {
+                                                            const img = e.target as HTMLImageElement;
+                                                            const loader = img.previousSibling as HTMLElement;
+                                                            img.style.visibility = "visible";
+                                                            if (loader) loader.style.display = "none";
+                                                        }}
+                                                    />
+                                                </Box>
+                                                {msg.post.content && (
+                                                    <Box sx={{ px: 1.25, py: 1 }}>
+                                                        <Typography sx={{ fontSize: "0.82rem", color: "#9aa0a6" }}>
+                                                            <Box component="span" sx={{ fontWeight: 500, color: "#c4c7cc", mr: 0.5 }}>
+                                                                {msg.post.owner.username}
+                                                            </Box>
+                                                            {msg.post.content}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+                                            </Box>
+
+                                            {/* ── Hover actions for post ── */}
+                                            {hoveredMessage === msg.message_id && (
+                                                <Box
+                                                    sx={{
+                                                        position: "absolute",
+                                                        top: "50%",
+                                                        transform: "translateY(-50%)",
+                                                        [self ? "right" : "left"]: "calc(100% + 6px)",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "2px",
+                                                        backgroundColor: "rgba(26,29,33,0.95)",
+                                                        borderRadius: "20px",
+                                                        border: "1px solid rgba(255,255,255,0.08)",
+                                                        px: 0.5,
+                                                        py: 0.25,
+                                                        zIndex: 10,
+                                                    }}
+                                                >
+                                                    {self && (
+                                                        <IconButton
+                                                            size="small"
+                                                            sx={{ color: "#9aa0a6", "&:hover": { color: "#e8eaed", backgroundColor: "transparent" } }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedMessageForAction(msg);
+                                                                setMoreMenuOpen(true);
+                                                            }}
+                                                        >
+                                                            <MoreHoriz sx={{ fontSize: 18 }} />
+                                                        </IconButton>
+                                                    )}
+                                                    <IconButton
+                                                        size="small"
+                                                        sx={{ color: "#9aa0a6", "&:hover": { color: "#e8eaed", backgroundColor: "transparent" } }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleReply(msg);
+                                                        }}
+                                                    >
+                                                        <ReplyIcon sx={{ fontSize: 18 }} />
+                                                    </IconButton>
+                                                    <IconButton
+                                                        size="small"
+                                                        sx={{ color: "#9aa0a6", "&:hover": { color: "#e8eaed", backgroundColor: "transparent" } }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedMessageForReaction(msg);
+                                                            setEmojiAnchorEl(e.currentTarget);
+                                                        }}
+                                                    >
+                                                        <EmojiEmotions sx={{ fontSize: 18 }} />
+                                                    </IconButton>
                                                 </Box>
                                             )}
                                         </Box>
