@@ -15,167 +15,116 @@ import { getPosts, getStories } from "../services/api";
 import BlankProfileImage from "../static/profile_blank.png";
 
 /* ─────────────────────────────────────────────
-   Keyframe injection (runs once)
+   Keyframe + static style injection (runs once)
 ───────────────────────────────────────────── */
 const injectStyles = () => {
   if (document.getElementById("hp-styles")) return;
   const style = document.createElement("style");
   style.id = "hp-styles";
   style.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
 
-        :root {
-            --accent-1: #b84a1e;
-            --accent-2: #7a2d8a;
-            --accent-3: #1e3a8a;
-            --ring-gradient: conic-gradient(from 0deg,#b84a1e,#7a2d8a,#b84a1e);
-            --surface: rgba(255,255,255,0.03);
-            --surface-hover: rgba(255,255,255,0.06);
-            --border: rgba(255,255,255,0.07);
-            --text-primary: #f0ede8;
-            --text-muted: #7a7775;
-        }
+    :root {
+      --accent-1: #b84a1e;
+      --accent-2: #7a2d8a;
+      --accent-3: #1e3a8a;
+      --ring-gradient: conic-gradient(from 0deg,#b84a1e,#7a2d8a,#b84a1e);
+      /* theme-aware vars are set dynamically by useHomeCssVars() */
+    }
 
-        @keyframes spin360 {
-            to { transform: rotate(360deg); }
-        }
-        @keyframes shimmer {
-            0%   { background-position: -400px 0; }
-            100% { background-position:  400px 0; }
-        }
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(18px); }
-            to   { opacity: 1; transform: translateY(0);     }
-        }
-        @keyframes popIn {
-            0%   { opacity: 0; transform: scale(.88); }
-            70%  { transform: scale(1.04);             }
-            100% { opacity: 1; transform: scale(1);    }
-        }
-        @keyframes pulseGlow {
-            0%,100% { box-shadow: 0 0 0 0 rgba(184,74,30,.35); }
-            50%      { box-shadow: 0 0 0 8px rgba(184,74,30,0);  }
-        }
+    @keyframes spin360    { to { transform: rotate(360deg); } }
+    @keyframes shimmer    { 0% { background-position:-400px 0; } 100% { background-position:400px 0; } }
+    @keyframes fadeSlideUp{ from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes popIn      { 0% { opacity:0; transform:scale(.88); } 70% { transform:scale(1.04); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes pulseGlow  { 0%,100% { box-shadow:0 0 0 0 rgba(184,74,30,.35); } 50% { box-shadow:0 0 0 8px rgba(184,74,30,0); } }
 
-        .hp-root { font-family: 'DM Sans', sans-serif; }
+    .hp-root { font-family: 'DM Sans', sans-serif; }
 
-        /* Story ring */
-        .story-ring {
-            position: relative;
-            border-radius: 50%;
-            padding: 3px;
-            background: var(--ring-gradient);
-            animation: none;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .story-ring::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 50%;
-            background: var(--ring-gradient);
-            filter: blur(6px);
-            opacity: 0;
-            transition: opacity .3s ease;
-            z-index: -1;
-        }
-        .story-ring:hover::before { opacity: .6; }
+    .story-ring {
+      position: relative; border-radius: 50%; padding: 3px;
+      background: var(--ring-gradient);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    }
+    .story-ring::before {
+      content: ''; position: absolute; inset: -2px; border-radius: 50%;
+      background: var(--ring-gradient); filter: blur(6px);
+      opacity: 0; transition: opacity .3s ease; z-index: -1;
+    }
+    .story-ring:hover::before { opacity: .6; }
 
-        .story-ring-inner {
-            border-radius: 50%;
-            background: #0e0e0f;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-        }
+    .story-ring-inner {
+      border-radius: 50%;
+      background: var(--hp-surface-solid);   /* set by useHomeCssVars */
+      overflow: hidden; width: 100%; height: 100%;
+    }
 
-        /* Loading spinner ring */
-        .spin-ring {
-            border-radius: 50%;
-            position: relative;
-        }
-        .spin-ring::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            border-top-color: #b84a1e;
-            border-right-color: #7a2d8a;
-            animation: spin360 .9s linear infinite;
-        }
+    .spin-ring { border-radius: 50%; position: relative; }
+    .spin-ring::after {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: #b84a1e; border-right-color: #7a2d8a;
+      animation: spin360 .9s linear infinite;
+    }
 
-        /* Skeleton shimmer */
-        .sk-shimmer {
-            background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.09) 50%, rgba(255,255,255,.04) 75%);
-            background-size: 400px 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 50%;
-        }
+    .sk-shimmer {
+      background: linear-gradient(90deg, var(--hp-shimmer-a) 25%, var(--hp-shimmer-b) 50%, var(--hp-shimmer-a) 75%);
+      background-size: 400px 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 50%;
+    }
 
-        /* Post card */
-        .post-card {
-            animation: fadeSlideUp .4s ease both;
-        }
+    .post-card { animation: fadeSlideUp .4s ease both; }
 
-        /* Add button */
-        .add-btn {
-            position: absolute;
-            bottom: 10px;
-            right: -4px;
-            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-            border-radius: 50%;
-            width: 26px;
-            height: 26px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 2px solid #0e0e0f;
-            transition: transform .2s ease, box-shadow .2s ease;
-            animation: pulseGlow 2.4s ease infinite;
-        }
-        .add-btn:hover {
-            transform: scale(1.15) rotate(90deg);
-            box-shadow: 0 0 12px rgba(184,74,30,.6);
-        }
+    .add-btn {
+      position: absolute; bottom: 10px; right: -4px;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      border-radius: 50%; width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: 2px solid var(--hp-surface-solid);
+      transition: transform .2s ease, box-shadow .2s ease;
+      animation: pulseGlow 2.4s ease infinite;
+    }
+    .add-btn:hover { transform: scale(1.15) rotate(90deg); box-shadow: 0 0 12px rgba(184,74,30,.6); }
 
-        /* Story avatar hover */
-        .story-avatar-wrap:hover .story-ring::before { opacity: .7; }
-        .story-avatar-wrap { cursor: pointer; }
+    .story-avatar-wrap:hover .story-ring::before { opacity: .7; }
+    .story-avatar-wrap { cursor: pointer; }
 
-        /* Section divider */
-        .section-divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 6px 0 16px;
-        }
-        .section-divider-line {
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-        .section-divider-label {
-            font-family: 'Syne', sans-serif;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 2.5px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-    `;
+    .section-divider { display: flex; align-items: center; gap: 12px; margin: 6px 0 16px; }
+    .section-divider-line { flex: 1; height: 1px; background: var(--hp-border); }
+    .section-divider-label {
+      font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+      letter-spacing: 2.5px; text-transform: uppercase; color: var(--hp-text-muted);
+    }
+  `;
   document.head.appendChild(style);
 };
 
 /* ─────────────────────────────────────────────
+   Drive CSS vars from MUI theme
+───────────────────────────────────────────── */
+function useHomeCssVars() {
+  const theme = useTheme();
+  useEffect(() => {
+    const vars: Record<string, string> = {
+      "--hp-bg": theme.palette.background.default,
+      "--hp-surface": theme.palette.background.paper,
+      "--hp-surface-solid": theme.palette.background.paper,
+      "--hp-border": theme.palette.divider,
+      "--hp-text-primary": theme.palette.text.primary,
+      "--hp-text-muted": theme.palette.text.disabled,
+      "--hp-hover": theme.palette.action.hover,
+      "--hp-shimmer-a": theme.palette.action.hover,
+      "--hp-shimmer-b": theme.palette.action.selected,
+    };
+    Object.entries(vars).forEach(([k, v]) =>
+      document.documentElement.style.setProperty(k, v),
+    );
+  }, [theme]);
+}
+
+/* ─────────────────────────────────────────────
    Sub-components
 ───────────────────────────────────────────── */
-
-/** Animated story ring */
 const StoryRing = ({
   src,
   size = 76,
@@ -223,7 +172,7 @@ const StoryRing = ({
           fontSize: "0.68rem",
           fontFamily: "'DM Sans', sans-serif",
           fontWeight: 500,
-          color: "var(--text-primary)",
+          color: (t) => t.palette.text.primary,
           maxWidth: size + 6,
           whiteSpace: "nowrap",
           overflow: "hidden",
@@ -238,7 +187,6 @@ const StoryRing = ({
   </Box>
 );
 
-/** Skeleton loading placeholder for stories */
 const StorySkeleton = ({ size = 76 }: { size?: number }) => (
   <Box
     display="flex"
@@ -263,6 +211,7 @@ const StorySkeleton = ({ size = 76 }: { size?: number }) => (
 ───────────────────────────────────────────── */
 const HomePage = () => {
   injectStyles();
+  useHomeCssVars(); // ← keeps CSS vars in sync with MUI theme
 
   const [posts, setPosts] = useState<any[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
@@ -276,12 +225,10 @@ const HomePage = () => {
   const [openStoryDialog, setOpenStoryDialog] = useState(false);
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
-
   const [selfStories, setSelfStories] = useState<any[]>([]);
   const [followingStories, setFollowingStories] = useState<any[]>([]);
   const [fetchingStories, setFetchingStories] = useState<boolean>(true);
 
-  // ── CHANGED: increased avatar sizes (was 58/64)
   const avatarSize = isMobile ? 76 : 84;
 
   const fetchPosts = async () => {
@@ -301,7 +248,6 @@ const HomePage = () => {
     try {
       setFetchingStories(true);
       const res = await getStories();
-
       const group = (arr: any[]) =>
         Object.values(
           arr.reduce((acc: any, story: any) => {
@@ -317,7 +263,6 @@ const HomePage = () => {
             return acc;
           }, {}),
         );
-
       setSelfStories(group(res.data.selfStory || []));
       setFollowingStories(group(res.data.stories || []));
     } catch (error) {
@@ -337,8 +282,8 @@ const HomePage = () => {
       className="hp-root"
       sx={{
         minHeight: "100vh",
-        background: "#000000",
-        color: "var(--text-primary)",
+        backgroundColor: (t) => t.palette.background.default,
+        color: (t) => t.palette.text.primary,
         maxWidth: isMobile ? "100%" : "480px",
         margin: "0 auto",
       }}
@@ -364,7 +309,6 @@ const HomePage = () => {
             backdropFilter: "blur(16px)",
           }}
         >
-          {/* Scrollable story strip */}
           <Box
             sx={{
               display: "flex",
@@ -379,14 +323,13 @@ const HomePage = () => {
             <Box position="relative" sx={{ flexShrink: 0 }}>
               <Box
                 sx={{
-                  // ── CHANGED: match increased avatarSize
                   width: avatarSize,
                   height: avatarSize,
                   borderRadius: "50%",
                   padding: "3px",
                   background: selfStories.length
                     ? "var(--ring-gradient)"
-                    : "rgba(255,255,255,0.08)",
+                    : (t) => t.palette.action.hover,
                   cursor: "pointer",
                   transition: "filter .25s",
                   display: "flex",
@@ -406,7 +349,7 @@ const HomePage = () => {
                     height: avatarSize,
                     borderRadius: "50%",
                     overflow: "hidden",
-                    background: "#0e0e0f",
+                    backgroundColor: (t) => t.palette.background.paper,
                   }}
                 >
                   <img
@@ -456,7 +399,6 @@ const HomePage = () => {
         {/* ── Posts ─────────────────────────────────── */}
         <Box px={isMobile ? 0 : "0px"}>
           {loadingPosts ? (
-            /* Loading state */
             <Box px={isMobile ? "12px" : "20px"}>
               {[0, 1, 2].map((i) => (
                 <Box
@@ -465,25 +407,25 @@ const HomePage = () => {
                     mb: "20px",
                     borderRadius: "20px",
                     overflow: "hidden",
-                    border: "1px solid var(--border)",
-                    background: "var(--surface)",
+                    border: "1px solid",
+                    borderColor: (t) => t.palette.divider,
+                    backgroundColor: (t) => t.palette.background.paper,
                     animation: `fadeSlideUp .4s ease ${i * 120}ms both`,
                   }}
                 >
-                  {/* Post header skeleton */}
                   <Box display="flex" alignItems="center" gap="12px" p="16px">
                     <Skeleton
                       variant="circular"
                       width={42}
                       height={42}
-                      sx={{ bgcolor: "rgba(255,255,255,.06)" }}
+                      sx={{ bgcolor: (t) => t.palette.action.hover }}
                     />
                     <Box flex={1}>
                       <Skeleton
                         width="35%"
                         height={14}
                         sx={{
-                          bgcolor: "rgba(255,255,255,.06)",
+                          bgcolor: (t) => t.palette.action.hover,
                           borderRadius: "6px",
                         }}
                       />
@@ -491,20 +433,18 @@ const HomePage = () => {
                         width="20%"
                         height={10}
                         sx={{
-                          bgcolor: "rgba(255,255,255,.04)",
+                          bgcolor: (t) => t.palette.action.hover,
                           borderRadius: "6px",
                           mt: "6px",
                         }}
                       />
                     </Box>
                   </Box>
-                  {/* Image skeleton */}
                   <Skeleton
                     variant="rectangular"
                     height={280}
-                    sx={{ bgcolor: "rgba(255,255,255,.05)" }}
+                    sx={{ bgcolor: (t) => t.palette.action.hover }}
                   />
-                  {/* Action bar skeleton */}
                   <Box display="flex" gap="16px" p="14px 16px">
                     {[60, 50, 40].map((w, j) => (
                       <Skeleton
@@ -512,7 +452,7 @@ const HomePage = () => {
                         width={w}
                         height={12}
                         sx={{
-                          bgcolor: "rgba(255,255,255,.05)",
+                          bgcolor: (t) => t.palette.action.hover,
                           borderRadius: "6px",
                         }}
                       />
@@ -528,16 +468,16 @@ const HomePage = () => {
                   key={post.id}
                   className="post-card"
                   sx={{
-                    padding: "4px",
+                    padding: isMobile ? 0 : "4px",
                     animationDelay: `${index * 80}ms`,
-                    mb: index !== posts.length - 1 ? "16px" : 0,
+                    mb: isMobile ? 0 : index !== posts.length - 1 ? "16px" : 0,
                     mx: isMobile ? 0 : "0px",
                   }}
                 >
                   <Post
                     post={post}
                     fetchPosts={fetchPosts}
-                    borderRadius={isMobile ? "20px" : "20px"}
+                    borderRadius={isMobile ? "0px" : "20px"}
                   />
                 </Box>
               ))}
@@ -561,8 +501,9 @@ const HomePage = () => {
                   width: 88,
                   height: 88,
                   borderRadius: "50%",
-                  background: "var(--surface)",
-                  border: "1px solid var(--border)",
+                  backgroundColor: (t) => t.palette.background.paper,
+                  border: "1px solid",
+                  borderColor: (t) => t.palette.divider,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -570,7 +511,7 @@ const HomePage = () => {
                 }}
               >
                 <SentimentDissatisfied
-                  sx={{ fontSize: 44, color: "var(--text-muted)" }}
+                  sx={{ fontSize: 44, color: (t) => t.palette.text.disabled }}
                 />
               </Box>
               <Typography
@@ -578,7 +519,7 @@ const HomePage = () => {
                   fontFamily: "'Syne', sans-serif",
                   fontWeight: 700,
                   fontSize: "1.2rem",
-                  color: "var(--text-primary)",
+                  color: (t) => t.palette.text.primary,
                   mb: "8px",
                 }}
               >
@@ -587,7 +528,7 @@ const HomePage = () => {
               <Typography
                 sx={{
                   fontSize: "0.85rem",
-                  color: "var(--text-muted)",
+                  color: (t) => t.palette.text.disabled,
                   lineHeight: 1.6,
                   maxWidth: 260,
                 }}
@@ -624,7 +565,6 @@ const HomePage = () => {
         </Box>
       </Container>
 
-      {/* ── Dialogs ───────────────────────────────── */}
       <StoryDialog
         open={openStoryDialog}
         onClose={() => setOpenStoryDialog(false)}

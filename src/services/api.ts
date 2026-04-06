@@ -42,6 +42,11 @@ import {
     CANCEL_FOLLOW_REQUEST_ENDPOINT,
     TRACK_TRAFFIC_ENDPOINT,
     GET_POST_ENDPOINT,
+    REMOVE_FOLLOWER_ENDPOINT,
+    SEARCH_HASHTAG_ENDPOINT,
+    DELETE_HASHTAG_SEARCH_HISTORY_ENDPOINT,
+    UPDATE_HASHTAG_SEARCH_HISTORY_ENDPOINT,
+    FETCH_HASHTAG_SEARCH_HISTORY_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -58,7 +63,7 @@ interface UserLoginData {
 interface PostData {
     user_id: string;
     content: string;
-    image?: File;
+    media?: File;
     location: string;
 }
 
@@ -318,6 +323,22 @@ export const unfollowUser = async (followerId: string, followingId: string) => {
     }
 };
 
+export const removeFollower = async (followerId: string, followingId: string) => {
+    try {
+        const response = await api.delete(REMOVE_FOLLOWER_ENDPOINT, {
+            data: { followerId, followingId },
+        });
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("Failed to remove follower:", error.message);
+        } else {
+            console.error("Failed to remove follower: Unknown error");
+        }
+        throw error;
+    }
+};
+
 export const respondToFollowRequest = async (requestId: number, status: string) => {
     try {
         const res = await api.post(FOLLOW_RESPONSE_ENDPOINT, { requestId, status });
@@ -341,6 +362,34 @@ export const getFollowingUsers = async () => {
             console.error("Failed to fetch following users:", error.message);
         } else {
             console.error("Failed to fetch following users: Unknown error");
+        }
+        throw error;
+    }
+};
+
+export const getFollowers = async (userId: string) => {
+    try {
+        const response = await api.get(`${FOLLOW_ENDPOINT}/${userId}/followers`);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("Failed to fetch followers:", error.message);
+        } else {
+            console.error("Failed to fetch followers: Unknown error");
+        }
+        throw error;
+    }
+};
+
+export const getFollowing = async (userId: string) => {
+    try {
+        const response = await api.get(`${FOLLOW_ENDPOINT}/${userId}/following`);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("Failed to fetch following:", error.message);
+        } else {
+            console.error("Failed to fetch following: Unknown error");
         }
         throw error;
     }
@@ -519,9 +568,8 @@ export const createPost = async (postData: PostData) => {
         formData.append("user_id", postData.user_id);
         formData.append("content", postData.content);
         formData.append("location", postData.location);
-
-        if (postData.image) {
-            formData.append("image", postData.image);
+        if (postData.media) {
+            formData.append("image", postData.media); // keep "image" as the field name multer expects
         }
 
         const response = await api.post(CREATE_POST_ENDPOINT, formData, {
@@ -651,6 +699,55 @@ export const deleteSearchHistoryItem = async (historyId: number) => {
         } else {
             console.error("Unknown Error");
         }
+        throw error;
+    }
+};
+
+export const searchByHashtag = async (tag: string) => {
+    try {
+        const response = await api.get(`${SEARCH_HASHTAG_ENDPOINT}?tag=${encodeURIComponent(tag)}`);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error(error.message);
+        } else {
+            console.error("Unknown Error");
+        }
+        throw error;
+    }
+};
+
+export const getHashtagSearchHistory = async () => {
+    try {
+        const response = await api.get(FETCH_HASHTAG_SEARCH_HISTORY_ENDPOINT);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        else console.error("Unknown Error");
+        throw error;
+    }
+};
+
+export const addToHashtagSearchHistory = async (tag: string) => {
+    try {
+        const response = await api.post(UPDATE_HASHTAG_SEARCH_HISTORY_ENDPOINT, { tag });
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        else console.error("Unknown Error");
+        throw error;
+    }
+};
+
+export const deleteHashtagSearchHistoryItem = async (historyId: number) => {
+    try {
+        const response = await api.delete(DELETE_HASHTAG_SEARCH_HISTORY_ENDPOINT, {
+            params: { historyId },
+        });
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        else console.error("Unknown Error");
         throw error;
     }
 };

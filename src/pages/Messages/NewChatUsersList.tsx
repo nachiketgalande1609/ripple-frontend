@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
-import { Menu, MenuItem, Avatar, TextField, Box, Typography } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import { Dialog, Box, Typography, Avatar, InputBase, IconButton } from "@mui/material";
+import { Close as CloseIcon, Search as SearchIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import BlankProfileImage from "../../static/profile_blank.png";
 
@@ -10,99 +11,194 @@ interface User {
     isOnline: boolean;
 }
 
-// Define props for the component
 interface NewChatUsersListProps {
-    anchorEl: HTMLElement | null;
     open: boolean;
     setAnchorEl: (el: HTMLElement | null) => void;
     usersList: User[];
     handleUserClick: (userId: number) => void;
 }
 
-const NewChatUsersList = ({ anchorEl, open, setAnchorEl, usersList }: NewChatUsersListProps) => {
+const NewChatUsersList = ({ open, setAnchorEl, usersList }: NewChatUsersListProps) => {
     const navigate = useNavigate();
-
     const [searchTerm, setSearchTerm] = useState("");
     const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-    // Focus the input field when the menu opens
     useEffect(() => {
         if (open) {
-            setTimeout(() => {
-                searchInputRef.current?.focus();
-            }, 100); // Small delay to ensure menu opens before focusing
+            setTimeout(() => searchInputRef.current?.focus(), 100);
+        } else {
+            setSearchTerm("");
         }
     }, [open]);
 
-    // Filter users based on the search term
-    const filteredUsers = usersList.filter((user) => user.username.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filteredUsers = usersList.filter((u) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const handleUserClick = (user: any) => {
+    const handleClose = () => setAnchorEl(null);
+
+    const handleUserClick = (user: User) => {
         navigate(`/messages/${user.id}`, { state: user });
-        setAnchorEl(null);
+        handleClose();
     };
 
     return (
-        <Menu
-            anchorEl={anchorEl}
+        <Dialog
             open={open}
-            onClose={() => setAnchorEl(null)}
-            anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-            }}
-            transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-            }}
+            onClose={handleClose}
             PaperProps={{
-                sx: { minWidth: 250, padding: 0, backgroundColor: "#000000", borderRadius: "10px" },
+                sx: {
+                    backgroundColor: (t) => t.palette.background.paper,
+                    border: "1px solid",
+                    borderColor: (t) => t.palette.divider,
+                    borderRadius: "16px",
+                    width: 380,
+                    maxWidth: "95vw",
+                    overflow: "hidden",
+                    boxShadow: "0 24px 48px rgba(0,0,0,0.4)",
+                },
             }}
-            MenuListProps={{ sx: { p: 0 } }}
-            sx={{ backgroundColor: "rgb(0, 0, 0, 0.5)" }}
+            BackdropProps={{ sx: { backgroundColor: "rgba(0,0,0,0.6)" } }}
         >
-            <Box sx={{ padding: "14px 10px 2px 10px", borderBottom: "1px solid #444444" }}>
-                <TextField
-                    inputRef={(el) => (searchInputRef.current = el)} // Ensure ref captures the input field
-                    variant="standard"
-                    size="small"
-                    placeholder="Search users..."
-                    fullWidth
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+            {/* Header */}
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    px: 2.25,
+                    pt: 2,
+                    pb: 1.5,
+                }}
+            >
+                <Typography
                     sx={{
-                        "& .MuiInputBase-input": {
-                            fontSize: "0.9rem",
-                            color: "#ffffff",
-                        },
-                        "& .MuiInput-underline:before": {
-                            borderBottom: "none !important",
-                        },
-                        "& .MuiInput-underline:after": {
-                            borderBottom: "none !important",
-                        },
-                        "& .MuiInput-underline:hover:before": {
-                            borderBottom: "none !important",
-                        },
-                        mb: 1,
+                        fontSize: "0.94rem",
+                        fontWeight: 500,
+                        color: (t) => t.palette.text.primary,
                     }}
-                />
+                >
+                    New message
+                </Typography>
+                <IconButton
+                    size="small"
+                    onClick={handleClose}
+                    sx={{
+                        color: (t) => t.palette.text.secondary,
+                        backgroundColor: (t) => t.palette.action.hover,
+                        width: 28,
+                        height: 28,
+                        "&:hover": {
+                            backgroundColor: (t) => t.palette.action.selected,
+                            color: (t) => t.palette.text.primary,
+                        },
+                    }}
+                >
+                    <CloseIcon sx={{ fontSize: 15 }} />
+                </IconButton>
+            </Box>
+
+            {/* Search */}
+            <Box sx={{ px: 1.75, pb: 1.5 }}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        backgroundColor: (t) => t.palette.action.hover,
+                        border: "1px solid",
+                        borderColor: (t) => t.palette.divider,
+                        borderRadius: "10px",
+                        px: 1.25,
+                        py: 0.75,
+                    }}
+                >
+                    <SearchIcon
+                        sx={{
+                            fontSize: 16,
+                            color: (t) => t.palette.text.disabled,
+                            flexShrink: 0,
+                        }}
+                    />
+                    <InputBase
+                        inputRef={searchInputRef}
+                        placeholder="Search people..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{
+                            flex: 1,
+                            fontSize: "0.88rem",
+                            color: (t) => t.palette.text.primary,
+                            "& input::placeholder": { color: (t) => t.palette.text.disabled },
+                        }}
+                    />
+                </Box>
             </Box>
 
             {/* User list */}
-            {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                    <MenuItem key={user.id} onClick={() => handleUserClick(user)} sx={{ p: "10px 12px" }}>
-                        <Avatar src={user.profile_picture || BlankProfileImage} sx={{ mr: 2 }} />
-                        <Typography sx={{ fontSize: "0.9rem" }}>{user.username}</Typography>
-                    </MenuItem>
-                ))
-            ) : (
-                <MenuItem disabled sx={{ p: "18px 12px" }}>
-                    <Typography sx={{ fontSize: "0.9rem" }}>No users found</Typography>
-                </MenuItem>
-            )}
-        </Menu>
+            <Box
+                sx={{
+                    borderTop: "1px solid",
+                    borderColor: (t) => t.palette.divider,
+                    maxHeight: 320,
+                    overflowY: "auto",
+                }}
+            >
+                {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                        <Box
+                            key={user.id}
+                            onClick={() => handleUserClick(user)}
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1.5,
+                                px: 2,
+                                py: 1.25,
+                                cursor: "pointer",
+                                "&:hover": { backgroundColor: (t) => t.palette.action.hover },
+                            }}
+                        >
+                            <Box sx={{ position: "relative", flexShrink: 0 }}>
+                                <Avatar src={user.profile_picture || BlankProfileImage} sx={{ width: 38, height: 38 }} />
+                                {user.isOnline && (
+                                    <Box
+                                        sx={{
+                                            position: "absolute",
+                                            bottom: 1,
+                                            right: 1,
+                                            width: 9,
+                                            height: 9,
+                                            borderRadius: "50%",
+                                            backgroundColor: (t) => t.palette.success.main,
+                                            border: "2px solid",
+                                            borderColor: (t) => t.palette.background.paper,
+                                        }}
+                                    />
+                                )}
+                            </Box>
+                            <Typography
+                                sx={{
+                                    fontSize: "0.88rem",
+                                    color: (t) => t.palette.text.primary,
+                                }}
+                            >
+                                {user.username}
+                            </Typography>
+                        </Box>
+                    ))
+                ) : (
+                    <Box sx={{ px: 2, py: 3, textAlign: "center" }}>
+                        <Typography
+                            sx={{
+                                fontSize: "0.85rem",
+                                color: (t) => t.palette.text.disabled,
+                            }}
+                        >
+                            No users found
+                        </Typography>
+                    </Box>
+                )}
+            </Box>
+        </Dialog>
     );
 };
 

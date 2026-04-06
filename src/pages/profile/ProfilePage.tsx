@@ -1,32 +1,3 @@
-// In ProfilePage.tsx
-// CHANGE 1: Remove these imports (no longer needed for post modal):
-//   Dialog, Zoom (from MUI) — keep Zoom only if used elsewhere
-//   ModalPost import
-
-// CHANGE 2: Remove state:
-//   const [selectedPost, setSelectedPost] = useState<any | null>(null);
-
-// CHANGE 3: In PostCard onClick handlers, replace:
-//   onClick={() => setSelectedPost(post)}
-// with:
-//   onClick={() => navigate(`/posts/${post.id}`)}
-
-// CHANGE 4: Remove the entire <Dialog> block for the post modal:
-//
-//   <Dialog
-//     open={!!selectedPost}
-//     onClose={() => setSelectedPost(null)}
-//     ...
-//   >
-//     {selectedPost && (
-//       <ModalPost ... />
-//     )}
-//   </Dialog>
-//
-// Delete all of the above.
-
-// ─── Full updated file below ──────────────────────────────────────────────────
-
 import { useState, useEffect } from "react";
 import {
     Container,
@@ -35,15 +6,12 @@ import {
     Grid,
     Button,
     IconButton,
-    useMediaQuery,
-    useTheme,
     Box,
     LinearProgress,
     Stack,
     Fade,
     Zoom,
     Tooltip,
-    alpha,
     Card,
     CardMedia,
     Skeleton as MuiSkeleton,
@@ -52,9 +20,8 @@ import {
     Badge,
     Alert,
     Snackbar,
-    Chip,
 } from "@mui/material";
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser } from "../../services/api";
 import {
     Lock,
     Message,
@@ -69,12 +36,15 @@ import {
     PhotoCamera,
     MoreHoriz,
     ArrowUpward,
+    ArrowBack,
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import MoreOptionsDialog from "./MoreOptionsDialog";
 import { useGlobalStore } from "../../store/store";
 import FollowButton from "./FollowButton";
 import BlankProfileImage from "../../static/profile_blank.png";
+import CreatePostModal from "../../component/post/CreatePostModal";
+import VideoThumbnail from "../../component/post/VideoThumbnail";
 
 interface Profile {
     id?: number;
@@ -104,16 +74,14 @@ interface TabPanelProps {
 const TabPanel = ({ children, value, index, ...other }: TabPanelProps) => (
     <div role="tabpanel" hidden={value !== index} id={`profile-tabpanel-${index}`} aria-labelledby={`profile-tab-${index}`} {...other}>
         {value === index && (
-            <Box sx={{ pt: 2 }}>
-                <Fade in timeout={400}>
-                    <div>{children}</div>
-                </Fade>
-            </Box>
+            <Fade in timeout={300}>
+                <div>{children}</div>
+            </Fade>
         )}
     </div>
 );
 
-/* ─── Animated Stat ─────────────────────────────────────────── */
+/* ─── Stat Box ───────────────────────────────────────────────── */
 const StatBox = ({ value, label, onClick }: { value: number; label: string; onClick?: () => void }) => {
     const formatted = value >= 1_000_000 ? `${(value / 1_000_000).toFixed(1)}M` : value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value;
 
@@ -122,61 +90,33 @@ const StatBox = ({ value, label, onClick }: { value: number; label: string; onCl
             onClick={onClick}
             sx={{
                 textAlign: "center",
-                px: { xs: 1.5, sm: 2.5 },
+                px: { xs: 1, sm: 2 },
                 py: 1.5,
                 cursor: onClick ? "pointer" : "default",
-                position: "relative",
-                transition: "all 0.2s ease",
-                "&::after": onClick
-                    ? {
-                          content: '""',
-                          position: "absolute",
-                          bottom: 0,
-                          left: "50%",
-                          transform: "translateX(-50%) scaleX(0)",
-                          width: "50%",
-                          height: "2px",
-                          bgcolor: "primary.main",
-                          transition: "transform 0.25s ease",
-                          borderRadius: "2px 2px 0 0",
-                      }
-                    : {},
-                "&:hover::after": onClick ? { transform: "translateX(-50%) scaleX(1)" } : {},
-                "&:hover": onClick
-                    ? {
-                          "& .stat-value": { color: "primary.main" },
-                          "& .stat-label": { color: "text.primary" },
-                      }
-                    : {},
+                transition: "background 0.15s",
+                "&:hover": onClick ? { bgcolor: "action.hover" } : {},
             }}
         >
             <Typography
-                className="stat-value"
                 sx={{
-                    fontFamily: '"Instrument Serif", Georgia, serif',
-                    fontStyle: "italic",
-                    fontWeight: 400,
-                    fontSize: { xs: "1.6rem", sm: "2rem" },
+                    fontWeight: 600,
+                    fontSize: { xs: "1.15rem", sm: "1.35rem" },
                     lineHeight: 1,
-                    letterSpacing: "-0.5px",
-                    transition: "color 0.2s ease",
                     color: "text.primary",
                 }}
             >
                 {formatted}
             </Typography>
             <Typography
-                className="stat-label"
                 variant="caption"
                 sx={{
                     color: "text.disabled",
                     fontWeight: 500,
                     textTransform: "uppercase",
-                    letterSpacing: "0.12em",
-                    fontSize: "0.58rem",
+                    letterSpacing: "0.08em",
+                    fontSize: "0.6rem",
                     display: "block",
-                    mt: 0.3,
-                    transition: "color 0.2s ease",
+                    mt: 0.4,
                 }}
             >
                 {label}
@@ -200,99 +140,137 @@ const PostCard = ({
     onClick: () => void;
     imageError: boolean;
     onImageError: () => void;
-}) => (
-    <Zoom in timeout={150} style={{ transitionDelay: `${(index % 12) * 25}ms` }}>
-        <Card
-            onClick={onClick}
-            sx={{
-                position: "relative",
-                cursor: "pointer",
-                aspectRatio: "1",
-                overflow: "hidden",
-                borderRadius: "12px",
-                boxShadow: "none",
-                border: "1px solid",
-                borderColor: "divider",
-                transition: "all 0.35s cubic-bezier(.34,1.56,.64,1)",
-                "&:hover": {
-                    transform: "translateY(-4px) scale(1.02)",
-                    boxShadow: "0 20px 48px rgba(0,0,0,0.18)",
-                    "& .post-overlay": { opacity: 1 },
-                    "& .post-img": { transform: "scale(1.06)" },
-                },
-            }}
-        >
-            {!imageError ? (
-                <CardMedia
-                    component="img"
-                    className="post-img"
-                    image={post.file_url}
-                    alt={`Post by ${username}`}
-                    sx={{
-                        height: "100%",
-                        objectFit: "cover",
-                        transition: "transform 0.45s cubic-bezier(0.4,0,0.2,1)",
-                    }}
-                    onError={onImageError}
-                />
-            ) : (
+}) => {
+    const isVideo = post.file_url && /\.(mp4|mov|webm)$/i.test(post.file_url);
+
+    return (
+        <Zoom in timeout={120} style={{ transitionDelay: `${(index % 12) * 20}ms` }}>
+            <Card
+                onClick={onClick}
+                sx={{
+                    position: "relative",
+                    cursor: "pointer",
+                    aspectRatio: "1",
+                    overflow: "hidden",
+                    borderRadius: "8px",
+                    boxShadow: "none",
+                    bgcolor: "action.hover",
+                    transition: "transform 0.2s ease",
+                    "&:hover": {
+                        transform: "scale(1.02)",
+                        "& .post-overlay": { opacity: 1 },
+                        "& .post-img": { transform: "scale(1.05)" },
+                    },
+                }}
+            >
+                {isVideo ? (
+                    <VideoThumbnail src={post.file_url} />
+                ) : !imageError ? (
+                    <CardMedia
+                        component="img"
+                        className="post-img"
+                        image={post.file_url}
+                        alt={`Post by ${username}`}
+                        sx={{
+                            height: "100%",
+                            objectFit: "cover",
+                            transition: "transform 0.35s ease",
+                        }}
+                        onError={onImageError}
+                    />
+                ) : (
+                    <Box
+                        sx={{
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "action.hover",
+                        }}
+                    >
+                        <PhotoCamera sx={{ fontSize: 20, color: "text.disabled" }} />
+                    </Box>
+                )}
+
                 <Box
+                    className="post-overlay"
                     sx={{
-                        height: "100%",
+                        position: "absolute",
+                        inset: 0,
+                        bgcolor: "rgba(0,0,0,0.38)",
+                        opacity: 0,
+                        transition: "opacity 0.2s ease",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        bgcolor: "action.hover",
+                        gap: 2,
                     }}
                 >
-                    <PhotoCamera sx={{ fontSize: 22, color: "text.disabled" }} />
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                        <Favorite sx={{ color: "white", fontSize: 14 }} />
+                        <Typography variant="caption" sx={{ color: "white", fontWeight: 600, fontSize: "0.7rem" }}>
+                            {post.likes_count || 0}
+                        </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                        <Comment sx={{ color: "white", fontSize: 14 }} />
+                        <Typography variant="caption" sx={{ color: "white", fontWeight: 600, fontSize: "0.7rem" }}>
+                            {post.comments_count || 0}
+                        </Typography>
+                    </Stack>
                 </Box>
-            )}
-            <Box
-                className="post-overlay"
-                sx={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 40%, transparent 100%)",
-                    opacity: 0,
-                    transition: "opacity 0.3s ease",
-                    display: "flex",
-                    alignItems: "flex-end",
-                    justifyContent: "space-between",
-                    px: 1.25,
-                    pb: 1.25,
-                }}
-            >
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Favorite sx={{ color: "white", fontSize: 13 }} />
-                    <Typography variant="caption" sx={{ color: "white", fontWeight: 700, fontSize: "0.65rem" }}>
-                        {post.likes_count || 0}
-                    </Typography>
-                </Stack>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Comment sx={{ color: "white", fontSize: 13 }} />
-                    <Typography variant="caption" sx={{ color: "white", fontWeight: 700, fontSize: "0.65rem" }}>
-                        {post.comments_count || 0}
-                    </Typography>
-                </Stack>
-            </Box>
-        </Card>
-    </Zoom>
+            </Card>
+        </Zoom>
+    );
+};
+
+/* ─── Empty / Private State ──────────────────────────────────── */
+const EmptyState = ({ icon, title, subtitle, action }: { icon: React.ReactNode; title: string; subtitle: string; action?: React.ReactNode }) => (
+    <Box sx={{ textAlign: "center", py: { xs: 8, sm: 10 } }}>
+        <Box
+            sx={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                bgcolor: "action.hover",
+                border: "1px solid",
+                borderColor: "divider",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mx: "auto",
+                mb: 2,
+            }}
+        >
+            {icon}
+        </Box>
+        <Typography
+            sx={{
+                fontWeight: 600,
+                fontSize: "0.95rem",
+                mb: 0.5,
+                color: "text.primary",
+            }}
+        >
+            {title}
+        </Typography>
+        <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.8rem", display: "block" }}>
+            {subtitle}
+        </Typography>
+        {action && <Box sx={{ mt: 2.5 }}>{action}</Box>}
+    </Box>
 );
 
 /* ─── Main Component ─────────────────────────────────────────── */
 const ProfilePage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const { postUploading } = useGlobalStore();
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
 
     const [profileData, setProfileData] = useState<Profile | null>(null);
     const [posts, setPosts] = useState<any[]>([]);
-    // ✅ REMOVED: selectedPost state (no longer needed)
     const [isFollowing, setIsFollowing] = useState<boolean>(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [fetchingProfile, setFetchingProfile] = useState(false);
@@ -304,11 +282,12 @@ const ProfilePage = () => {
     const [savedPosts, setSavedPosts] = useState<any[]>([]);
     const [fetchingSavedPosts, setFetchingSavedPosts] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
 
     const isOwnProfile = currentUser?.id == userId;
 
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 80);
+        const handleScroll = () => setScrolled(window.scrollY > 60);
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
@@ -425,6 +404,32 @@ const ProfilePage = () => {
         }
     };
 
+    const handleUnfollow = async () => {
+        if (currentUser?.id && userId) {
+            setFollowButtonLoading(true);
+            try {
+                const res = await unfollowUser(currentUser.id.toString(), userId);
+                if (res?.success) {
+                    setIsFollowing(false);
+                    setProfileData((prev) =>
+                        prev
+                            ? {
+                                  ...prev,
+                                  is_following: false,
+                                  is_request_active: false,
+                                  followers_count: prev.followers_count - 1,
+                              }
+                            : prev,
+                    );
+                }
+            } catch (error) {
+                console.error("Failed to unfollow the user:", error);
+            } finally {
+                setFollowButtonLoading(false);
+            }
+        }
+    };
+
     const formatDate = (dateString?: string) => {
         if (!dateString) return "";
         return new Date(dateString).toLocaleDateString("en-US", {
@@ -436,29 +441,29 @@ const ProfilePage = () => {
     /* ── Loading skeleton ── */
     if (fetchingProfile) {
         return (
-            <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "background.default" }}>
-                <LinearProgress
-                    sx={{
-                        height: 2,
-                        "& .MuiLinearProgress-bar": {
-                            background: "linear-gradient(90deg, #6366f1, #a855f7, #ec4899)",
-                        },
-                    }}
-                />
-                <Container maxWidth="md" sx={{ py: 4 }}>
-                    <Stack spacing={3}>
-                        <MuiSkeleton variant="rectangular" sx={{ borderRadius: 3, height: 180 }} />
-                        <Stack direction="row" spacing={2.5} alignItems="flex-start" sx={{ mt: -6, ml: 3 }}>
-                            <MuiSkeleton variant="circular" width={96} height={96} />
-                            <Box sx={{ flex: 1, pt: 6 }}>
-                                <MuiSkeleton variant="text" width="40%" height={28} />
-                                <MuiSkeleton variant="text" width="60%" height={18} sx={{ mt: 0.5 }} />
+            <Box
+                sx={{
+                    width: "100%",
+                    minHeight: "100vh",
+                    bgcolor: "background.default",
+                }}
+            >
+                <LinearProgress sx={{ height: 2 }} />
+                <Container maxWidth="sm" sx={{ py: 3, px: { xs: 2, sm: 3 } }}>
+                    <Stack spacing={2}>
+                        <Stack direction="row" spacing={2} alignItems="flex-start">
+                            <MuiSkeleton variant="circular" width={80} height={80} />
+                            <Box sx={{ flex: 1, pt: 1 }}>
+                                <MuiSkeleton variant="text" width="50%" height={22} />
+                                <MuiSkeleton variant="text" width="35%" height={16} sx={{ mt: 0.5 }} />
+                                <MuiSkeleton variant="text" width="70%" height={14} sx={{ mt: 1 }} />
                             </Box>
                         </Stack>
-                        <Grid container spacing={1.5}>
+                        <MuiSkeleton variant="rectangular" height={48} sx={{ borderRadius: 1 }} />
+                        <Grid container spacing={1}>
                             {[...Array(9)].map((_, i) => (
                                 <Grid item xs={4} key={i}>
-                                    <MuiSkeleton variant="rectangular" sx={{ paddingBottom: "100%", borderRadius: "12px" }} />
+                                    <MuiSkeleton variant="rectangular" sx={{ paddingBottom: "100%", borderRadius: "8px" }} />
                                 </Grid>
                             ))}
                         </Grid>
@@ -470,612 +475,489 @@ const ProfilePage = () => {
 
     const canViewPosts = profileData && (isOwnProfile || !profileData.is_private || profileData.is_following);
 
-    /* ── Gradient accent based on username (deterministic) ── */
-    const gradients = [
-        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-        "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-        "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-        "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-        "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
-        "linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)",
-        "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)",
-    ];
-
-    const usernameHash = (profileData?.username || "").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    const coverGradient = gradients[usernameHash % gradients.length];
-
     return (
-        <>
-            <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
-      `}</style>
-
+        <Box sx={{ bgcolor: "background.default", minHeight: "100vh", pb: 8 }}>
+            {/* ── Sticky top bar (always visible on mobile, fades in on scroll for desktop) ── */}
             <Box
                 sx={{
-                    bgcolor: "background.default",
-                    minHeight: "100vh",
-                    pb: 8,
-                    fontFamily: '"DM Sans", sans-serif',
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    bgcolor: "background.paper",
+                    borderBottom: "0.5px solid",
+                    borderColor: "divider",
+                    px: { xs: 1.5, sm: 2 },
+                    py: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
                 }}
             >
-                {/* ── Sticky mini-header on scroll ── */}
+                <IconButton size="small" onClick={() => navigate(-1)} sx={{ color: "text.primary" }}>
+                    <ArrowBack sx={{ fontSize: 20 }} />
+                </IconButton>
+
                 <Fade in={scrolled}>
-                    <Box
-                        sx={{
-                            position: "fixed",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            zIndex: 100,
-                            backdropFilter: "blur(20px)",
-                            bgcolor: alpha(theme.palette.background.default, 0.85),
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                            px: 3,
-                            py: 1,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1.5,
-                        }}
-                    >
-                        <Avatar src={profileData?.profile_picture || BlankProfileImage} sx={{ width: 32, height: 32 }} />
-                        <Typography sx={{ fontWeight: 600, fontSize: "0.9rem" }}>{profileData?.username}</Typography>
-                        {profileData?.is_verified && <Verified sx={{ fontSize: 14, color: "#1DA1F2" }} />}
-                        <Box sx={{ flex: 1 }} />
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+                        <Avatar src={profileData?.profile_picture || BlankProfileImage} sx={{ width: 28, height: 28 }} />
                         <Typography
-                            variant="caption"
                             sx={{
-                                color: "text.secondary",
-                                fontWeight: 500,
-                                letterSpacing: "0.05em",
+                                fontWeight: 600,
+                                fontSize: "0.88rem",
+                                color: "text.primary",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
                             }}
                         >
-                            {profileData?.posts_count || 0} posts
+                            {profileData?.username}
                         </Typography>
-                    </Box>
+                        {profileData?.is_verified && <Verified sx={{ fontSize: 13, color: "#1d9bf0", flexShrink: 0 }} />}
+                    </Stack>
                 </Fade>
 
-                <Container maxWidth="md" sx={{ pt: 0 }}>
-                    <Fade in timeout={400}>
-                        <Box>
-                            {/* ── Cover image ── */}
-                            <Box
-                                sx={{
-                                    height: { xs: 140, sm: 200 },
-                                    background: coverGradient,
-                                    borderRadius: "0 0 24px 24px",
-                                    position: "relative",
-                                    overflow: "hidden",
-                                    mb: 0,
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        inset: 0,
-                                        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E")`,
-                                        opacity: 0.4,
-                                    }}
-                                />
+                <Box sx={{ flex: scrolled ? "none" : 1 }} />
 
-                                <Stack direction="row" spacing={0.75} sx={{ position: "absolute", top: 12, right: 12 }}>
-                                    {!isOwnProfile && currentUser?.id && (
-                                        <Tooltip title="Send message">
-                                            <IconButton
-                                                onClick={() => navigate(`/messages/${userId}`, { state: profileData })}
-                                                size="small"
+                <IconButton size="small" onClick={() => setOpenDialog(true)} sx={{ color: "text.secondary" }}>
+                    <MoreHoriz sx={{ fontSize: 20 }} />
+                </IconButton>
+            </Box>
+
+            <Container maxWidth="sm" sx={{ pt: 0, px: { xs: 0, sm: 2 } }}>
+                <Fade in timeout={350}>
+                    <Box>
+                        {/* ── Profile header ── */}
+                        <Box
+                            sx={{
+                                bgcolor: "background.paper",
+                                borderBottom: "0.5px solid",
+                                borderColor: "divider",
+                                px: { xs: 2, sm: 3 },
+                                pt: 2.5,
+                                pb: 0,
+                            }}
+                        >
+                            {/* Avatar row */}
+                            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
+                                <Badge
+                                    overlap="circular"
+                                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                                    badgeContent={
+                                        profileData?.is_verified ? (
+                                            <Verified
                                                 sx={{
-                                                    bgcolor: "rgba(255,255,255,0.25)",
-                                                    backdropFilter: "blur(12px)",
-                                                    border: "1px solid rgba(255,255,255,0.3)",
-                                                    width: 34,
-                                                    height: 34,
-                                                    "&:hover": { bgcolor: "rgba(255,255,255,0.4)" },
+                                                    fontSize: 16,
+                                                    color: "#1d9bf0",
+                                                    bgcolor: "background.paper",
+                                                    borderRadius: "50%",
+                                                    p: "1px",
                                                 }}
-                                            >
-                                                <Message sx={{ fontSize: 16, color: "white" }} />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )}
-                                    <Tooltip title="More options">
-                                        <IconButton
-                                            onClick={() => setOpenDialog(true)}
-                                            size="small"
-                                            sx={{
-                                                bgcolor: "rgba(0, 0, 0, 0.25)",
-                                                backdropFilter: "blur(12px)",
-                                                border: "1px solid rgba(255,255,255,0.3)",
-                                                width: 34,
-                                                height: 34,
-                                                "&:hover": { bgcolor: "rgba(0, 0, 0, 0.4)" },
-                                            }}
-                                        >
-                                            <MoreHoriz sx={{ fontSize: 16, color: "white" }} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </Stack>
-                            </Box>
+                                            />
+                                        ) : null
+                                    }
+                                >
+                                    <Avatar
+                                        src={profileData?.profile_picture || BlankProfileImage}
+                                        sx={{
+                                            width: { xs: 76, sm: 88 },
+                                            height: { xs: 76, sm: 88 },
+                                            border: "2.5px solid",
+                                            borderColor: "divider",
+                                            fontSize: "1.75rem",
+                                        }}
+                                    />
+                                </Badge>
 
-                            {/* ── Profile body ── */}
-                            <Box sx={{ px: { xs: 2, sm: 3 } }}>
-                                {/* Avatar + follow row */}
-                                <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mt: "-52px", mb: 2 }}>
-                                    <Badge
-                                        overlap="circular"
-                                        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                                        badgeContent={
-                                            profileData?.is_verified ? (
-                                                <Verified
+                                {/* Action buttons */}
+                                <Stack direction="row" spacing={1} alignItems="center" sx={{ pt: 0.5 }}>
+                                    {!isOwnProfile && currentUser?.id && (
+                                        <>
+                                            <Tooltip title="Send message">
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() =>
+                                                        navigate(`/messages/${userId}`, {
+                                                            state: profileData,
+                                                        })
+                                                    }
                                                     sx={{
-                                                        fontSize: 18,
-                                                        color: "#1DA1F2",
-                                                        bgcolor: "background.paper",
-                                                        borderRadius: "50%",
-                                                        p: "1.5px",
-                                                        boxShadow: "0 0 0 2px " + theme.palette.background.paper,
+                                                        border: "0.5px solid",
+                                                        borderColor: "divider",
+                                                        borderRadius: "8px",
+                                                        width: 36,
+                                                        height: 36,
+                                                        color: "text.secondary",
+                                                        "&:hover": { bgcolor: "action.hover" },
                                                     }}
-                                                />
-                                            ) : null
-                                        }
-                                    >
-                                        <Avatar
-                                            src={profileData?.profile_picture || BlankProfileImage}
-                                            sx={{
-                                                width: { xs: 88, sm: 104 },
-                                                height: { xs: 88, sm: 104 },
-                                                border: "4px solid",
-                                                borderColor: "background.default",
-                                                boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                                                fontSize: "2rem",
-                                                transition: "transform 0.3s cubic-bezier(.34,1.56,.64,1)",
-                                                "&:hover": { transform: "scale(1.04)" },
-                                            }}
-                                        />
-                                    </Badge>
-
-                                    <Stack direction="row" spacing={1} alignItems="center">
-                                        {!isOwnProfile && currentUser?.id && (
+                                                >
+                                                    <Message sx={{ fontSize: 17 }} />
+                                                </IconButton>
+                                            </Tooltip>
                                             <FollowButton
                                                 isFollowing={isFollowing}
                                                 profileData={profileData}
                                                 followButtonLoading={followButtonLoading}
                                                 handleFollow={handleFollow}
                                                 handleCancelRequest={handleCancelRequest}
+                                                handleUnfollow={handleUnfollow}
                                             />
-                                        )}
-                                        {isOwnProfile && (
-                                            <Button
-                                                variant="outlined"
-                                                size="small"
-                                                onClick={() => navigate(`/settings?setting=profiledetails`)}
-                                                sx={{
-                                                    textTransform: "none",
-                                                    fontWeight: 600,
-                                                    borderRadius: "20px",
-                                                    fontSize: "0.8rem",
-                                                    px: 2.5,
-                                                    py: 0.75,
-                                                    borderColor: "divider",
-                                                    color: "text.primary",
-                                                    "&:hover": {
-                                                        borderColor: "text.secondary",
-                                                        bgcolor: alpha(theme.palette.text.primary, 0.04),
-                                                    },
-                                                }}
-                                            >
-                                                Edit profile
-                                            </Button>
-                                        )}
-                                    </Stack>
+                                        </>
+                                    )}
+                                    {isOwnProfile && (
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() => navigate(`/settings?setting=profiledetails`)}
+                                            sx={{
+                                                textTransform: "none",
+                                                fontWeight: 500,
+                                                borderRadius: "8px",
+                                                fontSize: "0.8rem",
+                                                px: 2,
+                                                py: 0.75,
+                                                borderColor: "divider",
+                                                color: "text.primary",
+                                                "&:hover": {
+                                                    borderColor: "text.secondary",
+                                                    bgcolor: "action.hover",
+                                                },
+                                            }}
+                                        >
+                                            Edit profile
+                                        </Button>
+                                    )}
                                 </Stack>
+                            </Stack>
 
-                                {/* Name + username */}
-                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
-                                    <Typography
-                                        sx={{
-                                            fontFamily: '"Instrument Serif", Georgia, serif',
-                                            fontWeight: 400,
-                                            fontSize: { xs: "1.5rem", sm: "1.85rem" },
-                                            letterSpacing: "-0.5px",
-                                            lineHeight: 1.15,
-                                            color: "text.primary",
-                                        }}
-                                    >
-                                        {profileData?.username}
-                                    </Typography>
-                                </Stack>
+                            {/* Name */}
+                            <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mb: 0.25 }}>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 700,
+                                        fontSize: { xs: "1rem", sm: "1.1rem" },
+                                        color: "text.primary",
+                                    }}
+                                >
+                                    {profileData?.username}
+                                </Typography>
+                                {profileData?.is_verified && <Verified sx={{ fontSize: 15, color: "#1d9bf0" }} />}
+                            </Stack>
 
-                                {/* Bio */}
-                                {profileData?.bio && (
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            mt: 1,
-                                            color: "text.secondary",
-                                            whiteSpace: "pre-line",
-                                            lineHeight: 1.7,
-                                            maxWidth: 480,
-                                            fontSize: "0.88rem",
-                                        }}
-                                    >
-                                        {profileData.bio}
-                                    </Typography>
-                                )}
+                            {/* Bio */}
+                            {profileData?.bio ? (
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: "text.primary",
+                                        whiteSpace: "pre-line",
+                                        lineHeight: 1.6,
+                                        fontSize: "0.85rem",
+                                        mt: 0.5,
+                                        mb: 1,
+                                    }}
+                                >
+                                    {profileData.bio}
+                                </Typography>
+                            ) : isOwnProfile ? (
+                                <Typography
+                                    variant="body2"
+                                    onClick={() => navigate(`/settings?setting=profiledetails`)}
+                                    sx={{
+                                        color: "text.disabled",
+                                        fontSize: "0.82rem",
+                                        mt: 0.5,
+                                        mb: 1,
+                                        cursor: "pointer",
+                                        "&:hover": { color: "text.secondary" },
+                                    }}
+                                >
+                                    + Add a bio
+                                </Typography>
+                            ) : null}
 
-                                {/* Meta chips */}
-                                {(profileData?.location || profileData?.website || profileData?.created_at) && (
-                                    <Stack direction="row" flexWrap="wrap" gap={0.75} sx={{ mt: 1.5 }}>
-                                        {profileData?.location && (
-                                            <Chip
-                                                label={profileData.location}
-                                                icon={<Typography sx={{ fontSize: "12px !important", pl: 0.5 }}>📍</Typography>}
-                                                size="small"
-                                                variant="outlined"
-                                                sx={{
-                                                    fontSize: "0.73rem",
-                                                    height: 26,
-                                                    fontWeight: 500,
-                                                    borderColor: "divider",
-                                                    color: "text.secondary",
-                                                    bgcolor: "transparent",
-                                                    "&:hover": { bgcolor: alpha(theme.palette.text.primary, 0.04) },
-                                                }}
-                                            />
-                                        )}
-                                        {profileData?.website && (
-                                            <Chip
+                            {/* Meta */}
+                            {(profileData?.location || profileData?.website || profileData?.created_at) && (
+                                <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mb: 1.5 }}>
+                                    {profileData?.location && (
+                                        <Stack direction="row" alignItems="center" spacing={0.4}>
+                                            <Typography sx={{ fontSize: "12px" }}>📍</Typography>
+                                            <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.78rem" }}>
+                                                {profileData.location}
+                                            </Typography>
+                                        </Stack>
+                                    )}
+                                    {profileData?.website && (
+                                        <Stack direction="row" alignItems="center" spacing={0.4}>
+                                            <LinkIcon sx={{ fontSize: 12, color: "primary.main" }} />
+                                            <Typography
                                                 component="a"
                                                 href={profileData.website}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                label={profileData.website.replace(/^https?:\/\//, "")}
-                                                icon={<LinkIcon sx={{ fontSize: "13px !important" }} />}
-                                                size="small"
-                                                variant="outlined"
-                                                clickable
-                                                sx={{
-                                                    fontSize: "0.73rem",
-                                                    height: 26,
-                                                    fontWeight: 600,
-                                                    borderColor: alpha(theme.palette.primary.main, 0.4),
-                                                    color: "primary.main",
-                                                    bgcolor: alpha(theme.palette.primary.main, 0.04),
-                                                    "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.1) },
-                                                }}
-                                            />
-                                        )}
-                                        {profileData?.created_at && (
-                                            <Chip
-                                                label={`Joined ${formatDate(profileData.created_at)}`}
-                                                icon={<CalendarToday sx={{ fontSize: "12px !important" }} />}
-                                                size="small"
-                                                variant="outlined"
-                                                sx={{
-                                                    fontSize: "0.73rem",
-                                                    height: 26,
-                                                    fontWeight: 500,
-                                                    borderColor: "divider",
-                                                    color: "text.disabled",
-                                                    bgcolor: "transparent",
-                                                }}
-                                            />
-                                        )}
-                                    </Stack>
-                                )}
-
-                                {/* Stats row */}
-                                <Box
-                                    sx={{
-                                        mt: 2.5,
-                                        mb: 0.5,
-                                        display: "flex",
-                                        borderTop: "1px solid",
-                                        borderBottom: "1px solid",
-                                        borderColor: "divider",
-                                        mx: -0.5,
-                                    }}
-                                >
-                                    <Box sx={{ flex: 1, borderRight: "1px solid", borderColor: "divider" }}>
-                                        <StatBox value={profileData?.posts_count || 0} label="Posts" />
-                                    </Box>
-                                    <Box sx={{ flex: 1, borderRight: "1px solid", borderColor: "divider" }}>
-                                        <StatBox
-                                            value={profileData?.followers_count || 0}
-                                            label="Followers"
-                                            onClick={() => navigate(`/profile/${userId}/followers`)}
-                                        />
-                                    </Box>
-                                    <Box sx={{ flex: 1 }}>
-                                        <StatBox
-                                            value={profileData?.following_count || 0}
-                                            label="Following"
-                                            onClick={() => navigate(`/profile/${userId}/following`)}
-                                        />
-                                    </Box>
-                                </Box>
-                            </Box>
-
-                            {/* ── Tabs ── */}
-                            <Box sx={{ px: { xs: 2, sm: 3 }, mt: 0 }}>
-                                <Tabs
-                                    value={tabValue}
-                                    onChange={(_, v) => setTabValue(v)}
-                                    variant={isMobile ? "fullWidth" : "standard"}
-                                    centered={!isMobile}
-                                    sx={{
-                                        minHeight: 44,
-                                        "& .MuiTab-root": {
-                                            textTransform: "none",
-                                            fontWeight: 600,
-                                            fontFamily: '"DM Sans", sans-serif',
-                                            fontSize: { xs: "0.78rem", sm: "0.85rem" },
-                                            minHeight: 44,
-                                            minWidth: "auto",
-                                            px: { xs: 1.5, sm: 3 },
-                                            gap: 0.75,
-                                            color: "text.disabled",
-                                            letterSpacing: "0.03em",
-                                            transition: "color 0.2s ease",
-                                        },
-                                        "& .Mui-selected": { color: "text.primary !important" },
-                                        "& .MuiTabs-indicator": {
-                                            height: 2,
-                                            borderRadius: "2px 2px 0 0",
-                                            background: "linear-gradient(90deg, #6366f1, #a855f7)",
-                                        },
-                                    }}
-                                >
-                                    <Tab icon={<GridOn sx={{ fontSize: 15 }} />} iconPosition="start" label="Posts" />
-                                    <Tab
-                                        icon={<BookmarkBorder sx={{ fontSize: 15 }} />}
-                                        iconPosition="start"
-                                        label="Saved"
-                                        disabled={!isOwnProfile}
-                                    />
-                                </Tabs>
-                            </Box>
-
-                            {/* ── Posts Tab ── */}
-                            <Box sx={{ px: { xs: 2, sm: 3 } }}>
-                                <TabPanel value={tabValue} index={0}>
-                                    {fetchingPosts ? (
-                                        <Grid container spacing={1.5}>
-                                            {[...Array(9)].map((_, i) => (
-                                                <Grid item xs={4} key={i}>
-                                                    <MuiSkeleton variant="rectangular" sx={{ paddingBottom: "100%", borderRadius: "12px" }} />
-                                                </Grid>
-                                            ))}
-                                        </Grid>
-                                    ) : !canViewPosts ? (
-                                        <Box sx={{ textAlign: "center", py: { xs: 8, sm: 12 } }}>
-                                            <Box
-                                                sx={{
-                                                    width: 72,
-                                                    height: 72,
-                                                    borderRadius: "50%",
-                                                    background: coverGradient,
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    mx: "auto",
-                                                    mb: 2,
-                                                    opacity: 0.7,
-                                                }}
-                                            >
-                                                <Lock sx={{ fontSize: 28, color: "white" }} />
-                                            </Box>
-                                            <Typography
-                                                sx={{
-                                                    fontFamily: '"Instrument Serif", Georgia, serif',
-                                                    fontSize: "1.3rem",
-                                                    mb: 0.75,
-                                                }}
-                                            >
-                                                This account is private
-                                            </Typography>
-                                            <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.82rem" }}>
-                                                Follow to see their photos and videos
-                                            </Typography>
-                                        </Box>
-                                    ) : posts.length === 0 ? (
-                                        <Box sx={{ textAlign: "center", py: { xs: 8, sm: 12 } }}>
-                                            <Box
-                                                sx={{
-                                                    width: 72,
-                                                    height: 72,
-                                                    borderRadius: "50%",
-                                                    background: coverGradient,
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    mx: "auto",
-                                                    mb: 2,
-                                                    opacity: 0.7,
-                                                }}
-                                            >
-                                                <PhotoCamera sx={{ fontSize: 28, color: "white" }} />
-                                            </Box>
-                                            <Typography
-                                                sx={{
-                                                    fontFamily: '"Instrument Serif", Georgia, serif',
-                                                    fontSize: "1.3rem",
-                                                    mb: 0.5,
-                                                }}
-                                            >
-                                                No posts yet
-                                            </Typography>
-                                            <Typography
                                                 variant="caption"
                                                 sx={{
-                                                    color: "text.secondary",
-                                                    display: "block",
-                                                    mb: 2.5,
-                                                    fontSize: "0.82rem",
+                                                    color: "primary.main",
+                                                    fontSize: "0.78rem",
+                                                    fontWeight: 500,
+                                                    textDecoration: "none",
+                                                    "&:hover": { textDecoration: "underline" },
                                                 }}
                                             >
-                                                {isOwnProfile ? "Share your first photo or video" : "Nothing here yet"}
+                                                {profileData.website.replace(/^https?:\/\//, "")}
                                             </Typography>
-                                            {isOwnProfile && (
+                                        </Stack>
+                                    )}
+                                    {profileData?.created_at && (
+                                        <Stack direction="row" alignItems="center" spacing={0.4}>
+                                            <CalendarToday sx={{ fontSize: 12, color: "text.disabled" }} />
+                                            <Typography variant="caption" sx={{ color: "text.disabled", fontSize: "0.78rem" }}>
+                                                Joined {formatDate(profileData.created_at)}
+                                            </Typography>
+                                        </Stack>
+                                    )}
+                                </Stack>
+                            )}
+
+                            {/* Stats row */}
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    borderTop: "0.5px solid",
+                                    borderColor: "divider",
+                                    mx: { xs: -2, sm: -3 },
+                                }}
+                            >
+                                {[
+                                    { value: profileData?.posts_count || 0, label: "Posts" },
+                                    {
+                                        value: profileData?.followers_count || 0,
+                                        label: "Followers",
+                                        onClick: () => navigate(`/profile/${userId}/followers`),
+                                    },
+                                    {
+                                        value: profileData?.following_count || 0,
+                                        label: "Following",
+                                        onClick: () => navigate(`/profile/${userId}/following`),
+                                    },
+                                ].map((stat, i, arr) => (
+                                    <Box
+                                        key={stat.label}
+                                        sx={{
+                                            flex: 1,
+                                            borderRight: i < arr.length - 1 ? "0.5px solid" : "none",
+                                            borderColor: "divider",
+                                        }}
+                                    >
+                                        <StatBox {...stat} />
+                                    </Box>
+                                ))}
+                            </Box>
+                        </Box>
+
+                        {/* ── Tabs ── */}
+                        <Box
+                            sx={{
+                                bgcolor: "background.paper",
+                                borderBottom: "0.5px solid",
+                                borderColor: "divider",
+                                position: "sticky",
+                                top: 49,
+                                zIndex: 9,
+                            }}
+                        >
+                            <Tabs
+                                value={tabValue}
+                                onChange={(_, v) => setTabValue(v)}
+                                variant="fullWidth"
+                                sx={{
+                                    minHeight: 44,
+                                    "& .MuiTab-root": {
+                                        textTransform: "none",
+                                        fontWeight: 500,
+                                        fontSize: "0.82rem",
+                                        minHeight: 44,
+                                        gap: 0.6,
+                                        color: "text.disabled",
+                                        letterSpacing: "0.02em",
+                                    },
+                                    "& .Mui-selected": {
+                                        color: "text.primary !important",
+                                        fontWeight: 600,
+                                    },
+                                    "& .MuiTabs-indicator": {
+                                        height: 1.5,
+                                        bgcolor: "text.primary",
+                                    },
+                                }}
+                            >
+                                <Tab icon={<GridOn sx={{ fontSize: 14 }} />} iconPosition="start" label="Posts" />
+                                <Tab icon={<BookmarkBorder sx={{ fontSize: 14 }} />} iconPosition="start" label="Saved" disabled={!isOwnProfile} />
+                            </Tabs>
+                        </Box>
+
+                        {/* ── Posts Tab ── */}
+                        <TabPanel value={tabValue} index={0}>
+                            {fetchingPosts ? (
+                                <Grid container spacing={0.5} sx={{ p: { xs: 0.5, sm: 1 } }}>
+                                    {[...Array(9)].map((_, i) => (
+                                        <Grid item xs={4} key={i}>
+                                            <MuiSkeleton variant="rectangular" sx={{ paddingBottom: "100%", borderRadius: "8px" }} />
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            ) : !canViewPosts ? (
+                                <Box sx={{ bgcolor: "background.paper" }}>
+                                    <EmptyState
+                                        icon={<Lock sx={{ fontSize: 22, color: "text.disabled" }} />}
+                                        title="This account is private"
+                                        subtitle="Follow to see their photos and videos"
+                                    />
+                                </Box>
+                            ) : posts.length === 0 ? (
+                                <Box sx={{ bgcolor: "background.paper" }}>
+                                    <EmptyState
+                                        icon={<PhotoCamera sx={{ fontSize: 22, color: "text.disabled" }} />}
+                                        title="No posts yet"
+                                        subtitle={isOwnProfile ? "Share your first photo or video" : "Nothing here yet"}
+                                        action={
+                                            isOwnProfile ? (
                                                 <Button
                                                     variant="contained"
                                                     size="small"
                                                     disableElevation
-                                                    onClick={() => navigate("/create")}
+                                                    onClick={() => setModalOpen(true)}
                                                     sx={{
                                                         textTransform: "none",
-                                                        fontWeight: 700,
-                                                        borderRadius: "20px",
+                                                        fontWeight: 600,
+                                                        borderRadius: "8px",
                                                         px: 3,
-                                                        py: 1,
                                                         fontSize: "0.82rem",
-                                                        background: coverGradient,
-                                                        "&:hover": { opacity: 0.9 },
+                                                        bgcolor: "text.primary",
+                                                        color: "background.default",
+                                                        "&:hover": {
+                                                            opacity: 0.85,
+                                                            bgcolor: "text.primary",
+                                                        },
                                                     }}
                                                 >
                                                     Create your first post
                                                 </Button>
-                                            )}
-                                        </Box>
-                                    ) : (
-                                        <Grid container spacing={1.5}>
-                                            {posts.map((post, index) => (
-                                                <Grid item xs={4} key={post.id}>
-                                                    <PostCard
-                                                        post={post}
-                                                        username={profileData?.username}
-                                                        index={index}
-                                                        // ✅ Navigate to post detail page instead of opening modal
-                                                        onClick={() => navigate(`/posts/${post.id}`)}
-                                                        imageError={!!imageErrors[post.id]}
-                                                        onImageError={() =>
-                                                            setImageErrors((prev) => ({
-                                                                ...prev,
-                                                                [post.id]: true,
-                                                            }))
-                                                        }
-                                                    />
-                                                </Grid>
-                                            ))}
+                                            ) : undefined
+                                        }
+                                    />
+                                </Box>
+                            ) : (
+                                <Grid container spacing={0.5} sx={{ p: { xs: 0.5, sm: 1 } }}>
+                                    {posts.map((post, index) => (
+                                        <Grid item xs={4} key={post.id}>
+                                            <PostCard
+                                                post={post}
+                                                username={profileData?.username}
+                                                index={index}
+                                                onClick={() => navigate(`/posts/${post.id}`)}
+                                                imageError={!!imageErrors[post.id]}
+                                                onImageError={() =>
+                                                    setImageErrors((prev) => ({
+                                                        ...prev,
+                                                        [post.id]: true,
+                                                    }))
+                                                }
+                                            />
                                         </Grid>
-                                    )}
-                                </TabPanel>
+                                    ))}
+                                </Grid>
+                            )}
+                        </TabPanel>
 
-                                {/* ── Saved Tab ── */}
-                                <TabPanel value={tabValue} index={1}>
-                                    {fetchingSavedPosts ? (
-                                        <Grid container spacing={1.5}>
-                                            {[...Array(6)].map((_, i) => (
-                                                <Grid item xs={4} key={i}>
-                                                    <MuiSkeleton variant="rectangular" sx={{ paddingBottom: "100%", borderRadius: "12px" }} />
-                                                </Grid>
-                                            ))}
+                        {/* ── Saved Tab ── */}
+                        <TabPanel value={tabValue} index={1}>
+                            {fetchingSavedPosts ? (
+                                <Grid container spacing={0.5} sx={{ p: { xs: 0.5, sm: 1 } }}>
+                                    {[...Array(6)].map((_, i) => (
+                                        <Grid item xs={4} key={i}>
+                                            <MuiSkeleton variant="rectangular" sx={{ paddingBottom: "100%", borderRadius: "8px" }} />
                                         </Grid>
-                                    ) : savedPosts.length === 0 ? (
-                                        <Box sx={{ textAlign: "center", py: { xs: 8, sm: 12 } }}>
-                                            <Box
-                                                sx={{
-                                                    width: 72,
-                                                    height: 72,
-                                                    borderRadius: "50%",
-                                                    background: coverGradient,
-                                                    opacity: 0.7,
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    mx: "auto",
-                                                    mb: 2,
-                                                }}
-                                            >
-                                                <BookmarkBorder sx={{ fontSize: 28, color: "white" }} />
-                                            </Box>
-                                            <Typography
-                                                sx={{
-                                                    fontFamily: '"Instrument Serif", Georgia, serif',
-                                                    fontSize: "1.3rem",
-                                                    mb: 0.5,
-                                                }}
-                                            >
-                                                Nothing saved yet
-                                            </Typography>
-                                            <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.82rem" }}>
-                                                Posts you save will appear here
-                                            </Typography>
-                                        </Box>
-                                    ) : (
-                                        <Grid container spacing={1.5}>
-                                            {savedPosts.map((post, index) => (
-                                                <Grid item xs={4} key={post.id}>
-                                                    <PostCard
-                                                        post={post}
-                                                        index={index}
-                                                        // ✅ Navigate to post detail page instead of opening modal
-                                                        onClick={() => navigate(`/posts/${post.id}`)}
-                                                        imageError={!!imageErrors[post.id]}
-                                                        onImageError={() =>
-                                                            setImageErrors((prev) => ({
-                                                                ...prev,
-                                                                [post.id]: true,
-                                                            }))
-                                                        }
-                                                    />
-                                                </Grid>
-                                            ))}
+                                    ))}
+                                </Grid>
+                            ) : savedPosts.length === 0 ? (
+                                <Box sx={{ bgcolor: "background.paper" }}>
+                                    <EmptyState
+                                        icon={<BookmarkBorder sx={{ fontSize: 22, color: "text.disabled" }} />}
+                                        title="Nothing saved yet"
+                                        subtitle="Posts you save will appear here"
+                                    />
+                                </Box>
+                            ) : (
+                                <Grid container spacing={0.5} sx={{ p: { xs: 0.5, sm: 1 } }}>
+                                    {savedPosts.map((post, index) => (
+                                        <Grid item xs={4} key={post.id}>
+                                            <PostCard
+                                                post={post}
+                                                index={index}
+                                                onClick={() => navigate(`/posts/${post.id}`)}
+                                                imageError={!!imageErrors[post.id]}
+                                                onImageError={() =>
+                                                    setImageErrors((prev) => ({
+                                                        ...prev,
+                                                        [post.id]: true,
+                                                    }))
+                                                }
+                                            />
                                         </Grid>
-                                    )}
-                                </TabPanel>
-                            </Box>
-                        </Box>
-                    </Fade>
-                </Container>
-
-                {/* ── Back-to-top FAB ── */}
-                <Fade in={scrolled}>
-                    <IconButton
-                        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                        sx={{
-                            position: "fixed",
-                            bottom: 24,
-                            right: 24,
-                            width: 44,
-                            height: 44,
-                            background: coverGradient,
-                            color: "white",
-                            boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
-                            zIndex: 50,
-                            "&:hover": { opacity: 0.9, transform: "translateY(-2px)" },
-                            transition: "all 0.2s ease",
-                        }}
-                    >
-                        <ArrowUpward sx={{ fontSize: 18 }} />
-                    </IconButton>
+                                    ))}
+                                </Grid>
+                            )}
+                        </TabPanel>
+                    </Box>
                 </Fade>
+            </Container>
 
-                {/* ✅ REMOVED: Post modal Dialog (replaced by navigation to /posts/:postId) */}
-
-                {/* ── Snackbar ── */}
-                <Snackbar
-                    open={showCopiedSnackbar}
-                    autoHideDuration={2000}
-                    onClose={() => setShowCopiedSnackbar(false)}
-                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            {/* ── Back-to-top FAB ── */}
+            <Fade in={scrolled}>
+                <IconButton
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    sx={{
+                        position: "fixed",
+                        bottom: 24,
+                        right: 20,
+                        width: 40,
+                        height: 40,
+                        bgcolor: "text.primary",
+                        color: "background.default",
+                        border: "none",
+                        zIndex: 50,
+                        "&:hover": { opacity: 0.85, bgcolor: "text.primary" },
+                        transition: "all 0.2s ease",
+                    }}
                 >
-                    <Alert severity="success" variant="filled" icon={<CheckCircle />} sx={{ borderRadius: "12px", fontWeight: 600 }}>
-                        Profile link copied!
-                    </Alert>
-                </Snackbar>
+                    <ArrowUpward sx={{ fontSize: 17 }} />
+                </IconButton>
+            </Fade>
 
-                {/* ── More Options ── */}
-                <MoreOptionsDialog
-                    openDialog={openDialog}
-                    handleCloseDialog={() => setOpenDialog(false)}
-                    userId={userId}
-                    fetchProfile={fetchProfile}
-                    fetchUserPosts={fetchUserPosts}
-                    isFollowing={profileData?.is_following}
-                />
-            </Box>
-        </>
+            {/* ── Snackbar ── */}
+            <Snackbar
+                open={showCopiedSnackbar}
+                autoHideDuration={2000}
+                onClose={() => setShowCopiedSnackbar(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert severity="success" variant="filled" icon={<CheckCircle />} sx={{ borderRadius: "8px", fontWeight: 500 }}>
+                    Profile link copied!
+                </Alert>
+            </Snackbar>
+
+            {/* ── More Options ── */}
+            <MoreOptionsDialog
+                openDialog={openDialog}
+                handleCloseDialog={() => setOpenDialog(false)}
+                userId={userId}
+                fetchProfile={fetchProfile}
+                fetchUserPosts={fetchUserPosts}
+                isFollowing={profileData?.is_following}
+            />
+
+            <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />
+        </Box>
     );
 };
 

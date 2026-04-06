@@ -5,6 +5,7 @@ interface User {
     username: string;
     email: string;
     profile_picture_url: string;
+    theme?: "light" | "dark";   // ← add this
 }
 
 interface globalStoreState {

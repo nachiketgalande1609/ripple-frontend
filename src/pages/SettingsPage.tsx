@@ -25,43 +25,35 @@ const menuItems = [
 
 const DRAWER_WIDTH = 270;
 
-// Back arrow SVG icon (no external dep needed)
-const BackArrow = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M12.5 15L7.5 10L12.5 5"
-      stroke="rgba(255,255,255,0.7)"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+const BackArrow = () => {
+  const theme = useTheme();
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12.5 15L7.5 10L12.5 5"
+        stroke={theme.palette.text.secondary}
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
 
-// Chevron right SVG
-const ChevronRight = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M6 12L10 8L6 4"
-      stroke="rgba(255,255,255,0.25)"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+const ChevronRight = () => {
+  const theme = useTheme();
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M6 12L10 8L6 4"
+        stroke={theme.palette.text.disabled}
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
 
 const SettingsPage = () => {
   const location = useLocation();
@@ -89,22 +81,15 @@ const SettingsPage = () => {
     if (currentSetting === "accountprivacy") return <AccountPrivacy />;
     if (currentSetting === "general") return <General />;
     return (
-      <Box
-        sx={{
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 2,
-        }}
-      >
+      <Box sx={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
         <Box
           sx={{
             width: 56,
             height: 56,
             borderRadius: "16px",
-            backgroundColor: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.07)",
+            backgroundColor: (t) => t.palette.action.hover,
+            border: "1px solid",
+            borderColor: (t) => t.palette.divider,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -119,7 +104,7 @@ const SettingsPage = () => {
             fontFamily: "'DM Sans', sans-serif",
             fontSize: "16px",
             fontWeight: 600,
-            color: "rgba(255,255,255,0.6)",
+            color: (t) => t.palette.text.secondary,
             letterSpacing: "-0.3px",
           }}
         >
@@ -129,7 +114,7 @@ const SettingsPage = () => {
           sx={{
             fontFamily: "'DM Sans', sans-serif",
             fontSize: "13px",
-            color: "rgba(255,255,255,0.25)",
+            color: (t) => t.palette.text.disabled,
             maxWidth: 260,
             lineHeight: 1.6,
           }}
@@ -140,15 +125,14 @@ const SettingsPage = () => {
     );
   };
 
-  // ─── MOBILE LAYOUT ──────────────────────────────────────────────────────────
+  // ─── MOBILE LAYOUT ───────────────────────────────────────────────────────────
   if (isMobile) {
-    // Sub-page: a setting is selected
     if (currentSetting) {
       return (
         <Box
           sx={{
             minHeight: "100vh",
-            backgroundColor: "#0a0a0a",
+            backgroundColor: (t) => t.palette.background.default,
             fontFamily: "'DM Sans', sans-serif",
             display: "flex",
             flexDirection: "column",
@@ -162,8 +146,9 @@ const SettingsPage = () => {
               gap: 1,
               px: 2,
               py: 2,
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
-              backgroundColor: "#0f0f0f",
+              borderBottom: "1px solid",
+              borderColor: (t) => t.palette.divider,
+              backgroundColor: (t) => t.palette.background.paper,
               position: "sticky",
               top: 0,
               zIndex: 10,
@@ -174,9 +159,10 @@ const SettingsPage = () => {
               sx={{
                 p: "6px",
                 borderRadius: "8px",
-                backgroundColor: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                "&:hover": { backgroundColor: "rgba(255,255,255,0.09)" },
+                backgroundColor: (t) => t.palette.action.hover,
+                border: "1px solid",
+                borderColor: (t) => t.palette.divider,
+                "&:hover": { backgroundColor: (t) => t.palette.action.selected },
                 "&:active": { transform: "scale(0.95)" },
                 transition: "all 0.15s ease",
               }}
@@ -188,7 +174,7 @@ const SettingsPage = () => {
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: "16px",
                 fontWeight: 600,
-                color: "#ffffff",
+                color: (t) => t.palette.text.primary,
                 letterSpacing: "-0.3px",
               }}
             >
@@ -214,12 +200,12 @@ const SettingsPage = () => {
       );
     }
 
-    // Menu page (no setting selected on mobile)
+    // Menu page
     return (
       <Box
         sx={{
           minHeight: "100vh",
-          backgroundColor: "#0a0a0a",
+          backgroundColor: (t) => t.palette.background.default,
           fontFamily: "'DM Sans', sans-serif",
           display: "flex",
           flexDirection: "column",
@@ -231,8 +217,9 @@ const SettingsPage = () => {
             px: 3,
             pt: 5,
             pb: 3,
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
-            backgroundColor: "#0f0f0f",
+            borderBottom: "1px solid",
+            borderColor: (t) => t.palette.divider,
+            backgroundColor: (t) => t.palette.background.paper,
           }}
         >
           <Typography
@@ -240,7 +227,7 @@ const SettingsPage = () => {
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 700,
               fontSize: "22px",
-              color: "#ffffff",
+              color: (t) => t.palette.text.primary,
               letterSpacing: "-0.5px",
             }}
           >
@@ -250,7 +237,7 @@ const SettingsPage = () => {
             sx={{
               fontFamily: "'DM Sans', sans-serif",
               fontSize: "12px",
-              color: "rgba(255,255,255,0.35)",
+              color: (t) => t.palette.text.secondary,
               mt: 0.5,
               letterSpacing: "0.3px",
             }}
@@ -279,15 +266,11 @@ const SettingsPage = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  backgroundColor: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.05)",
-                  "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.06)",
-                  },
-                  "&:active": {
-                    transform: "scale(0.98)",
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                  },
+                  backgroundColor: (t) => t.palette.action.hover,
+                  border: "1px solid",
+                  borderColor: (t) => t.palette.divider,
+                  "&:hover": { backgroundColor: (t) => t.palette.action.selected },
+                  "&:active": { transform: "scale(0.98)", backgroundColor: (t) => t.palette.action.focus },
                 }}
               >
                 <ListItemText
@@ -297,7 +280,7 @@ const SettingsPage = () => {
                       fontFamily: "'DM Sans', sans-serif",
                       fontSize: "15px",
                       fontWeight: 400,
-                      color: "rgba(255,255,255,0.75)",
+                      color: (t) => t.palette.text.primary,
                       letterSpacing: "-0.1px",
                     },
                   }}
@@ -309,11 +292,11 @@ const SettingsPage = () => {
         </List>
 
         {/* Footer */}
-        <Box sx={{ px: 3, py: 3, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <Box sx={{ px: 3, py: 3, borderTop: "1px solid", borderColor: (t) => t.palette.divider }}>
           <Typography
             sx={{
               fontSize: "11px",
-              color: "rgba(255,255,255,0.2)",
+              color: (t) => t.palette.text.disabled,
               fontFamily: "'DM Sans', sans-serif",
               letterSpacing: "0.3px",
             }}
@@ -325,13 +308,13 @@ const SettingsPage = () => {
     );
   }
 
-  // ─── DESKTOP LAYOUT (unchanged) ─────────────────────────────────────────────
+  // ─── DESKTOP LAYOUT ──────────────────────────────────────────────────────────
   return (
     <Box
       sx={{
         display: "flex",
         minHeight: "100vh",
-        backgroundColor: "#0a0a0a",
+        backgroundColor: (t) => t.palette.background.default,
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
@@ -344,8 +327,9 @@ const SettingsPage = () => {
           [`& .MuiDrawer-paper`]: {
             width: DRAWER_WIDTH,
             boxSizing: "border-box",
-            backgroundColor: "#0f0f0f",
-            borderRight: "1px solid rgba(255,255,255,0.06)",
+            backgroundColor: (t) => t.palette.background.paper,
+            borderRight: "1px solid",
+            borderColor: (t) => t.palette.divider,
             display: "flex",
             flexDirection: "column",
             padding: "0",
@@ -359,7 +343,8 @@ const SettingsPage = () => {
             px: 3,
             pt: 4,
             pb: 3,
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
+            borderBottom: "1px solid",
+            borderColor: (t) => t.palette.divider,
           }}
         >
           <Typography
@@ -367,7 +352,7 @@ const SettingsPage = () => {
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 700,
               fontSize: "22px",
-              color: "#ffffff",
+              color: (t) => t.palette.text.primary,
               letterSpacing: "-0.5px",
             }}
           >
@@ -377,7 +362,7 @@ const SettingsPage = () => {
             sx={{
               fontFamily: "'DM Sans', sans-serif",
               fontSize: "12px",
-              color: "rgba(255,255,255,0.35)",
+              color: (t) => t.palette.text.secondary,
               mt: 0.5,
               letterSpacing: "0.3px",
             }}
@@ -409,20 +394,14 @@ const SettingsPage = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: "12px",
-                  backgroundColor: isActive
-                    ? "rgba(255,255,255,0.08)"
-                    : "transparent",
-                  boxShadow: isActive
-                    ? "inset 0 0 0 1px rgba(255,255,255,0.08)"
-                    : "none",
+                  backgroundColor: isActive ? (t) => t.palette.action.selected : "transparent",
+                  boxShadow: isActive ? (t) => `inset 0 0 0 1px ${t.palette.divider}` : "none",
                   "&:hover": {
                     backgroundColor: isActive
-                      ? "rgba(255,255,255,0.08)"
-                      : "rgba(255,255,255,0.04)",
+                      ? (t) => t.palette.action.selected
+                      : (t) => t.palette.action.hover,
                   },
-                  "&:active": {
-                    transform: "scale(0.98)",
-                  },
+                  "&:active": { transform: "scale(0.98)" },
                 }}
               >
                 <ListItemText
@@ -432,7 +411,7 @@ const SettingsPage = () => {
                       fontFamily: "'DM Sans', sans-serif",
                       fontSize: "14px",
                       fontWeight: isActive ? 600 : 400,
-                      color: isActive ? "#ffffff" : "rgba(255,255,255,0.55)",
+                      color: isActive ? (t) => t.palette.text.primary : (t) => t.palette.text.secondary,
                       letterSpacing: "-0.1px",
                       transition: "color 0.18s",
                     },
@@ -444,7 +423,7 @@ const SettingsPage = () => {
                       width: 6,
                       height: 6,
                       borderRadius: "50%",
-                      backgroundColor: "#ffffff",
+                      backgroundColor: (t) => t.palette.text.primary,
                       flexShrink: 0,
                       opacity: 0.7,
                     }}
@@ -455,18 +434,12 @@ const SettingsPage = () => {
           })}
         </List>
 
-        {/* Footer hint */}
-        <Box
-          sx={{
-            px: 3,
-            py: 2.5,
-            borderTop: "1px solid rgba(255,255,255,0.05)",
-          }}
-        >
+        {/* Footer */}
+        <Box sx={{ px: 3, py: 2.5, borderTop: "1px solid", borderColor: (t) => t.palette.divider }}>
           <Typography
             sx={{
               fontSize: "11px",
-              color: "rgba(255,255,255,0.2)",
+              color: (t) => t.palette.text.disabled,
               fontFamily: "'DM Sans', sans-serif",
               letterSpacing: "0.3px",
             }}
@@ -482,18 +455,18 @@ const SettingsPage = () => {
           flexGrow: 1,
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#0a0a0a",
+          backgroundColor: (t) => t.palette.background.default,
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Subtle top bar */}
         {currentSetting && (
           <Box
             sx={{
               px: 5,
               py: 3,
-              borderBottom: "1px solid rgba(255,255,255,0.05)",
+              borderBottom: "1px solid",
+              borderColor: (t) => t.palette.divider,
               display: "flex",
               alignItems: "center",
               gap: 2,
@@ -503,13 +476,13 @@ const SettingsPage = () => {
               sx={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: "12px",
-                color: "rgba(255,255,255,0.3)",
+                color: (t) => t.palette.text.disabled,
                 letterSpacing: "0.3px",
               }}
             >
               Settings
             </Typography>
-            <Typography sx={{ fontSize: "12px", color: "rgba(255,255,255,0.15)" }}>
+            <Typography sx={{ fontSize: "12px", color: (t) => t.palette.text.disabled }}>
               /
             </Typography>
             <Typography
@@ -517,7 +490,7 @@ const SettingsPage = () => {
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: "12px",
                 fontWeight: 500,
-                color: "rgba(255,255,255,0.6)",
+                color: (t) => t.palette.text.secondary,
                 letterSpacing: "0.3px",
                 textTransform: "capitalize",
               }}

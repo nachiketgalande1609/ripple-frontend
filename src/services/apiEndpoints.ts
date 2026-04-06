@@ -17,6 +17,7 @@ export const UPDATE_PROFILE_ENDPOINT: string = "/api/users/profile/update-profil
 export const FOLLOW_ENDPOINT: string = "/api/follow";
 export const CANCEL_FOLLOW_REQUEST_ENDPOINT: string = "/api/follow/cancel-request";
 export const UNFOLLOW_ENDPOINT: string = "/api/follow/unfollow";
+export const REMOVE_FOLLOWER_ENDPOINT = "api/follow/remove-follower";
 export const FOLLOW_RESPONSE_ENDPOINT: string = "/api/follow/response";
 export const FOLLOWING_USERS_LIST_ENDPOINT: string = "/api/follow/fetch-following-list";
 
@@ -46,6 +47,10 @@ export const SEARCH_ENDPOINT: string = "/api/search/search-users";
 export const FETCH_SEARCH_HISTORY_ENDPOINT: string = "/api/search/fetch-search-history";
 export const UPDATE_SEARCH_HISTORY_ENDPOINT: string = "/api/search/update-search-history";
 export const DELETE_SEARCH_HISTORY_ENDPOINT: string = "/api/search/delete-search-history";
+export const SEARCH_HASHTAG_ENDPOINT = "api/search/search-hashtag";
+export const FETCH_HASHTAG_SEARCH_HISTORY_ENDPOINT  = "api/search/fetch-hashtag-search-history";
+export const UPDATE_HASHTAG_SEARCH_HISTORY_ENDPOINT = "api/search/update-hashtag-search-history";
+export const DELETE_HASHTAG_SEARCH_HISTORY_ENDPOINT = "api/search/delete-hashtag-search-history";
 
 // Settings Endpoints
 export const SETTINGS_ENDPOINT: string = "/api/settings";

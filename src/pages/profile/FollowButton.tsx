@@ -7,32 +7,32 @@ import { useState } from "react";
 
 interface Profile {
     username: string;
-    email: string;
-    bio?: string;
-    profile_picture?: string;
-    followers_count: number;
-    following_count: number;
-    posts_count: number;
-    is_request_active: boolean;
     follow_status: string;
     is_following: boolean;
     is_private: boolean;
+    is_request_active: boolean;
+    bio?: string;
+    profile_picture?: string;
     isMobile?: boolean;
+    email?: string;
+    followers_count?: number;
+    following_count?: number;
+    posts_count?: number;
 }
 
 interface FollowButtonProps {
     isFollowing: boolean;
-    profileData: Profile | null;
+    profileData: Pick<Profile, "is_request_active"> | null;
     followButtonLoading: boolean;
     handleFollow: () => void;
     handleCancelRequest: () => void;
+    handleUnfollow?: () => void;
 }
-
 type ButtonState = "follow" | "pending" | "following";
 
 function getState(isFollowing: boolean, profileData: Profile | null): ButtonState {
     if (profileData?.is_request_active) return "pending";
-    if (isFollowing && profileData?.follow_status === "accepted") return "following";
+    if (isFollowing) return "following";
     return "follow";
 }
 
@@ -48,6 +48,7 @@ const stateConfig: Record<
         hoverBg: string;
         hoverColor: string;
         border: string;
+        hoverBorder: string;
     }
 > = {
     follow: {
@@ -60,6 +61,7 @@ const stateConfig: Record<
         hoverBg: "#e8e8e8",
         hoverColor: "#0a0a0a",
         border: "1.5px solid transparent",
+        hoverBorder: "1.5px solid transparent",
     },
     pending: {
         label: "Requested",
@@ -71,17 +73,19 @@ const stateConfig: Record<
         hoverBg: "rgba(255,80,80,0.08)",
         hoverColor: "#ff5050",
         border: "1.5px solid #2a2a2a",
+        hoverBorder: "1.5px solid rgba(255,80,80,0.25)",
     },
     following: {
         label: "Following",
-        hoverLabel: "Following",
+        hoverLabel: "Unfollow",
         icon: <CheckIcon sx={{ fontSize: 14 }} />,
-        hoverIcon: <CheckIcon sx={{ fontSize: 14 }} />,
+        hoverIcon: <CloseIcon sx={{ fontSize: 14 }} />,
         bg: "transparent",
         color: "#555",
-        hoverBg: "transparent",
-        hoverColor: "#555",
+        hoverBg: "rgba(255,80,80,0.08)",
+        hoverColor: "#ff5050",
         border: "1.5px solid #222",
+        hoverBorder: "1.5px solid rgba(255,80,80,0.25)",
     },
 };
 
@@ -91,30 +95,27 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     followButtonLoading,
     handleFollow,
     handleCancelRequest,
+    handleUnfollow,
 }) => {
     const [hovered, setHovered] = useState(false);
     const state = getState(isFollowing, profileData);
     const config = stateConfig[state];
-    const isDisabled = state === "following" || followButtonLoading;
+    const isInteractive = state === "pending" || state === "following";
+    const showHoverState = hovered && isInteractive;
 
     const handleClick = () => {
-        if (isDisabled) return;
+        if (followButtonLoading) return;
         if (state === "pending") handleCancelRequest();
+        else if (state === "following") handleUnfollow?.();
         else handleFollow();
     };
-
-    const displayLabel = hovered && state === "pending" ? config.hoverLabel : config.label;
-    const displayIcon = hovered && state === "pending" ? config.hoverIcon : config.icon;
-    const displayColor = hovered && state === "pending" ? config.hoverColor : config.color;
-    const displayBg = hovered && state === "pending" ? config.hoverBg : config.bg;
-    const displayBorder = hovered && state === "pending" ? "1.5px solid rgba(255,80,80,0.25)" : config.border;
 
     return (
         <button
             onClick={handleClick}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
-            disabled={isDisabled}
+            disabled={followButtonLoading}
             style={{
                 position: "relative",
                 display: "inline-flex",
@@ -123,15 +124,14 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                 gap: "6px",
                 padding: "7px 16px",
                 minWidth: "100px",
-                marginTop: "16px",
                 borderRadius: "20px",
-                border: displayBorder,
-                background: displayBg,
-                color: displayColor,
+                border: showHoverState ? config.hoverBorder : config.border,
+                background: showHoverState ? config.hoverBg : config.bg,
+                color: showHoverState ? config.hoverColor : config.color,
                 fontSize: "13px",
                 fontWeight: 500,
                 letterSpacing: "0.01em",
-                cursor: isDisabled ? "default" : "pointer",
+                cursor: followButtonLoading ? "default" : "pointer",
                 transition: "all 0.2s ease",
                 outline: "none",
                 whiteSpace: "nowrap",
@@ -139,10 +139,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
             }}
         >
             {followButtonLoading ? (
-                <CircularProgress
-                    size={14}
-                    sx={{ color: "#555" }}
-                />
+                <CircularProgress size={14} sx={{ color: "#555" }} />
             ) : (
                 <>
                     <span
@@ -150,12 +147,12 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                             display: "flex",
                             alignItems: "center",
                             transition: "color 0.2s ease",
-                            color: displayColor,
+                            color: showHoverState ? config.hoverColor : config.color,
                         }}
                     >
-                        {displayIcon}
+                        {showHoverState ? config.hoverIcon : config.icon}
                     </span>
-                    <span style={{ transition: "color 0.2s ease" }}>{displayLabel}</span>
+                    <span style={{ transition: "color 0.2s ease" }}>{showHoverState ? config.hoverLabel : config.label}</span>
                 </>
             )}
         </button>

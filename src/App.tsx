@@ -1,30 +1,22 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import { ThemeProvider } from "@mui/material";
-
-import { extendTheme } from "@mui/material/styles";
+import { Experimental_CssVarsProvider as CssVarsProvider, experimental_extendTheme as extendTheme } from "@mui/material/styles";
 import AppContent from "./AppContent";
 
 const demoTheme = extendTheme({
     colorSchemes: { light: true, dark: true },
     colorSchemeSelector: "class",
-    breakpoints: {
-        values: {
-            xs: 0,
-            sm: 600,
-            md: 900,
-            lg: 1200,
-            xl: 1536,
-        },
-    },
 });
 
 const App = () => {
+    const savedUser = JSON.parse(localStorage.getItem("user") || "null");
+    const defaultMode = savedUser?.theme === "dark" ? "dark" : "light";
+
     return (
-        <ThemeProvider theme={demoTheme}>
+        <CssVarsProvider theme={demoTheme} defaultMode={defaultMode}>
             <Router>
                 <AppContent />
             </Router>
-        </ThemeProvider>
+        </CssVarsProvider>
     );
 };
 

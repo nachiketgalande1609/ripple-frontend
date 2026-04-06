@@ -108,14 +108,20 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
 
+    const [loadingUsers, setLoadingUsers] = useState(true);
+
+
     // Fetch messages initially
     const fetchUsersData = async () => {
+        setLoadingUsers(true);
         try {
             const res = await getAllMessageUsersData();
             const users = res.data;
             setUsers(users);
         } catch (error) {
             console.error("Failed to fetch users and messages:", error);
+        } finally {
+            setLoadingUsers(false);
         }
     };
 
@@ -395,10 +401,10 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     useEffect(() => {
         if (!selectedUser || !messages.length) return;
 
-        const unreadMessages = messages.filter((message) => message.sender_id === selectedUser.id && !message.read);
+        const unreadMessages = messages.filter((message) => message.sender_id === selectedUser.id && !message.read);        
 
         if (unreadMessages.length > 0) {
-            const messageIds = unreadMessages.map((message) => message.message_id);
+            const messageIds = unreadMessages.map((message) => message.message_id);            
             socket.emit("messageRead", {
                 senderId: selectedUser.id,
                 receiverId: currentUser.id,
@@ -528,10 +534,10 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     };
 
     return (
-        <Box sx={{ display: "flex", height: "98.5dvh" }}>
+        <Box sx={{ display: "flex", height: "100dvh" }}>
             {isMobile ? (
                 !selectedUser ? (
-                    <MessagesUserList users={users} onlineUsers={onlineUsers} handleUserClick={handleUserClick} />
+                    <MessagesUserList users={users} onlineUsers={onlineUsers} handleUserClick={handleUserClick} loading={loadingUsers} />
                 ) : (
                     <Box
                         sx={{
