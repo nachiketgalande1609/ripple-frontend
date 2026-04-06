@@ -12,9 +12,7 @@ import {
     Box,
     Typography,
     Skeleton,
-    Divider,
     Fade,
-    Chip,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
@@ -151,26 +149,16 @@ export default function SearchPage() {
                     }}
                 >
                     <ListItemAvatar sx={{ minWidth: 48 }}>
-                        <Avatar
-                            src={user.profile_picture || BlankProfileImage}
-                            sx={{ width: 38, height: 38 }}
-                        />
+                        <Avatar src={user.profile_picture || BlankProfileImage} sx={{ width: 38, height: 38 }} />
                     </ListItemAvatar>
                     <ListItemText
                         primary={
-                            <Typography
-                                variant="body2"
-                                fontWeight={500}
-                                sx={{ color: "#e7e9ea", fontSize: "0.875rem", lineHeight: 1.4 }}
-                            >
+                            <Typography variant="body2" fontWeight={500} sx={{ color: "#e7e9ea", fontSize: "0.875rem", lineHeight: 1.4 }}>
                                 {user.username}
                             </Typography>
                         }
                         secondary={
-                            <Typography
-                                variant="caption"
-                                sx={{ color: "hsl(226, 11%, 50%)", fontSize: "0.78rem" }}
-                            >
+                            <Typography variant="caption" sx={{ color: "hsl(226, 11%, 50%)", fontSize: "0.78rem" }}>
                                 {user.email}
                             </Typography>
                         }
@@ -221,11 +209,7 @@ export default function SearchPage() {
                         ),
                         endAdornment: searchQuery ? (
                             <InputAdornment position="end">
-                                <IconButton
-                                    size="small"
-                                    onClick={() => setSearchQuery("")}
-                                    sx={{ color: "hsl(226, 11%, 45%)", p: 0.25 }}
-                                >
+                                <IconButton size="small" onClick={() => setSearchQuery("")} sx={{ color: "hsl(226, 11%, 45%)", p: 0.25 }}>
                                     <CloseIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
                             </InputAdornment>
@@ -286,7 +270,9 @@ export default function SearchPage() {
                 {/* Search loading skeletons */}
                 {loading && isSearching && (
                     <List disablePadding>
-                        {[1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+                        {[1, 2, 3].map((i) => (
+                            <SkeletonRow key={i} />
+                        ))}
                     </List>
                 )}
 
@@ -309,9 +295,7 @@ export default function SearchPage() {
                                     "{debouncedQuery}"
                                 </Box>
                             </Typography>
-                            <Typography sx={{ color: "hsl(226, 11%, 35%)", fontSize: "0.8rem" }}>
-                                Try a different username or email
-                            </Typography>
+                            <Typography sx={{ color: "hsl(226, 11%, 35%)", fontSize: "0.8rem" }}>Try a different username or email</Typography>
                         </Box>
                     </Fade>
                 )}
@@ -337,11 +321,7 @@ export default function SearchPage() {
                             </Box>
                             <List disablePadding sx={{ mt: 0.5 }}>
                                 {history.map((item) => (
-                                    <UserRow
-                                        key={item.history_id}
-                                        user={item}
-                                        onDelete={() => handleDeleteHistory(item.history_id)}
-                                    />
+                                    <UserRow key={item.history_id} user={item} onDelete={() => handleDeleteHistory(item.history_id)} />
                                 ))}
                             </List>
                         </Box>
@@ -351,7 +331,9 @@ export default function SearchPage() {
                 {/* History loading */}
                 {historyLoading && !isSearching && (
                     <List disablePadding sx={{ mt: 1 }}>
-                        {[1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+                        {[1, 2, 3].map((i) => (
+                            <SkeletonRow key={i} />
+                        ))}
                     </List>
                 )}
 
@@ -368,9 +350,7 @@ export default function SearchPage() {
                             }}
                         >
                             <SearchIcon sx={{ fontSize: 36, color: "#2e3338" }} />
-                            <Typography sx={{ color: "hsl(226, 11%, 45%)", fontSize: "0.9rem" }}>
-                                Search for people
-                            </Typography>
+                            <Typography sx={{ color: "hsl(226, 11%, 45%)", fontSize: "0.9rem" }}>Search for people</Typography>
                         </Box>
                     </Fade>
                 )}

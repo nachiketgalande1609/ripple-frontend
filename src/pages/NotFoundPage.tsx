@@ -1,12 +1,12 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const NotFoundPage = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <>
-      <style>{`
+    return (
+        <>
+            <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
         @keyframes floatUp {
@@ -194,53 +194,52 @@ const NotFoundPage = () => {
         }
       `}</style>
 
-      <div className="nf-root">
-        <div className="nf-blob nf-blob-1" />
-        <div className="nf-blob nf-blob-2" />
-        <div className="nf-grid" />
+            <div className="nf-root">
+                <div className="nf-blob nf-blob-1" />
+                <div className="nf-blob nf-blob-2" />
+                <div className="nf-grid" />
 
-        {/* Decorative scattered dots */}
-        <div className="nf-dots">
-          {[
-            { top: "18%", left: "12%" }, { top: "72%", left: "8%" },
-            { top: "40%", left: "88%" }, { top: "85%", left: "78%" },
-            { top: "12%", left: "60%" }, { top: "60%", left: "92%" },
-          ].map((pos, i) => (
-            <div key={i} className="nf-dot" style={pos} />
-          ))}
-        </div>
+                {/* Decorative scattered dots */}
+                <div className="nf-dots">
+                    {[
+                        { top: "18%", left: "12%" },
+                        { top: "72%", left: "8%" },
+                        { top: "40%", left: "88%" },
+                        { top: "85%", left: "78%" },
+                        { top: "12%", left: "60%" },
+                        { top: "60%", left: "92%" },
+                    ].map((pos, i) => (
+                        <div key={i} className="nf-dot" style={pos} />
+                    ))}
+                </div>
 
-        <div className="nf-content">
-          {/* 404 with orbiting ring */}
-          <div className="nf-ring-wrap">
-            <svg className="nf-ring" viewBox="0 0 280 280">
-              <defs>
-                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#7c5cfc" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#ff6b35" stopOpacity="0.4" />
-                </linearGradient>
-              </defs>
-              <circle cx="140" cy="140" r="132" />
-            </svg>
-            <div className="nf-number">404</div>
-          </div>
+                <div className="nf-content">
+                    {/* 404 with orbiting ring */}
+                    <div className="nf-ring-wrap">
+                        <svg className="nf-ring" viewBox="0 0 280 280">
+                            <defs>
+                                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#7c5cfc" stopOpacity="0.8" />
+                                    <stop offset="100%" stopColor="#ff6b35" stopOpacity="0.4" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="140" cy="140" r="132" />
+                        </svg>
+                        <div className="nf-number">404</div>
+                    </div>
 
-          <div className="nf-divider" />
+                    <div className="nf-divider" />
 
-          <Typography className="nf-title">
-            Page not found
-          </Typography>
-          <Typography className="nf-sub">
-            The page you're looking for doesn't exist or has been moved somewhere else.
-          </Typography>
+                    <Typography className="nf-title">Page not found</Typography>
+                    <Typography className="nf-sub">The page you're looking for doesn't exist or has been moved somewhere else.</Typography>
 
-          <Button className="nf-btn" onClick={() => navigate("/")}>
-            Back to home
-          </Button>
-        </div>
-      </div>
-    </>
-  );
+                    <Button className="nf-btn" onClick={() => navigate("/")}>
+                        Back to home
+                    </Button>
+                </div>
+            </div>
+        </>
+    );
 };
 
 export default NotFoundPage;

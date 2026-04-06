@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
     Box,
     Button,
@@ -14,9 +14,6 @@ import {
     useMediaQuery,
     InputAdornment,
     LinearProgress,
-    ToggleButtonGroup,
-    ToggleButton,
-    Tooltip,
 } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { createPost } from "../../services/api";
@@ -28,9 +25,6 @@ import {
     LocationOn,
     Close,
     AddPhotoAlternate,
-    Public as PublicIcon,
-    People as PeopleIcon,
-    Favorite as CloseFriendsIcon,
     Send as SendIcon,
     EditOutlined as EditIcon,
     DeleteOutline as DeleteIcon,
@@ -43,8 +37,6 @@ interface CreatePostModalProps {
     handleClose: () => void;
 }
 
-type Audience = "public" | "followers" | "close-friends";
-
 const CAPTION_LIMIT = 2200;
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) => {
@@ -53,7 +45,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
     const [postContent, setPostContent] = useState<string>("");
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [location, setLocation] = useState<string>("");
-    const [audience, setAudience] = useState<Audience>("public");
     const [loading, setLoading] = useState<boolean>(false);
     const [emojiAnchorEl, setEmojiAnchorEl] = useState<null | HTMLElement>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -89,7 +80,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                 setImageFile(null);
                 setPostContent("");
                 setLocation("");
-                setAudience("public");
                 setIsDragging(false);
                 setPosted(false);
             }, 300);

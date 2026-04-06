@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import BlankProfileImage from "../../../static/profile_blank.png";
-import { getFollowingUsers } from "../../../services/api";
 import { timeAgo } from "../../../utils/utils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -349,34 +348,7 @@ const CSS = `
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-const MessagesUserList: React.FC<MessagesUserListProps> = ({
-    users,
-    onlineUsers,
-    handleUserClick,
-    activeUserId,
-}) => {
-    const [usersList, setUsersList] = useState<User[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [search, setSearch] = useState("");
-
-    const fetchUsersList = async () => {
-        setLoading(true);
-        try {
-            const response = await getFollowingUsers();
-            if (response.success) {
-                setUsersList(response.data);
-            }
-        } catch (error) {
-            console.error("Error fetching users list:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchUsersList();
-    }, []);
-
+const MessagesUserList: React.FC<MessagesUserListProps> = ({ users, onlineUsers, handleUserClick, activeUserId }) => {
     // Inject styles once
     useEffect(() => {
         const id = "msg-user-list-styles";
@@ -388,17 +360,7 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
         }
     }, []);
 
-    const sorted = [...users]
-        .sort(
-            (a, b) =>
-                new Date(b.latest_message_timestamp).getTime() -
-                new Date(a.latest_message_timestamp).getTime()
-        )
-        .filter(
-            (u) =>
-                !search ||
-                u.username.toLowerCase().includes(search.toLowerCase())
-        );
+    const sorted = [...users].sort((a, b) => new Date(b.latest_message_timestamp).getTime() - new Date(a.latest_message_timestamp).getTime());
 
     const totalUnread = users.reduce((n, u) => n + (u.unread_count || 0), 0);
 
@@ -407,34 +369,20 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
             {/* Header */}
             <div className="msg-header">
                 <h1 className="msg-header-title">Messages</h1>
-                {totalUnread > 0 && (
-                    <span className="msg-header-count">
-                        {totalUnread} new
-                    </span>
-                )}
+                {totalUnread > 0 && <span className="msg-header-count">{totalUnread} new</span>}
             </div>
 
-            {/* Content */}
-            {loading ? (
-                <div className="msg-loader">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div className="msg-skeleton" key={i} style={{ animationDelay: `${i * 0.12}s` }}>
-                            <div className="msg-skeleton-avatar" />
-                            <div className="msg-skeleton-lines">
-                                <div className="msg-skeleton-line" style={{ width: `${55 + i * 8}%` }} />
-                                <div className="msg-skeleton-line" style={{ width: `${35 + i * 6}%` }} />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : sorted.length === 0 ? (
+            {sorted.length === 0 ? (
                 <div className="msg-empty">
                     <svg className="msg-empty-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 12a2 2 0 012-2h20a2 2 0 012 2v14a2 2 0 01-2 2H12l-6 4V12z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                        <path
+                            d="M8 12a2 2 0 012-2h20a2 2 0 012 2v14a2 2 0 01-2 2H12l-6 4V12z"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinejoin="round"
+                        />
                     </svg>
-                    <p className="msg-empty-text">
-                        {search ? "No conversations match your search." : "No conversations yet."}
-                    </p>
+                    <p className="msg-empty-text">No conversations yet.</p>
                 </div>
             ) : (
                 <ul className="msg-list" role="list" style={{ margin: 0, padding: "6px 8px", listStyle: "none" }}>
@@ -442,13 +390,7 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
                         const isOnline = onlineUsers.includes(user.id.toString());
                         const isActive = activeUserId === user.id;
                         const hasUnread = (user.unread_count || 0) > 0;
-                        const classes = [
-                            "msg-item",
-                            isActive ? "active" : "",
-                            hasUnread ? "has-unread" : "",
-                        ]
-                            .filter(Boolean)
-                            .join(" ");
+                        const classes = ["msg-item", isActive ? "active" : "", hasUnread ? "has-unread" : ""].filter(Boolean).join(" ");
 
                         return (
                             <li key={user.id} style={{ animationDelay: `${i * 0.04}s` }}>
@@ -474,9 +416,7 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
                                     <div className="msg-content">
                                         <div className="msg-top-row">
                                             <span className="msg-name">{user.username}</span>
-                                            <span className="msg-time">
-                                                {timeAgo(user.latest_message_timestamp)}
-                                            </span>
+                                            <span className="msg-time">{timeAgo(user.latest_message_timestamp)}</span>
                                         </div>
                                         <span className="msg-preview">{user.latest_message || "No messages yet"}</span>
                                     </div>
