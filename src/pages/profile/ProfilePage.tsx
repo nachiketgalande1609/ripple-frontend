@@ -1,10 +1,38 @@
+// In ProfilePage.tsx
+// CHANGE 1: Remove these imports (no longer needed for post modal):
+//   Dialog, Zoom (from MUI) — keep Zoom only if used elsewhere
+//   ModalPost import
+
+// CHANGE 2: Remove state:
+//   const [selectedPost, setSelectedPost] = useState<any | null>(null);
+
+// CHANGE 3: In PostCard onClick handlers, replace:
+//   onClick={() => setSelectedPost(post)}
+// with:
+//   onClick={() => navigate(`/posts/${post.id}`)}
+
+// CHANGE 4: Remove the entire <Dialog> block for the post modal:
+//
+//   <Dialog
+//     open={!!selectedPost}
+//     onClose={() => setSelectedPost(null)}
+//     ...
+//   >
+//     {selectedPost && (
+//       <ModalPost ... />
+//     )}
+//   </Dialog>
+//
+// Delete all of the above.
+
+// ─── Full updated file below ──────────────────────────────────────────────────
+
 import { useState, useEffect } from "react";
 import {
     Container,
     Typography,
     Avatar,
     Grid,
-    Dialog,
     Button,
     IconButton,
     useMediaQuery,
@@ -26,7 +54,6 @@ import {
     Snackbar,
     Chip,
 } from "@mui/material";
-import ModalPost from "../../component/post/ModalPost";
 import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts } from "../../services/api";
 import {
     Lock,
@@ -265,7 +292,7 @@ const ProfilePage = () => {
 
     const [profileData, setProfileData] = useState<Profile | null>(null);
     const [posts, setPosts] = useState<any[]>([]);
-    const [selectedPost, setSelectedPost] = useState<any | null>(null);
+    // ✅ REMOVED: selectedPost state (no longer needed)
     const [isFollowing, setIsFollowing] = useState<boolean>(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [fetchingProfile, setFetchingProfile] = useState(false);
@@ -420,7 +447,6 @@ const ProfilePage = () => {
                 />
                 <Container maxWidth="md" sx={{ py: 4 }}>
                     <Stack spacing={3}>
-                        {/* Cover skeleton */}
                         <MuiSkeleton variant="rectangular" sx={{ borderRadius: 3, height: 180 }} />
                         <Stack direction="row" spacing={2.5} alignItems="flex-start" sx={{ mt: -6, ml: 3 }}>
                             <MuiSkeleton variant="circular" width={96} height={96} />
@@ -461,7 +487,6 @@ const ProfilePage = () => {
 
     return (
         <>
-            {/* ── Google Fonts ── */}
             <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
       `}</style>
@@ -525,7 +550,6 @@ const ProfilePage = () => {
                                     mb: 0,
                                 }}
                             >
-                                {/* Noise texture overlay */}
                                 <Box
                                     sx={{
                                         position: "absolute",
@@ -535,7 +559,6 @@ const ProfilePage = () => {
                                     }}
                                 />
 
-                                {/* Action buttons top-right */}
                                 <Stack direction="row" spacing={0.75} sx={{ position: "absolute", top: 12, right: 12 }}>
                                     {!isOwnProfile && currentUser?.id && (
                                         <Tooltip title="Send message">
@@ -741,7 +764,7 @@ const ProfilePage = () => {
                                     </Stack>
                                 )}
 
-                                {/* Stats row — elegant divider style */}
+                                {/* Stats row */}
                                 <Box
                                     sx={{
                                         mt: 2.5,
@@ -922,7 +945,8 @@ const ProfilePage = () => {
                                                         post={post}
                                                         username={profileData?.username}
                                                         index={index}
-                                                        onClick={() => setSelectedPost(post)}
+                                                        // ✅ Navigate to post detail page instead of opening modal
+                                                        onClick={() => navigate(`/posts/${post.id}`)}
                                                         imageError={!!imageErrors[post.id]}
                                                         onImageError={() =>
                                                             setImageErrors((prev) => ({
@@ -985,7 +1009,8 @@ const ProfilePage = () => {
                                                     <PostCard
                                                         post={post}
                                                         index={index}
-                                                        onClick={() => setSelectedPost(post)}
+                                                        // ✅ Navigate to post detail page instead of opening modal
+                                                        onClick={() => navigate(`/posts/${post.id}`)}
                                                         imageError={!!imageErrors[post.id]}
                                                         onImageError={() =>
                                                             setImageErrors((prev) => ({
@@ -1026,34 +1051,7 @@ const ProfilePage = () => {
                     </IconButton>
                 </Fade>
 
-                {/* ── Post Modal ── */}
-                <Dialog
-                    open={!!selectedPost}
-                    onClose={() => setSelectedPost(null)}
-                    maxWidth="lg"
-                    fullWidth
-                    PaperProps={{
-                        sx: {
-                            borderRadius: "20px",
-                            maxWidth: "min(92vw, 980px)",
-                            maxHeight: "92vh",
-                            overflow: "hidden",
-                            boxShadow: "0 32px 80px rgba(0,0,0,0.35)",
-                        },
-                    }}
-                    TransitionComponent={Zoom}
-                >
-                    {selectedPost && (
-                        <ModalPost
-                            userId={userId}
-                            postId={selectedPost.id}
-                            fetchPosts={fetchUserPosts}
-                            borderRadius="20px"
-                            isMobile={isMobile}
-                            handleCloseModal={() => setSelectedPost(null)}
-                        />
-                    )}
-                </Dialog>
+                {/* ✅ REMOVED: Post modal Dialog (replaced by navigation to /posts/:postId) */}
 
                 {/* ── Snackbar ── */}
                 <Snackbar

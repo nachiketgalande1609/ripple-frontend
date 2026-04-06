@@ -29,6 +29,7 @@ import {
 } from "@mui/icons-material";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import BlurBackgroundImage from "../../../static/blur.jpg";
+import { useNavigate } from "react-router-dom";
 
 import TypingIndicator from "../../../component/TypingIndicator";
 import { getMessagesDataForSelectedUser } from "../../../services/api";
@@ -102,9 +103,7 @@ interface ReactionDetail {
 const formatFileSize = (size: string | null) => {
     if (!size) return "N/A";
     const bytes = Number(size);
-    return bytes < 1024 * 1024
-        ? (bytes / 1024).toFixed(1) + " KB"
-        : (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    return bytes < 1024 * 1024 ? (bytes / 1024).toFixed(1) + " KB" : (bytes / (1024 * 1024)).toFixed(1) + " MB";
 };
 
 const MessagesContainer: React.FC<MessagesContainerProps> = ({
@@ -121,6 +120,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     initialMessageLoading,
 }) => {
     const theme = useTheme();
+    const navigate = useNavigate();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -247,8 +247,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
         setSelectedReactions(null);
     };
 
-    const findOriginalMessage = (replyToId: number | null) =>
-        allMessages.find((m) => m.message_id === replyToId);
+    const findOriginalMessage = (replyToId: number | null) => allMessages.find((m) => m.message_id === replyToId);
 
     const handleEmojiClick = (emojiObject: { emoji: string }) => {
         if (selectedMessageForReaction) {
@@ -318,7 +317,6 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                 onMouseLeave={() => setHoveredMessage(null)}
                             >
                                 <Box sx={{ maxWidth: isMobile ? "75vw" : { lg: "45vw", md: "50vw", sm: "60vw" } }}>
-
                                     {/* ── Media attachment ── */}
                                     {msg.file_url && (
                                         <Box
@@ -345,9 +343,10 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                         alt="Sent"
                                                         sx={{
                                                             width: isMobile ? "200px" : "300px",
-                                                            height: msg.media_width && msg.media_height
-                                                                ? `${(msg.media_height / msg.media_width) * (isMobile ? 200 : 300)}px`
-                                                                : "auto",
+                                                            height:
+                                                                msg.media_width && msg.media_height
+                                                                    ? `${(msg.media_height / msg.media_width) * (isMobile ? 200 : 300)}px`
+                                                                    : "auto",
                                                             objectFit: "contain",
                                                             borderRadius: "12px",
                                                             visibility: "hidden",
@@ -366,9 +365,10 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                     controls
                                                     style={{
                                                         width: isMobile ? "200px" : "300px",
-                                                        height: msg.media_width && msg.media_height
-                                                            ? `${(msg.media_height / msg.media_width) * (isMobile ? 200 : 300)}px`
-                                                            : "auto",
+                                                        height:
+                                                            msg.media_width && msg.media_height
+                                                                ? `${(msg.media_height / msg.media_width) * (isMobile ? 200 : 300)}px`
+                                                                : "auto",
                                                         maxWidth: "100%",
                                                         borderRadius: "12px",
                                                     }}
@@ -390,7 +390,16 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5 }}>
                                                         <PdfIcon sx={{ color: "#d32f2f", fontSize: 32, flexShrink: 0 }} />
                                                         <Box sx={{ overflow: "hidden" }}>
-                                                            <Typography sx={{ fontSize: "0.82rem", fontWeight: 500, color: "#e8eaed", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                            <Typography
+                                                                sx={{
+                                                                    fontSize: "0.82rem",
+                                                                    fontWeight: 500,
+                                                                    color: "#e8eaed",
+                                                                    overflow: "hidden",
+                                                                    textOverflow: "ellipsis",
+                                                                    whiteSpace: "nowrap",
+                                                                }}
+                                                            >
                                                                 {msg.file_name}
                                                             </Typography>
                                                             <Typography sx={{ fontSize: "0.72rem", color: "#5f6368" }}>
@@ -422,7 +431,16 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5 }}>
                                                         <FolderIcon sx={{ color: "#ffd014", fontSize: 32, flexShrink: 0 }} />
                                                         <Box sx={{ overflow: "hidden" }}>
-                                                            <Typography sx={{ fontSize: "0.82rem", fontWeight: 500, color: "#e8eaed", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                            <Typography
+                                                                sx={{
+                                                                    fontSize: "0.82rem",
+                                                                    fontWeight: 500,
+                                                                    color: "#e8eaed",
+                                                                    overflow: "hidden",
+                                                                    textOverflow: "ellipsis",
+                                                                    whiteSpace: "nowrap",
+                                                                }}
+                                                            >
                                                                 {msg.file_name}
                                                             </Typography>
                                                             <Typography sx={{ fontSize: "0.72rem", color: "#5f6368" }}>
@@ -471,16 +489,33 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                     {/* ── Shared post ── */}
                                     {msg.post && (
                                         <Box
+                                            onClick={() => {
+                                                if (msg.post?.post_id) {
+                                                    navigate(`/posts/${msg.post.post_id}`);
+                                                }
+                                            }}
                                             sx={{
                                                 backgroundColor: "#1a1d21",
                                                 borderRadius: "12px",
                                                 border: "1px solid rgba(255,255,255,0.08)",
                                                 overflow: "hidden",
                                                 mb: 0.5,
+                                                cursor: "pointer",
+                                                "&:hover": {
+                                                    backgroundColor: "#22262b",
+                                                },
                                             }}
                                         >
                                             {msg.post.owner && (
-                                                <Box sx={{ display: "flex", alignItems: "center", px: 1.25, py: 1, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                                                <Box
+                                                    sx={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        px: 1.25,
+                                                        py: 1,
+                                                        borderBottom: "1px solid rgba(255,255,255,0.07)",
+                                                    }}
+                                                >
                                                     <Box
                                                         component="img"
                                                         src={msg.post.owner.profile_picture || BlankProfileImage}
@@ -491,16 +526,26 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                     </Typography>
                                                 </Box>
                                             )}
-                                            <Box sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", backgroundImage: `url(${BlurBackgroundImage})`, backgroundSize: "cover" }}>
+                                            <Box
+                                                sx={{
+                                                    position: "relative",
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+                                                    backgroundImage: `url(${BlurBackgroundImage})`,
+                                                    backgroundSize: "cover",
+                                                }}
+                                            >
                                                 <CircularProgress sx={{ position: "absolute", color: "#fff" }} size={24} />
                                                 <Box
                                                     component="img"
                                                     src={msg.post.file_url}
                                                     sx={{
                                                         width: isMobile ? "200px" : "300px",
-                                                        height: msg.post.media_width && msg.post.media_height
-                                                            ? `${(msg.post.media_height / msg.post.media_width) * (isMobile ? 200 : 300)}px`
-                                                            : "auto",
+                                                        height:
+                                                            msg.post.media_width && msg.post.media_height
+                                                                ? `${(msg.post.media_height / msg.post.media_width) * (isMobile ? 200 : 300)}px`
+                                                                : "auto",
                                                         objectFit: "cover",
                                                         visibility: "hidden",
                                                     }}
@@ -566,8 +611,19 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                 }}
                                             >
                                                 <span>{msg.message_text}</span>
-                                                <span style={{ fontSize: "0.67rem", color: "rgba(255,255,255,0.45)", marginTop: "3px", alignSelf: self ? "flex-start" : "flex-end" }}>
-                                                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+                                                <span
+                                                    style={{
+                                                        fontSize: "0.67rem",
+                                                        color: "rgba(255,255,255,0.45)",
+                                                        marginTop: "3px",
+                                                        alignSelf: self ? "flex-start" : "flex-end",
+                                                    }}
+                                                >
+                                                    {new Date(msg.timestamp).toLocaleTimeString([], {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                        hour12: true,
+                                                    })}
                                                 </span>
                                             </Typography>
 
@@ -686,7 +742,10 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                         {r.user_id === currentUser.id.toString() && (
                                                             <IconButton
                                                                 size="small"
-                                                                sx={{ color: "#5f6368", "&:hover": { color: "#e8eaed", backgroundColor: "transparent" } }}
+                                                                sx={{
+                                                                    color: "#5f6368",
+                                                                    "&:hover": { color: "#e8eaed", backgroundColor: "transparent" },
+                                                                }}
                                                                 onClick={() => {
                                                                     if (selectedMessageForReaction) {
                                                                         handleReaction(selectedMessageForReaction.message_id, "");
@@ -705,8 +764,8 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
 
                                 {/* ── Read/delivered status ── */}
                                 <Box sx={{ pb: "2px", flexShrink: 0 }}>
-                                    {self && (
-                                        msg.read ? (
+                                    {self &&
+                                        (msg.read ? (
                                             <DoneAllIcon sx={{ color: "#1976D2", fontSize: 15, ml: 0.75 }} />
                                         ) : msg.delivered ? (
                                             <DoneAllIcon sx={{ color: "#5f6368", fontSize: 15, ml: 0.75 }} />
@@ -714,8 +773,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                             <DoneIcon sx={{ color: "#5f6368", fontSize: 15, ml: 0.75 }} />
                                         ) : (
                                             <AccessTimeIcon sx={{ color: "#5f6368", fontSize: 15, ml: 0.75 }} />
-                                        )
-                                    )}
+                                        ))}
                                 </Box>
                             </Box>
                         );
@@ -731,9 +789,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                     {/* End-of-history label — appears at the top in column-reverse */}
                     {!isLoading && !hasMoreRef.current && allMessages.length > 0 && (
                         <Box sx={{ display: "flex", justifyContent: "center", py: 1 }}>
-                            <Typography sx={{ fontSize: "0.72rem", color: "#5f6368" }}>
-                                No more messages
-                            </Typography>
+                            <Typography sx={{ fontSize: "0.72rem", color: "#5f6368" }}>No more messages</Typography>
                         </Box>
                     )}
 
@@ -753,9 +809,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                 /* ── Empty state ── */
                 <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 1.5 }}>
                     <ChatIcon sx={{ fontSize: 52, color: "#3a3d42" }} />
-                    <Typography sx={{ color: "#5f6368", fontSize: "0.9rem" }}>
-                        Select a conversation to start chatting
-                    </Typography>
+                    <Typography sx={{ color: "#5f6368", fontSize: "0.9rem" }}>Select a conversation to start chatting</Typography>
                     <Button
                         variant="outlined"
                         size="small"
@@ -797,8 +851,15 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
             <MessageOptionsDialog
                 open={moreMenuOpen}
                 onClose={() => setMoreMenuOpen(false)}
-                onDelete={() => { handleDeleteMessage(selectedMessageForAction); setMoreMenuOpen(false); }}
-                onInfo={() => { setSelectedMessage(selectedMessageForAction); setDrawerOpen(true); setMoreMenuOpen(false); }}
+                onDelete={() => {
+                    handleDeleteMessage(selectedMessageForAction);
+                    setMoreMenuOpen(false);
+                }}
+                onInfo={() => {
+                    setSelectedMessage(selectedMessageForAction);
+                    setDrawerOpen(true);
+                    setMoreMenuOpen(false);
+                }}
             />
             <MessageDetailsDrawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} selectedMessage={selectedMessage} />
         </Box>

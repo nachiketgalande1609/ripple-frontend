@@ -28,6 +28,7 @@ import VerifyAccount from "./pages/VerifyAccount";
 import ResetPassword from "./pages/ResetPassword";
 import { useAppNotifications } from "./hooks/useNotification";
 import Messages from "./pages/Messages/Messages";
+import PostDetailPage from "./pages/PostDetailPage";
 
 type User = {
     id: number;
@@ -484,6 +485,14 @@ const AppContent = () => {
                         }
                     />
                     <Route path="/profile/:userId" element={<ProfilePage />} />
+                    <Route
+                        path="/posts/:postId"
+                        element={
+                            <PrivateRoute>
+                                <PostDetailPage />
+                            </PrivateRoute>
+                        }
+                    />
                     <Route
                         path="/messages/:userId?"
                         element={

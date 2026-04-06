@@ -21,6 +21,7 @@ export const FOLLOW_RESPONSE_ENDPOINT: string = "/api/follow/response";
 export const FOLLOWING_USERS_LIST_ENDPOINT: string = "/api/follow/fetch-following-list";
 
 // Post Endpoints
+export const GET_POST_ENDPOINT: string = "/api/posts";
 export const GET_POSTS_ENDPOINT: string = "/api/posts/fetch-posts";
 export const GET_PROFILE_POSTS_ENDPOINT: string = "/api/posts/fetch-profile-posts";
 export const GET_PROFILE_POST_DETAILS_ENDPOINT: string = "/api/posts/fetch-post-details";

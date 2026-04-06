@@ -41,6 +41,7 @@ import {
     GET_PROFILE_POST_DETAILS_ENDPOINT,
     CANCEL_FOLLOW_REQUEST_ENDPOINT,
     TRACK_TRAFFIC_ENDPOINT,
+    GET_POST_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -348,6 +349,21 @@ export const getFollowingUsers = async () => {
 ///////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// POST APIS ////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
+
+export const getPost = async (postId: string) => {
+    try {
+        const response = await api.get(`${GET_POST_ENDPOINT}/${postId}`);
+
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("Error fetching post:", error.message);
+        } else {
+            console.error("Unknown Error");
+        }
+        throw error;
+    }
+};
 
 export const getPosts = async () => {
     try {
