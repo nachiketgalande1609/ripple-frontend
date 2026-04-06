@@ -1,5 +1,5 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import { Experimental_CssVarsProvider as CssVarsProvider, experimental_extendTheme as extendTheme } from "@mui/material/styles";
+import { CssVarsProvider, extendTheme } from "@mui/material/styles";
 import AppContent from "./AppContent";
 
 const demoTheme = extendTheme({

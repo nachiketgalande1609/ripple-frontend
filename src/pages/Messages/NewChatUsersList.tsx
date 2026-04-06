@@ -12,6 +12,7 @@ interface User {
 }
 
 interface NewChatUsersListProps {
+    anchorEl: HTMLElement | null; // add this
     open: boolean;
     setAnchorEl: (el: HTMLElement | null) => void;
     usersList: User[];

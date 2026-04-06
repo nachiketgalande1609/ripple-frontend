@@ -30,7 +30,7 @@ interface FollowButtonProps {
 }
 type ButtonState = "follow" | "pending" | "following";
 
-function getState(isFollowing: boolean, profileData: Profile | null): ButtonState {
+function getState(isFollowing: boolean, profileData: Pick<Profile, "is_request_active"> | null): ButtonState {
     if (profileData?.is_request_active) return "pending";
     if (isFollowing) return "following";
     return "follow";
