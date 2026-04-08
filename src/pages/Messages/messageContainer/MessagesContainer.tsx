@@ -899,7 +899,8 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                 display: "flex",
                                                 gap: "1px",
                                                 justifyContent: self ? "flex-end" : "flex-start",
-                                                mt: "3px",
+                                                mt: "-8px",
+                                                zIndex: 1,
                                                 cursor: "pointer",
                                                 backgroundColor: (t) => t.palette.background.paper,
                                                 border: "1px solid",
@@ -908,7 +909,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                 px: "6px",
                                                 py: "2px",
                                                 width: "fit-content",
-                                                alignSelf: self ? "flex-end" : "flex-start",
+                                                alignSelf: self ? "flex-start" : "flex-end",
                                             }}
                                             onClick={(e) => {
                                                 setSelectedMessageForReaction(msg);
