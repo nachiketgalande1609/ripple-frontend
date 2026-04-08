@@ -46,6 +46,8 @@ type MessageInputProps = {
   selectedUser: User | null;
 };
 
+const ACCENT = "#7c5cfc";
+
 const MessageInput: React.FC<MessageInputProps> = ({
   selectedFile, setSelectedFile, selectedFileURL, setSelectedFileURL,
   inputMessage, handleTyping, setInputMessage, handleSendMessage,
@@ -71,27 +73,44 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
   const canSend = !!(inputMessage.trim() || selectedFile);
 
-  // Icon button style built from theme
-  const iconButtonSx = {
+  const iconBtnSx = {
+    width: 32,
+    height: 32,
+    borderRadius: "9px",
     color: (t: any) => t.palette.text.disabled,
-    width: 34, height: 34,
-    "&:hover": { color: (t: any) => t.palette.text.secondary, backgroundColor: (t: any) => t.palette.action.hover },
+    flexShrink: 0,
+    "&:hover": {
+      color: (t: any) => t.palette.text.secondary,
+      backgroundColor: (t: any) => t.palette.action.hover,
+    },
     "&:disabled": { color: (t: any) => t.palette.action.disabled },
   };
 
   const getFilePreview = () => {
     if (!selectedFile || !selectedFileURL) return null;
-    const fileType = selectedFile.type;
-    if (fileType.startsWith("image/"))
-      return <img src={selectedFileURL} alt="Attached" style={{ maxHeight: 160, maxWidth: "100%", borderRadius: "10px", display: "block" }} />;
-    if (fileType.startsWith("video/"))
-      return <video src={selectedFileURL} controls style={{ maxHeight: 160, maxWidth: "100%", borderRadius: "10px", display: "block" }} />;
-    if (fileType.startsWith("audio/"))
+    const type = selectedFile.type;
+    if (type.startsWith("image/"))
+      return (
+        <img
+          src={selectedFileURL}
+          alt="Attached"
+          style={{ maxHeight: 140, maxWidth: "100%", borderRadius: "10px", display: "block" }}
+        />
+      );
+    if (type.startsWith("video/"))
+      return (
+        <video
+          src={selectedFileURL}
+          controls
+          style={{ maxHeight: 140, maxWidth: "100%", borderRadius: "10px", display: "block" }}
+        />
+      );
+    if (type.startsWith("audio/"))
       return <audio controls src={selectedFileURL} style={{ width: "100%" }} />;
     return (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: (t) => t.palette.text.secondary }}>
-        <FileIcon sx={{ fontSize: 20 }} />
-        <Typography sx={{ fontSize: "0.82rem" }}>{selectedFile.name}</Typography>
+        <FileIcon sx={{ fontSize: 18 }} />
+        <Typography sx={{ fontSize: "0.8rem" }}>{selectedFile.name}</Typography>
       </Box>
     );
   };
@@ -99,50 +118,72 @@ const MessageInput: React.FC<MessageInputProps> = ({
   return (
     <Box
       sx={{
-        display: "flex", flexDirection: "column",
+        display: "flex",
+        flexDirection: "column",
         backgroundColor: (t) => t.palette.background.paper,
-        borderTop: "1px solid", borderColor: (t) => t.palette.divider,
-        mb: isMobile ? "50px" : 0,
+        borderTop: "1px solid",
+        borderColor: (t) => t.palette.divider,
+        mb: isMobile ? "60px" : 0,
       }}
     >
-      {/* Reply preview */}
+      {/* ── Reply preview ── */}
       {selectedMessageForReply && (
         <Box
           sx={{
-            mx: 2, mt: 1.5, px: 1.5, py: 1,
-            borderLeft: "3px solid", borderColor: (t) => t.palette.primary.main,
+            mx: 1.5,
+            mt: 1.25,
+            px: 1.25,
+            py: 0.875,
+            borderLeft: "3px solid",
+            borderColor: ACCENT,
             borderRadius: "8px",
-            backgroundColor: (t) => t.palette.action.hover,
-            display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 1,
+            backgroundColor: isDark ? "rgba(124,92,252,0.1)" : "rgba(124,92,252,0.07)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 1,
           }}
         >
           <Box sx={{ overflow: "hidden" }}>
-            <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: (t) => t.palette.primary.main, mb: 0.25 }}>
+            <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: ACCENT, mb: "2px" }}>
               {selectedMessageForReply.sender_id === currentUser.id ? "You" : selectedUser?.username}
             </Typography>
-            <Typography noWrap sx={{ fontSize: "0.8rem", color: (t) => t.palette.text.secondary }}>
-              {selectedMessageForReply.message_text.length > 60
-                ? selectedMessageForReply.message_text.slice(0, 60) + "…"
+            <Typography noWrap sx={{ fontSize: "0.78rem", color: (t) => t.palette.text.secondary }}>
+              {selectedMessageForReply.message_text.length > 65
+                ? selectedMessageForReply.message_text.slice(0, 65) + "…"
                 : selectedMessageForReply.message_text}
             </Typography>
           </Box>
           <IconButton
-            onClick={cancelReply} size="small"
-            sx={{ color: (t) => t.palette.text.disabled, mt: -0.25, "&:hover": { color: (t) => t.palette.text.secondary } }}
+            onClick={cancelReply}
+            size="small"
+            sx={{
+              width: 22,
+              height: 22,
+              color: (t) => t.palette.text.disabled,
+              flexShrink: 0,
+              "&:hover": { color: (t) => t.palette.text.secondary, backgroundColor: "transparent" },
+            }}
           >
-            <CloseIcon sx={{ fontSize: 16 }} />
+            <CloseIcon sx={{ fontSize: 14 }} />
           </IconButton>
         </Box>
       )}
 
-      {/* File preview */}
+      {/* ── File preview ── */}
       {selectedFile && selectedFileURL && (
         <Box
           sx={{
-            mx: 2, mt: 1.5, p: 1.5, borderRadius: "10px",
+            mx: 1.5,
+            mt: 1.25,
+            p: 1.25,
+            borderRadius: "12px",
             backgroundColor: (t) => t.palette.action.hover,
-            border: "1px solid", borderColor: (t) => t.palette.divider,
-            position: "relative", display: "inline-flex", alignSelf: "flex-start",
+            border: "1px solid",
+            borderColor: (t) => t.palette.divider,
+            position: "relative",
+            display: "inline-flex",
+            alignSelf: "flex-start",
           }}
         >
           {getFilePreview()}
@@ -150,96 +191,157 @@ const MessageInput: React.FC<MessageInputProps> = ({
             onClick={() => { setSelectedFile(null); setSelectedFileURL(""); }}
             size="small"
             sx={{
-              position: "absolute", top: -8, right: -8,
+              position: "absolute",
+              top: -8,
+              right: -8,
+              width: 20,
+              height: 20,
               backgroundColor: (t) => t.palette.background.paper,
-              border: "1px solid", borderColor: (t) => t.palette.divider,
+              border: "1px solid",
+              borderColor: (t) => t.palette.divider,
               color: (t) => t.palette.text.secondary,
-              width: 22, height: 22,
-              "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
+              "&:hover": {
+                backgroundColor: (t) => t.palette.action.hover,
+                color: (t) => t.palette.text.primary,
+              },
             }}
           >
-            <CloseIcon sx={{ fontSize: 13 }} />
+            <CloseIcon sx={{ fontSize: 12 }} />
           </IconButton>
         </Box>
       )}
 
-      {/* Input row */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, px: 1.5, py: 1.25 }}>
-        {/* Attach */}
+      {/* ── Input row ── */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "flex-end",
+          gap: "6px",
+          px: 1.25,
+          py: 1,
+        }}
+      >
+        {/* Attach button */}
         <input
-          type="file" onChange={handleFileChange} style={{ display: "none" }}
-          id="upload-file" disabled={!!(selectedFile || selectedFileURL)}
+          type="file"
+          onChange={handleFileChange}
+          style={{ display: "none" }}
+          id="upload-file"
+          disabled={!!(selectedFile || selectedFileURL)}
         />
         <label htmlFor="upload-file">
-          <IconButton component="span" disabled={!!(selectedFile || selectedFileURL)} sx={iconButtonSx}>
-            <AttachFileIcon sx={{ fontSize: 20 }} />
+          <IconButton
+            component="span"
+            disabled={!!(selectedFile || selectedFileURL)}
+            sx={{ ...iconBtnSx, mb: "8px" }}
+          >
+            <AttachFileIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </label>
 
-        {/* Text field */}
+        {/* Text input pill */}
         <Box
           sx={{
             flex: 1,
             backgroundColor: (t) => t.palette.action.hover,
-            borderRadius: "22px",
-            border: "1px solid", borderColor: (t) => t.palette.divider,
-            px: 1.75, py: 0.75,
-            display: "flex", alignItems: "flex-end", gap: 0.5,
-            transition: "border-color 0.15s ease",
-            "&:focus-within": { borderColor: (t) => t.palette.text.disabled },
+            borderRadius: "14px",
+            border: "1px solid",
+            borderColor: (t) => t.palette.divider,
+            px: 1.5,
+            py: "8px",
+            display: "flex",
+            alignItems: "flex-end",
+            gap: "4px",
+            transition: "border-color 0.15s",
           }}
         >
           <TextField
-            fullWidth placeholder="Message..." size="small"
-            value={inputMessage} variant="standard" inputRef={inputRef}
+            fullWidth
+            placeholder="Message…"
+            size="small"
+            value={inputMessage}
+            variant="standard"
+            inputRef={inputRef}
             onChange={(e) => { setInputMessage(e.target.value); handleTyping(); }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (canSend) handleSendMessage(); }
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (canSend) handleSendMessage();
+              }
             }}
-            multiline minRows={1} maxRows={4}
+            multiline
+            minRows={1}
+            maxRows={5}
             InputProps={{
               disableUnderline: true,
               sx: {
                 color: (t) => t.palette.text.primary,
-                fontSize: isMobile ? "0.85rem" : "0.9rem",
-                "& textarea::placeholder": { color: (t) => t.palette.text.disabled },
+                fontSize: isMobile ? "0.85rem" : "0.88rem",
+                lineHeight: 1.5,
+                "& textarea::placeholder": {
+                  color: (t) => t.palette.text.disabled,
+                  opacity: 1,
+                },
               },
             }}
             sx={{ flex: 1 }}
           />
-          <IconButton onClick={(e) => setEmojiAnchorEl(e.currentTarget)} sx={{ ...iconButtonSx, mb: -0.25 }}>
-            <EmojiIcon sx={{ fontSize: 20 }} />
+          {/* Emoji inside pill */}
+          <IconButton
+            onClick={(e) => setEmojiAnchorEl(e.currentTarget)}
+            sx={{
+              ...iconBtnSx,
+              mb: "-2px",
+              "&:hover": {
+                color: ACCENT,
+                backgroundColor: "transparent",
+              },
+            }}
+          >
+            <EmojiIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Box>
 
-        {/* Send */}
+        {/* Send button */}
         <IconButton
           onClick={() => canSend && handleSendMessage()}
           disabled={isSendingMessage || !canSend}
           sx={{
-            width: 36, height: 36,
-            backgroundColor: canSend ? (t) => t.palette.primary.main : (t) => t.palette.action.hover,
+            width: 36,
+            height: 36,
+            borderRadius: "11px",
+            flexShrink: 0,
+            mb: "6px",
+            backgroundColor: canSend ? ACCENT : (t) => t.palette.action.hover,
             color: canSend ? "#fff" : (t) => t.palette.action.disabled,
-            transition: "background-color 0.15s ease",
-            "&:hover": { backgroundColor: canSend ? (t) => t.palette.primary.dark : (t) => t.palette.action.hover },
-            "&:disabled": { backgroundColor: (t) => t.palette.action.disabledBackground, color: (t) => t.palette.action.disabled },
+            transition: "background-color 0.15s, transform 0.1s",
+            "&:hover": {
+              backgroundColor: canSend ? "#6b4de0" : (t) => t.palette.action.hover,
+            },
+            "&:active": { transform: canSend ? "scale(0.93)" : "none" },
+            "&:disabled": {
+              backgroundColor: (t) => t.palette.action.hover,
+              color: (t) => t.palette.action.disabled,
+            },
           }}
         >
           {isSendingMessage
-            ? <CircularProgress size={16} sx={{ color: "#fff" }} />
-            : <SendIcon sx={{ fontSize: 17 }} />}
+            ? <CircularProgress size={15} sx={{ color: "#fff" }} />
+            : <SendIcon sx={{ fontSize: 16 }} />}
         </IconButton>
-
-        <Popover
-          open={Boolean(emojiAnchorEl)} anchorEl={emojiAnchorEl}
-          onClose={() => setEmojiAnchorEl(null)}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          transformOrigin={{ vertical: "bottom", horizontal: "right" }}
-          PaperProps={{ sx: { borderRadius: "16px", overflow: "hidden" } }}
-        >
-          <EmojiPicker theme={isDark ? Theme.DARK : Theme.LIGHT} onEmojiClick={handleEmojiClick} />
-        </Popover>
       </Box>
+
+      {/* Emoji popover */}
+      <Popover
+        open={Boolean(emojiAnchorEl)}
+        anchorEl={emojiAnchorEl}
+        onClose={() => setEmojiAnchorEl(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+        PaperProps={{ sx: { borderRadius: "16px", overflow: "hidden" } }}
+      >
+        <EmojiPicker theme={isDark ? Theme.DARK : Theme.LIGHT} onEmojiClick={handleEmojiClick} />
+      </Popover>
     </Box>
   );
 };

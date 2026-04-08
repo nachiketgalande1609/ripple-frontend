@@ -31,50 +31,35 @@ export default function MobileTopBar({
         top: 0,
         left: 0,
         right: 0,
-        height: 56,
+        height: 52,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         px: 2,
         backgroundColor: (t) => t.palette.background.paper,
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
         borderBottom: "1px solid",
         borderColor: (t) => t.palette.divider,
         zIndex: 1200,
       }}
     >
-      {/* Brand — gradient stays fixed as a brand color */}
-      <Box
-        sx={{
-          fontFamily: "'Syne', sans-serif",
-          fontWeight: 800,
-          fontSize: "1.4rem",
-          background: "linear-gradient(135deg, #7c5cfc 0%, #ff6b35 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          letterSpacing: "-0.5px",
-          userSelect: "none",
-        }}
-      >
-        Ripple
-      </Box>
+      {/* Brand */}
+      <span className="brand-text">Ripple</span>
 
       {/* Notifications */}
       <IconButton
         onClick={() => navigate("/notifications")}
         sx={{
-          width: 40,
-          height: 40,
-          borderRadius: "12px",
-          backgroundColor: isActive ? "rgba(124,92,252,0.15)" : "transparent",
-          color: isActive ? "#a989ff" : (t) => t.palette.text.secondary,
-          transition: "all 0.2s ease",
-          "&:active": {
-            transform: "scale(0.92)",
-            backgroundColor: "rgba(124,92,252,0.2)",
-          },
+          width: 36,
+          height: 36,
+          borderRadius: "10px",
+          backgroundColor: isActive
+            ? (t) => t.palette.action.selected
+            : "transparent",
+          color: isActive
+            ? (t) => t.palette.text.primary
+            : (t) => t.palette.text.secondary,
+          transition: "background 0.15s, color 0.15s",
+          "&:active": { transform: "scale(0.92)" },
         }}
       >
         <Badge
@@ -83,15 +68,15 @@ export default function MobileTopBar({
           sx={{
             "& .MuiBadge-badge": {
               fontSize: "0.6rem",
-              minWidth: 16,
-              height: 16,
+              minWidth: 15,
+              height: 15,
             },
           }}
         >
           {isActive ? (
-            <Favorite sx={{ fontSize: "1.35rem" }} />
+            <Favorite sx={{ fontSize: "1.2rem" }} />
           ) : (
-            <FavoriteBorder sx={{ fontSize: "1.35rem" }} />
+            <FavoriteBorder sx={{ fontSize: "1.2rem" }} />
           )}
         </Badge>
       </IconButton>

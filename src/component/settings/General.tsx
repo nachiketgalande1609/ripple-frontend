@@ -2,6 +2,8 @@ import { Box, Switch, Typography } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
 import { useAppNotifications } from "../../hooks/useNotification";
 
+const ACCENT = "#7c5cfc";
+
 const General = () => {
   const notifications = useAppNotifications();
   const { mode, setMode } = useColorScheme();
@@ -11,14 +13,12 @@ const General = () => {
   const handleToggle = () => {
     const newTheme = isDark ? "light" : "dark";
     setMode(newTheme);
-
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
     localStorage.setItem(
       "user",
       JSON.stringify({ ...currentUser, theme: newTheme }),
     );
-
-    notifications.show(`Theme changed to ${newTheme}`, {
+    notifications.show(`Switched to ${newTheme} mode`, {
       severity: "success",
       autoHideDuration: 3000,
     });
@@ -28,45 +28,45 @@ const General = () => {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 720,
+        maxWidth: 620,
         display: "flex",
         flexDirection: "column",
-        gap: 4,
-        fontFamily: "'DM Sans', sans-serif",
+        gap: 2.5,
+        fontFamily: "'Inter', -apple-system, sans-serif",
       }}
     >
-      {/* Header */}
-      <Box>
+      {/* ── Header ── */}
+      <Box sx={{ mb: 0.25 }}>
         <Typography
           sx={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "20px",
-            fontWeight: 700,
-            color: (theme) => theme.palette.text.primary,
-            letterSpacing: "-0.4px",
-            mb: 0.5,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "1rem",
+            fontWeight: 500,
+            color: (t) => t.palette.text.primary,
+            lineHeight: 1.3,
           }}
         >
           General
         </Typography>
         <Typography
           sx={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "13px",
-            color: (theme) => theme.palette.text.secondary,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "0.8rem",
+            color: (t) => t.palette.text.disabled,
+            mt: 0.375,
           }}
         >
-          Manage your app preferences.
+          Manage your app preferences
         </Typography>
       </Box>
 
-      {/* Card */}
+      {/* ── Theme card ── */}
       <Box
         sx={{
           borderRadius: "14px",
           border: "1px solid",
-          borderColor: (theme) => theme.palette.divider,
-          backgroundColor: (theme) => theme.palette.background.paper,
+          borderColor: (t) => t.palette.divider,
+          backgroundColor: (t) => t.palette.background.paper,
           overflow: "hidden",
         }}
       >
@@ -75,23 +75,24 @@ const General = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            px: 3,
-            py: 2.5,
+            px: 2.5,
+            py: 2,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.75 }}>
             <Box
               sx={{
-                width: 38,
-                height: 38,
+                width: 36,
+                height: 36,
                 borderRadius: "10px",
-                backgroundColor: (theme) => theme.palette.action.hover,
+                backgroundColor: (t) => t.palette.action.hover,
+                border: "1px solid",
+                borderColor: (t) => t.palette.divider,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "17px",
+                fontSize: "16px",
                 flexShrink: 0,
-                transition: "background 0.2s",
               }}
             >
               {isDark ? "🌙" : "☀️"}
@@ -99,20 +100,20 @@ const General = () => {
             <Box>
               <Typography
                 sx={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  color: (theme) => theme.palette.text.primary,
-                  letterSpacing: "-0.1px",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  color: (t) => t.palette.text.primary,
+                  lineHeight: 1.3,
                 }}
               >
-                {isDark ? "Dark Mode" : "Light Mode"}
+                {isDark ? "Dark mode" : "Light mode"}
               </Typography>
               <Typography
                 sx={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "12px",
-                  color: (theme) => theme.palette.text.secondary,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "0.75rem",
+                  color: (t) => t.palette.text.disabled,
                   mt: 0.25,
                 }}
               >
@@ -126,25 +127,31 @@ const General = () => {
           <Switch
             checked={isDark}
             onChange={handleToggle}
-            sx={{ flexShrink: 0 }}
+            sx={{
+              flexShrink: 0,
+              "& .MuiSwitch-switchBase.Mui-checked": { color: ACCENT },
+              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                backgroundColor: ACCENT,
+              },
+            }}
           />
         </Box>
 
-        {/* Footer */}
+        {/* Footer note */}
         <Box
           sx={{
             borderTop: "1px solid",
-            borderColor: (theme) => theme.palette.divider,
-            px: 3,
-            py: 2,
-            backgroundColor: (theme) => theme.palette.action.hover,
+            borderColor: (t) => t.palette.divider,
+            px: 2.5,
+            py: 1.375,
+            backgroundColor: (t) => t.palette.action.hover,
           }}
         >
           <Typography
             sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "12px",
-              color: (theme) => theme.palette.text.disabled,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "0.75rem",
+              color: (t) => t.palette.text.disabled,
               lineHeight: 1.6,
             }}
           >

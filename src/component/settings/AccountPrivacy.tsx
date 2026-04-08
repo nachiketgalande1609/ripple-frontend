@@ -1,16 +1,11 @@
 import { useState } from "react";
-import {
-  Box,
-  Switch,
-  Typography,
-  CircularProgress,
-  useTheme,
-} from "@mui/material";
+import { Box, Switch, Typography, CircularProgress } from "@mui/material";
 import { updatePrivacy } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
 
+const ACCENT = "#7c5cfc";
+
 const AccountPrivacy = () => {
-  const theme = useTheme();
   const notifications = useAppNotifications();
   const [loading, setLoading] = useState(false);
   const currentUser = localStorage.getItem("user")
@@ -19,22 +14,22 @@ const AccountPrivacy = () => {
   const [isPrivate, setIsPrivate] = useState(currentUser.is_private);
 
   const handleToggle = async () => {
-    const newPrivacyStatus = !isPrivate;
-    setIsPrivate(newPrivacyStatus);
+    const newVal = !isPrivate;
+    setIsPrivate(newVal);
     setLoading(true);
     try {
-      const res = await updatePrivacy(newPrivacyStatus);
+      const res = await updatePrivacy(newVal);
       if (res.success) {
-        currentUser.is_private = newPrivacyStatus;
+        currentUser.is_private = newVal;
         localStorage.setItem("user", JSON.stringify(currentUser));
         notifications.show(
-          `Account changed to ${newPrivacyStatus ? "Private" : "Public"}`,
+          `Account changed to ${newVal ? "private" : "public"}`,
           { severity: "success", autoHideDuration: 3000 },
         );
       }
     } catch (error) {
       console.error("Error updating privacy setting:", error);
-      setIsPrivate(!newPrivacyStatus);
+      setIsPrivate(!newVal);
     } finally {
       setLoading(false);
     }
@@ -44,39 +39,39 @@ const AccountPrivacy = () => {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 720,
+        maxWidth: 620,
         display: "flex",
         flexDirection: "column",
-        gap: 4,
-        fontFamily: "'DM Sans', sans-serif",
+        gap: 2.5,
+        fontFamily: "'Inter', -apple-system, sans-serif",
       }}
     >
-      {/* Section header */}
-      <Box>
+      {/* ── Header ── */}
+      <Box sx={{ mb: 0.25 }}>
         <Typography
           sx={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "20px",
-            fontWeight: 700,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "1rem",
+            fontWeight: 500,
             color: (t) => t.palette.text.primary,
-            letterSpacing: "-0.4px",
-            mb: 0.5,
+            lineHeight: 1.3,
           }}
         >
-          Account Privacy
+          Account privacy
         </Typography>
         <Typography
           sx={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "13px",
-            color: (t) => t.palette.text.secondary,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "0.8rem",
+            color: (t) => t.palette.text.disabled,
+            mt: 0.375,
           }}
         >
-          Control who can see your profile and content.
+          Control who can see your profile and content
         </Typography>
       </Box>
 
-      {/* Card */}
+      {/* ── Privacy card ── */}
       <Box
         sx={{
           borderRadius: "14px",
@@ -86,31 +81,30 @@ const AccountPrivacy = () => {
           overflow: "hidden",
         }}
       >
-        {/* Row */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            px: 3,
-            py: 2.5,
+            px: 2.5,
+            py: 2,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.75 }}>
             <Box
               sx={{
-                width: 38,
-                height: 38,
+                width: 36,
+                height: 36,
                 borderRadius: "10px",
-                backgroundColor: isPrivate
-                  ? (t) => t.palette.action.selected
-                  : (t) => t.palette.action.hover,
+                backgroundColor: (t) => t.palette.action.hover,
+                border: "1px solid",
+                borderColor: (t) => t.palette.divider,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "17px",
+                fontSize: "16px",
                 flexShrink: 0,
-                transition: "background 0.2s",
+                transition: "background-color 0.15s",
               }}
             >
               {isPrivate ? "🔒" : "🌐"}
@@ -119,20 +113,20 @@ const AccountPrivacy = () => {
             <Box>
               <Typography
                 sx={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "14px",
-                  fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
                   color: (t) => t.palette.text.primary,
-                  letterSpacing: "-0.1px",
+                  lineHeight: 1.3,
                 }}
               >
-                {isPrivate ? "Private Account" : "Public Account"}
+                {isPrivate ? "Private account" : "Public account"}
               </Typography>
               <Typography
                 sx={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "12px",
-                  color: (t) => t.palette.text.secondary,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "0.75rem",
+                  color: (t) => t.palette.text.disabled,
                   mt: 0.25,
                 }}
               >
@@ -143,18 +137,17 @@ const AccountPrivacy = () => {
             </Box>
           </Box>
 
-          {/* Toggle or spinner */}
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 1.5,
+              gap: 1,
               flexShrink: 0,
             }}
           >
             {loading && (
               <CircularProgress
-                size={14}
+                size={13}
                 thickness={5}
                 sx={{ color: (t) => t.palette.text.disabled }}
               />
@@ -164,39 +157,29 @@ const AccountPrivacy = () => {
               onChange={handleToggle}
               disabled={loading}
               sx={{
-                "& .MuiSwitch-switchBase.Mui-checked": {
-                  color: theme.palette.text.primary,
-                },
+                "& .MuiSwitch-switchBase.Mui-checked": { color: ACCENT },
                 "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                  backgroundColor: theme.palette.action.selected,
-                  opacity: 1,
-                },
-                "& .MuiSwitch-track": {
-                  backgroundColor: theme.palette.action.hover,
-                  opacity: 1,
-                },
-                "& .MuiSwitch-thumb": {
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+                  backgroundColor: ACCENT,
                 },
               }}
             />
           </Box>
         </Box>
 
-        {/* Footer */}
+        {/* Footer note */}
         <Box
           sx={{
             borderTop: "1px solid",
             borderColor: (t) => t.palette.divider,
-            px: 3,
-            py: 2,
+            px: 2.5,
+            py: 1.375,
             backgroundColor: (t) => t.palette.action.hover,
           }}
         >
           <Typography
             sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "12px",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "0.75rem",
               color: (t) => t.palette.text.disabled,
               lineHeight: 1.6,
             }}

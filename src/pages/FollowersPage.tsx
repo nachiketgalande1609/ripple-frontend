@@ -6,13 +6,9 @@ import {
     Avatar,
     Stack,
     IconButton,
-    LinearProgress,
     Skeleton as MuiSkeleton,
     Fade,
-    alpha,
-    useTheme,
     InputBase,
-    Divider,
     Button,
     Dialog,
     DialogContent,
@@ -22,6 +18,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import BlankProfileImage from "../static/profile_blank.png";
 import FollowButton from "./profile/FollowButton";
 import { getFollowers, followUser, cancelFollowRequest, unfollowUser, removeFollower } from "../services/api";
+
+const ACCENT = "#7c5cfc";
 
 interface FollowerUser {
     id: number;
@@ -33,7 +31,7 @@ interface FollowerUser {
     follow_status?: string;
 }
 
-/* ── Confirmation Dialog ─────────────────────────────────────── */
+/* ── Confirm dialog ───────────────────────────────────────────── */
 const RemoveConfirmDialog = ({
     open,
     username,
@@ -56,61 +54,70 @@ const RemoveConfirmDialog = ({
         fullWidth
         sx={{
             "& .MuiDialog-paper": {
-                borderRadius: "20px",
+                borderRadius: "16px",
                 p: 0,
                 overflow: "hidden",
+                border: "1px solid",
+                borderColor: (t) => t.palette.divider,
+                boxShadow: "0 16px 40px rgba(0,0,0,0.2)",
+                transform: "translateZ(0)",
+                willChange: "transform",
             },
-            "& .MuiBackdrop-root": {
-                backdropFilter: "blur(4px)",
-            },
+            "& .MuiBackdrop-root": { backgroundColor: "rgba(0,0,0,0.4)" },
         }}
     >
-        <DialogContent sx={{ p: 3, textAlign: "center" }}>
+        <DialogContent sx={{ p: 2.5, textAlign: "center" }}>
             <Avatar
                 src={profilePicture || BlankProfileImage}
                 sx={{
-                    width: 64,
-                    height: 64,
+                    width: 54,
+                    height: 54,
                     mx: "auto",
-                    mb: 2,
-                    border: "2px solid",
-                    borderColor: "divider",
+                    mb: 1.75,
+                    border: "1px solid",
+                    borderColor: (t) => t.palette.divider,
                 }}
             />
             <Typography
                 sx={{
-                    fontFamily: '"Instrument Serif", Georgia, serif',
-                    fontSize: "1.2rem",
-                    fontWeight: 400,
-                    mb: 0.75,
-                    color: "text.primary",
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: "0.95rem",
+                    fontWeight: 500,
+                    mb: 0.5,
+                    color: (t) => t.palette.text.primary,
                 }}
             >
                 Remove follower?
             </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.83rem", mb: 3, lineHeight: 1.6 }}>
+            <Typography
+                sx={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: "0.8rem",
+                    color: (t) => t.palette.text.secondary,
+                    mb: 2.5,
+                    lineHeight: 1.6,
+                }}
+            >
                 <strong>@{username}</strong> will be removed from your followers. They won't be notified.
             </Typography>
 
-            <Stack spacing={1.25}>
+            <Stack spacing={0.875}>
                 <Button
                     fullWidth
                     onClick={onConfirm}
                     disabled={loading}
                     sx={{
                         textTransform: "none",
-                        fontWeight: 600,
-                        fontSize: "0.88rem",
-                        borderRadius: "12px",
-                        py: 1.1,
-                        bgcolor: "rgba(255,59,48,0.1)",
-                        color: "#ff5050",
-                        border: "1.5px solid rgba(255,80,80,0.2)",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                            bgcolor: "rgba(255,59,48,0.18)",
-                            borderColor: "rgba(255,80,80,0.4)",
-                        },
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 500,
+                        fontSize: "0.84rem",
+                        borderRadius: "10px",
+                        py: 0.875,
+                        backgroundColor: (t) => `${t.palette.error.main}14`,
+                        color: (t) => t.palette.error.main,
+                        border: "1px solid",
+                        borderColor: (t) => `${t.palette.error.main}30`,
+                        "&:hover": { backgroundColor: (t) => `${t.palette.error.main}20` },
                         "&:disabled": { opacity: 0.6 },
                     }}
                 >
@@ -122,16 +129,17 @@ const RemoveConfirmDialog = ({
                     disabled={loading}
                     sx={{
                         textTransform: "none",
+                        fontFamily: "'Inter', sans-serif",
                         fontWeight: 500,
-                        fontSize: "0.88rem",
-                        borderRadius: "12px",
-                        py: 1.1,
-                        color: "text.secondary",
-                        border: "1.5px solid",
-                        borderColor: "divider",
+                        fontSize: "0.84rem",
+                        borderRadius: "10px",
+                        py: 0.875,
+                        color: (t) => t.palette.text.secondary,
+                        border: "1px solid",
+                        borderColor: (t) => t.palette.divider,
                         "&:hover": {
-                            bgcolor: "action.hover",
-                            borderColor: "text.disabled",
+                            backgroundColor: (t) => t.palette.action.hover,
+                            borderColor: (t) => t.palette.text.disabled,
                         },
                     }}
                 >
@@ -142,7 +150,7 @@ const RemoveConfirmDialog = ({
     </Dialog>
 );
 
-/* ── Follower Row ─────────────────────────────────────────────── */
+/* ── Follower row ─────────────────────────────────────────────── */
 const FollowerRow = ({
     user,
     currentUserId,
@@ -219,55 +227,52 @@ const FollowerRow = ({
 
     return (
         <>
-            <Fade in timeout={300}>
+            <Fade in timeout={250}>
                 <Stack
                     direction="row"
                     alignItems="center"
                     justifyContent="space-between"
                     sx={{
-                        py: 1.25,
+                        py: 1,
                         px: 1,
-                        borderRadius: "12px",
-                        transition: "background 0.15s ease",
-                        "&:hover": { bgcolor: "action.hover" },
+                        borderRadius: "10px",
+                        transition: "background-color 0.15s",
+                        "&:hover": { backgroundColor: (t) => t.palette.action.hover },
                     }}
                 >
                     <Stack
                         direction="row"
                         alignItems="center"
-                        spacing={1.5}
+                        spacing={1.25}
                         sx={{ cursor: "pointer", flex: 1, minWidth: 0 }}
                         onClick={() => navigate(`/profile/${user.id}`)}
                     >
                         <Avatar
                             src={user.profile_picture || BlankProfileImage}
                             sx={{
-                                width: 46,
-                                height: 46,
+                                width: 40,
+                                height: 40,
                                 flexShrink: 0,
-                                border: "2px solid",
-                                borderColor: "divider",
-                                transition: "transform 0.2s ease",
-                                "&:hover": { transform: "scale(1.05)" },
+                                border: "1px solid",
+                                borderColor: (t) => t.palette.divider,
                             }}
                         />
-                        <Box sx={{ minWidth: 0 }}>
-                            <Typography
-                                sx={{
-                                    fontWeight: 600,
-                                    fontSize: "0.88rem",
-                                    color: "text.primary",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                }}
-                            >
-                                {user.username}
-                            </Typography>
-                        </Box>
+                        <Typography
+                            sx={{
+                                fontFamily: "'Inter', sans-serif",
+                                fontWeight: 500,
+                                fontSize: "0.875rem",
+                                color: (t) => t.palette.text.primary,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                            }}
+                        >
+                            {user.username}
+                        </Typography>
                     </Stack>
 
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0, ml: 1.5 }}>
+                    <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexShrink: 0, ml: 1.5 }}>
                         {isOwnFollowersList && !isOwnProfile && (
                             <Button
                                 size="small"
@@ -276,21 +281,21 @@ const FollowerRow = ({
                                 startIcon={<PersonRemove sx={{ fontSize: 13 }} />}
                                 sx={{
                                     textTransform: "none",
+                                    fontFamily: "'Inter', sans-serif",
                                     fontSize: "0.78rem",
                                     fontWeight: 500,
-                                    borderRadius: "20px",
-                                    px: 1.5,
-                                    py: 0.6,
-                                    color: "text.secondary",
-                                    border: "1.5px solid",
-                                    borderColor: "divider",
-                                    bgcolor: "transparent",
+                                    borderRadius: "9px",
+                                    px: 1.25,
+                                    py: 0.5,
+                                    color: (t) => t.palette.text.secondary,
+                                    border: "1px solid",
+                                    borderColor: (t) => t.palette.divider,
                                     whiteSpace: "nowrap",
-                                    transition: "all 0.2s ease",
+                                    transition: "all 0.15s",
                                     "&:hover": {
-                                        borderColor: "rgba(255,80,80,0.4)",
-                                        color: "#ff5050",
-                                        bgcolor: "rgba(255,80,80,0.06)",
+                                        borderColor: (t) => `${t.palette.error.main}50`,
+                                        color: (t) => t.palette.error.main,
+                                        backgroundColor: (t) => `${t.palette.error.main}0a`,
                                     },
                                 }}
                             >
@@ -330,7 +335,6 @@ const FollowerRow = ({
 const FollowersPage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
-    const theme = useTheme();
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
     const isOwnFollowersList = currentUser?.id?.toString() === userId;
@@ -341,7 +345,7 @@ const FollowersPage = () => {
     const [username, setUsername] = useState("");
 
     useEffect(() => {
-        const fetchFollowers = async () => {
+        const fetch = async () => {
             if (!userId) return;
             try {
                 setLoading(true);
@@ -354,7 +358,7 @@ const FollowersPage = () => {
                 setLoading(false);
             }
         };
-        fetchFollowers();
+        fetch();
     }, [userId]);
 
     const filtered = followers.filter((u) => u.username.toLowerCase().includes(search.toLowerCase()));
@@ -368,119 +372,196 @@ const FollowersPage = () => {
     };
 
     return (
-        <Box sx={{ bgcolor: "background.default", minHeight: "100vh", fontFamily: '"DM Sans", sans-serif' }}>
-            {loading && (
-                <LinearProgress
-                    sx={{
-                        height: 2,
-                        "& .MuiLinearProgress-bar": {
-                            background: "linear-gradient(90deg, #6366f1, #a855f7, #ec4899)",
-                        },
-                    }}
-                />
-            )}
-            <Container maxWidth="sm" sx={{ py: 3 }}>
-                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
+        <Box
+            sx={{
+                backgroundColor: (t) => t.palette.background.default,
+                minHeight: "100vh",
+                fontFamily: "'Inter', -apple-system, sans-serif",
+            }}
+        >
+            <Container maxWidth="sm" sx={{ py: 2.5, px: { xs: 2, sm: 3 } }}>
+                {/* ── Header ── */}
+                <Stack direction="row" alignItems="center" spacing={1.25} sx={{ mb: 2.5 }}>
                     <IconButton
                         onClick={() => navigate(-1)}
                         size="small"
                         sx={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: "9px",
                             border: "1px solid",
-                            borderColor: "divider",
-                            borderRadius: "10px",
-                            width: 36,
-                            height: 36,
-                            "&:hover": { bgcolor: "action.hover" },
+                            borderColor: (t) => t.palette.divider,
+                            color: (t) => t.palette.text.secondary,
+                            "&:hover": {
+                                backgroundColor: (t) => t.palette.action.hover,
+                                color: (t) => t.palette.text.primary,
+                            },
                         }}
                     >
-                        <ArrowBack sx={{ fontSize: 18 }} />
+                        <ArrowBack sx={{ fontSize: 17 }} />
                     </IconButton>
                     <Box>
                         <Typography
                             sx={{
-                                fontFamily: '"Instrument Serif", Georgia, serif',
-                                fontSize: "1.4rem",
-                                fontWeight: 400,
-                                lineHeight: 1.2,
-                                letterSpacing: "-0.3px",
+                                fontFamily: "'Inter', sans-serif",
+                                fontSize: "1rem",
+                                fontWeight: 500,
+                                color: (t) => t.palette.text.primary,
+                                lineHeight: 1.3,
                             }}
                         >
                             Followers
                         </Typography>
                         {username && (
-                            <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.75rem" }}>
+                            <Typography
+                                sx={{
+                                    fontFamily: "'Inter', sans-serif",
+                                    fontSize: "0.75rem",
+                                    color: (t) => t.palette.text.disabled,
+                                }}
+                            >
                                 @{username}
                             </Typography>
                         )}
                     </Box>
                 </Stack>
 
+                {/* ── Search bar ── */}
                 <Box
                     sx={{
                         display: "flex",
                         alignItems: "center",
                         gap: 1,
-                        px: 1.5,
-                        py: 0.75,
-                        bgcolor: alpha(theme.palette.text.primary, 0.05),
-                        borderRadius: "12px",
+                        px: 1.375,
+                        py: 0.625,
+                        backgroundColor: (t) => t.palette.action.hover,
+                        borderRadius: "10px",
                         border: "1px solid",
-                        borderColor: "divider",
-                        mb: 2.5,
-                        transition: "border-color 0.2s",
-                        "&:focus-within": { borderColor: "primary.main" },
+                        borderColor: (t) => t.palette.divider,
+                        mb: 2,
+                        transition: "border-color 0.15s",
+                        "&:focus-within": { borderColor: `${ACCENT}80` },
                     }}
                 >
-                    <Search sx={{ fontSize: 18, color: "text.disabled" }} />
+                    <Search
+                        sx={{
+                            fontSize: 17,
+                            color: (t) => t.palette.text.disabled,
+                            flexShrink: 0,
+                        }}
+                    />
                     <InputBase
                         placeholder="Search followers…"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        sx={{ flex: 1, fontSize: "0.88rem", fontFamily: '"DM Sans", sans-serif' }}
+                        sx={{
+                            flex: 1,
+                            fontSize: "0.875rem",
+                            fontFamily: "'Inter', sans-serif",
+                            color: (t) => t.palette.text.primary,
+                            "& input::placeholder": { color: (t) => t.palette.text.disabled },
+                        }}
                     />
                 </Box>
 
+                {/* ── Count label ── */}
                 {!loading && (
                     <Typography
-                        variant="caption"
                         sx={{
-                            color: "text.disabled",
-                            fontSize: "0.75rem",
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: "0.7rem",
                             fontWeight: 500,
-                            letterSpacing: "0.08em",
+                            letterSpacing: "0.07em",
                             textTransform: "uppercase",
-                            mb: 1.5,
-                            display: "block",
+                            color: (t) => t.palette.text.disabled,
+                            mb: 1,
                         }}
                     >
                         {filtered.length} {filtered.length === 1 ? "person" : "people"}
                     </Typography>
                 )}
 
-                <Divider sx={{ mb: 1.5 }} />
-
+                {/* ── List ── */}
                 {loading ? (
-                    <Stack spacing={1}>
+                    <Stack spacing={0.5}>
                         {[...Array(6)].map((_, i) => (
-                            <Stack key={i} direction="row" alignItems="center" spacing={1.5} sx={{ py: 1 }}>
-                                <MuiSkeleton variant="circular" width={46} height={46} />
+                            <Stack key={i} direction="row" alignItems="center" spacing={1.25} sx={{ py: 1, px: 1 }}>
+                                <MuiSkeleton
+                                    variant="circular"
+                                    width={40}
+                                    height={40}
+                                    sx={{ flexShrink: 0, bgcolor: (t) => t.palette.action.hover }}
+                                />
                                 <Box sx={{ flex: 1 }}>
-                                    <MuiSkeleton variant="text" width="45%" height={18} />
-                                    <MuiSkeleton variant="text" width="30%" height={14} />
+                                    <MuiSkeleton
+                                        width="40%"
+                                        height={14}
+                                        sx={{
+                                            borderRadius: "5px",
+                                            bgcolor: (t) => t.palette.action.hover,
+                                        }}
+                                    />
                                 </Box>
-                                <MuiSkeleton variant="rounded" width={76} height={32} sx={{ borderRadius: "20px" }} />
+                                <MuiSkeleton
+                                    variant="rounded"
+                                    width={68}
+                                    height={30}
+                                    sx={{
+                                        borderRadius: "9px",
+                                        bgcolor: (t) => t.palette.action.hover,
+                                    }}
+                                />
                             </Stack>
                         ))}
                     </Stack>
                 ) : filtered.length === 0 ? (
-                    <Box sx={{ textAlign: "center", py: 10 }}>
-                        <PersonOff sx={{ fontSize: 40, color: "text.disabled", mb: 1.5 }} />
-                        <Typography sx={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: "1.2rem", mb: 0.5 }}>
-                            {search ? "No results found" : "No followers yet"}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
-                            {search ? "Try a different search" : "When someone follows this account, they'll appear here"}
-                        </Typography>
+                    <Box
+                        sx={{
+                            textAlign: "center",
+                            py: 8,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 1.5,
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: 56,
+                                height: 56,
+                                borderRadius: "16px",
+                                backgroundColor: (t) => t.palette.action.hover,
+                                border: "1px solid",
+                                borderColor: (t) => t.palette.divider,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <PersonOff sx={{ fontSize: 26, color: (t) => t.palette.text.disabled }} />
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                            <Typography
+                                sx={{
+                                    fontFamily: "'Inter', sans-serif",
+                                    fontSize: "0.95rem",
+                                    fontWeight: 500,
+                                    color: (t) => t.palette.text.primary,
+                                    mb: 0.375,
+                                }}
+                            >
+                                {search ? "No results found" : "No followers yet"}
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontFamily: "'Inter', sans-serif",
+                                    fontSize: "0.8rem",
+                                    color: (t) => t.palette.text.disabled,
+                                }}
+                            >
+                                {search ? "Try a different search" : "When someone follows this account, they'll appear here"}
+                            </Typography>
+                        </Box>
                     </Box>
                 ) : (
                     <Stack>

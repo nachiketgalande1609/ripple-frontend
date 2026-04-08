@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import socket from "../../services/socket";
-import { useGlobalStore } from "../../store/store";
 import { deleteMessage, getAllMessageUsersData, getMessagesDataForSelectedUser, shareChatMedia } from "../../services/api";
 import ImageDialog from "../../component/ImageDialog";
 import MessagesContainer from "./messageContainer/MessagesContainer";
@@ -11,7 +10,6 @@ import MessagesTopBar from "./MessagesTopBar";
 import MessagesDrawer from "./MessagesDrawer";
 import { useAppNotifications } from "../../hooks/useNotification";
 import MessagesUserList from "./mobileView/MessagesUserList";
-import { ChevronLeft } from "@mui/icons-material";
 
 type Message = {
     message_id: number;
@@ -72,7 +70,6 @@ interface MessageProps {
 const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelectedUser, handleVideoCall }) => {
     const { userId } = useParams();
     const notifications = useAppNotifications();
-    const { unreadMessagesCount, setUnreadMessagesCount } = useGlobalStore();
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -85,7 +82,6 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     const [inputMessage, setInputMessage] = useState("");
     const [typingUser, setTypingUser] = useState<number | null>(null);
     const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
-    const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedFileURL, setSelectedFileURL] = useState<string>("");
     const [isSendingMessage, setIsSendingMessage] = useState(false);
@@ -109,7 +105,6 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
 
     const [loadingUsers, setLoadingUsers] = useState(true);
-
 
     // Fetch messages initially
     const fetchUsersData = async () => {
@@ -178,18 +173,25 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     // Socket for receiving messages
     useEffect(() => {
         socket.on("receiveMessage", (data) => {
-            setMessages((prevMessages: Message[]) => {
-                // Check if the message already exists (avoid duplicates)
-                const messageExists = prevMessages.some((msg) => msg.message_id === data.messageId);
-                if (messageExists) {
-                    return prevMessages;
-                }
+            if (data.senderId === currentUser.id) return;
 
-                // Create a new message object
+            // ✅ Only add to visible messages if it's from the active conversation
+            if (data.senderId !== selectedUser?.id) {
+                // Still update the user list unread count, but don't touch messages
+                setUsers((prevUsers) =>
+                    prevUsers.map((user) => (user.id === data.senderId ? { ...user, unread_count: (user.unread_count || 0) + 1 } : user)),
+                );
+                return;
+            }
+
+            setMessages((prevMessages: Message[]) => {
+                const messageExists = prevMessages.some((msg) => msg.message_id === data.messageId);
+                if (messageExists) return prevMessages;
+
                 const newMessage: Message = {
                     message_id: data.messageId,
                     sender_id: data.senderId,
-                    receiver_id: data.receiverId, // Ensure this exists in the received data
+                    receiver_id: data.receiverId,
                     message_text: data.message_text,
                     timestamp: new Date().toISOString(),
                     saved: !!data.messageId,
@@ -199,13 +201,12 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
                     reply_to: data?.replyTo || null,
                     media_width: data?.mediaWidth || null,
                     media_height: data?.mediaHeight || null,
-                    delivered: false, // Assuming the new message isn't delivered yet
-                    read: false, // Assuming it's unread
+                    delivered: false,
+                    read: false,
                     reactions: [],
                     post: null,
                 };
 
-                // Append the new message to the existing array
                 return [...prevMessages, newMessage];
             });
         });
@@ -213,7 +214,7 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
         return () => {
             socket.off("receiveMessage");
         };
-    }, [currentUser]);
+    }, [currentUser, selectedUser]); // ← Add selectedUser to the dependency array
 
     // Socket for catching typing activity
     useEffect(() => {
@@ -261,7 +262,6 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     // Set selected user on clicking the user's chat
     const handleUserClick = (userId: number) => {
         setMessages([]);
-        setDrawerOpen(false);
         setSelectedUser(users.find((user) => user.id === userId) || null);
         fetchMessagesForSelectedUser(userId);
         setUsers((prevUsers) => prevUsers.map((user) => (user.id === userId ? { ...user, unread_count: 0 } : user)));
@@ -388,7 +388,13 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
         socket.on("messageDelivered", (data: { messageId: number; deliveredTimestamp: string | null }) => {
             setMessages((prevMessages: Message[]) =>
                 prevMessages.map((msg) =>
-                    msg.message_id === data.messageId ? { ...msg, delivered: true, delivered_timestamp: data.deliveredTimestamp } : msg,
+                    msg.message_id === data.messageId
+                        ? {
+                              ...msg,
+                              delivered: true,
+                              delivered_timestamp: data.deliveredTimestamp,
+                          }
+                        : msg,
                 ),
             );
         });
@@ -401,44 +407,26 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     useEffect(() => {
         if (!selectedUser || !messages.length) return;
 
-        const unreadMessages = messages.filter((message) => message.sender_id === selectedUser.id && !message.read);        
+        const hasUnread = messages.some((message) => message.sender_id === selectedUser.id && !message.read);
 
-        if (unreadMessages.length > 0) {
-            const messageIds = unreadMessages.map((message) => message.message_id);            
+        if (hasUnread) {
             socket.emit("messageRead", {
                 senderId: selectedUser.id,
                 receiverId: currentUser.id,
-                messageIds, // Send all unread message IDs at once
             });
 
-            // Mark all unread messages as read in the state
-            setMessages((prevMessages) =>
-                prevMessages.map((message) =>
-                    unreadMessages.some((unread) => unread.message_id === message.message_id) ? { ...message, read: true } : message,
-                ),
-            );
-
-            // Update the unread messages count
-            setUnreadMessagesCount(Math.max((unreadMessagesCount ?? 0) - unreadMessages.length, 0));
+            setMessages((prevMessages) => prevMessages.map((message) => ({ ...message, read: true })));
         }
     }, [selectedUser, messages]);
 
     useEffect(() => {
-        socket.on("messageRead", (data: { receiverId: number; messageIds: { messageId: number; readTimestamp: string }[] }) => {
+        socket.on("messageRead", () => {
             setMessages((prevMessages) =>
-                prevMessages.map((message) => {
-                    const readMessage = data.messageIds.find((m) => m.messageId === message.message_id);
-
-                    if (readMessage && message.receiver_id === data.receiverId) {
-                        return {
-                            ...message,
-                            read: true,
-                            read_timestamp: readMessage.readTimestamp,
-                        };
-                    }
-
-                    return message;
-                }),
+                prevMessages.map((message) => ({
+                    ...message,
+                    read: true,
+                    read_timestamp: new Date().toISOString(),
+                })),
             );
         });
 
@@ -450,68 +438,62 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     const handleReaction = (messageId: number, reaction: string) => {
         if (!selectedUser) return;
 
-        setMessages((prevMessages) => {
-            const updatedMessages = prevMessages.map((message) => {
-                if (message.message_id === messageId) {
-                    const updatedReactions =
-                        Array.isArray(message.reactions) && message.reactions.length > 0
-                            ? message.reactions.map((r) => {
-                                  if (r.user_id === currentUser.id.toString()) {
-                                      return { ...r, reaction };
-                                  }
-                                  return r;
-                              })
-                            : [
-                                  {
-                                      user_id: currentUser.id.toString(),
-                                      reaction,
-                                      username: currentUser.username,
-                                      profile_picture: currentUser.profile_picture_url,
-                                  },
-                              ];
-
-                    return {
-                        ...message,
-                        reactions: updatedReactions,
-                    };
-                }
-
-                return message;
-            });
-
-            return updatedMessages;
-        });
-
-        // Emit the reaction to the server
-        socket.emit("send-reaction", { messageId, senderUserId: currentUser.id, reaction });
-    };
-
-    socket.on("reaction-received", ({ messageId, reaction }) => {
         setMessages((prevMessages) =>
             prevMessages.map((message) => {
                 if (message.message_id !== messageId) return message;
 
                 const prevReactions = Array.isArray(message.reactions) ? message.reactions : [];
 
-                // Remove any previous reaction by this user
-                const updatedReactions = prevReactions.filter((r) => r.user_id !== reaction.user_id);
+                const alreadyReacted = prevReactions.some((r) => r.user_id === currentUser.id.toString());
 
-                // If reaction is null, just return filtered list
-                if (reaction.reaction === null) {
-                    return {
-                        ...message,
-                        reactions: updatedReactions,
-                    };
-                }
+                const updatedReactions = alreadyReacted
+                    ? prevReactions.map((r) => (r.user_id === currentUser.id.toString() ? { ...r, reaction } : r))
+                    : [
+                          ...prevReactions, // ✅ Keep existing reactions
+                          {
+                              user_id: currentUser.id.toString(),
+                              reaction,
+                              username: currentUser.username,
+                              profile_picture: currentUser.profile_picture_url,
+                          },
+                      ];
 
-                // Otherwise, add the new/updated reaction object
-                return {
-                    ...message,
-                    reactions: [...updatedReactions, reaction],
-                };
+                return { ...message, reactions: updatedReactions };
             }),
         );
-    });
+
+        socket.emit("send-reaction", {
+            messageId,
+            senderUserId: currentUser.id,
+            reaction,
+        });
+    };
+
+    useEffect(() => {
+        socket.on("reaction-received", ({ messageId, reaction }) => {
+            console.log("Reaction Received");
+
+            setMessages((prevMessages) =>
+                prevMessages.map((message) => {
+                    if (message.message_id !== messageId) return message;
+
+                    const prevReactions = Array.isArray(message.reactions) ? message.reactions : [];
+
+                    const updatedReactions = prevReactions.filter((r) => r.user_id !== reaction.user_id);
+
+                    if (reaction.reaction === null) {
+                        return { ...message, reactions: updatedReactions };
+                    }
+
+                    return { ...message, reactions: [...updatedReactions, reaction] };
+                }),
+            );
+        });
+
+        return () => {
+            socket.off("reaction-received"); // ✅ Cleanup on re-render
+        };
+    }, []); // setMessages is stable, so empty deps array is fine
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
@@ -534,7 +516,12 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
     };
 
     return (
-        <Box sx={{ display: "flex", height: "100dvh" }}>
+        <Box
+            sx={{
+                display: "flex",
+                height: isMobile ? "calc(100dvh - 60px)" : "100dvh",
+            }}
+        >
             {isMobile ? (
                 !selectedUser ? (
                     <MessagesUserList users={users} onlineUsers={onlineUsers} handleUserClick={handleUserClick} loading={loadingUsers} />
@@ -551,24 +538,6 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
                             backgroundPosition: "center",
                         }}
                     >
-                        {isMobile && (
-                            <IconButton
-                                onClick={() => {
-                                    navigate("/messages");
-                                    setMessages([]);
-                                    setSelectedUser(null);
-                                }}
-                                sx={{
-                                    position: "absolute",
-                                    left: 5,
-                                    top: 21,
-                                    zIndex: 2000,
-                                    visibility: drawerOpen ? "hidden" : "visible",
-                                }}
-                            >
-                                <ChevronLeft />
-                            </IconButton>
-                        )}
                         <MessagesTopBar
                             selectedUser={selectedUser}
                             chatTheme={chatTheme}

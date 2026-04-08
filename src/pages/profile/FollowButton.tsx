@@ -123,7 +123,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                 justifyContent: "center",
                 gap: "6px",
                 padding: "7px 16px",
-                minWidth: "100px",
+                width: "110px",
                 borderRadius: "20px",
                 border: showHoverState ? config.hoverBorder : config.border,
                 background: showHoverState ? config.hoverBg : config.bg,

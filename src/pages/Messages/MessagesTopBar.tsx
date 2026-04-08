@@ -219,7 +219,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
     <Box
       sx={{
         backgroundColor: (t) => t.palette.background.paper,
-        px: isMobile ? 2 : 1.5,
+        px: isMobile ? 0.5 : 1.5,
         py: 1.25,
         display: "flex",
         alignItems: "center",
@@ -238,23 +238,21 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
           overflow: "hidden",
         }}
       >
-        {!isMobile && (
-          <IconButton
-            onClick={() => {
-              navigate("/messages");
-              setMessages([]);
-            }}
-            sx={{ ...iconButtonSx, ml: -0.5 }}
-          >
-            <ChevronLeft fontSize="small" />
-          </IconButton>
-        )}
+        <IconButton
+          onClick={() => {
+            navigate("/messages");
+            setMessages([]);
+          }}
+          sx={{ ...iconButtonSx }}
+        >
+          <ChevronLeft fontSize="small" />
+        </IconButton>
         <Avatar
           sx={{
             width: 36,
             height: 36,
             cursor: "pointer",
-            ml: isMobile ? 3 : 0,
+            ml: isMobile ? -1 : 0,
             border: "2px solid",
             borderColor: (t) => t.palette.divider,
           }}
