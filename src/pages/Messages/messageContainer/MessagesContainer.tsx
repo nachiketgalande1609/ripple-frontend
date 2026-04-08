@@ -143,10 +143,7 @@ function HoverActions({
                         height: 28,
                         borderRadius: "7px",
                         color: (t) => t.palette.text.secondary,
-                        "&:hover": {
-                            color: (t) => t.palette.text.primary,
-                            backgroundColor: (t) => t.palette.action.hover,
-                        },
+                        "&:hover": { color: (t) => t.palette.text.primary, backgroundColor: (t) => t.palette.action.hover },
                     }}
                 >
                     <MoreHoriz sx={{ fontSize: 16 }} />
@@ -160,10 +157,7 @@ function HoverActions({
                     height: 28,
                     borderRadius: "7px",
                     color: (t) => t.palette.text.secondary,
-                    "&:hover": {
-                        color: (t) => t.palette.text.primary,
-                        backgroundColor: (t) => t.palette.action.hover,
-                    },
+                    "&:hover": { color: (t) => t.palette.text.primary, backgroundColor: (t) => t.palette.action.hover },
                 }}
             >
                 <ReplyIcon sx={{ fontSize: 16 }} />
@@ -176,10 +170,7 @@ function HoverActions({
                     height: 28,
                     borderRadius: "7px",
                     color: (t) => t.palette.text.secondary,
-                    "&:hover": {
-                        color: (t) => t.palette.text.primary,
-                        backgroundColor: (t) => t.palette.action.hover,
-                    },
+                    "&:hover": { color: (t) => t.palette.text.primary, backgroundColor: (t) => t.palette.action.hover },
                 }}
             >
                 <EmojiEmotions sx={{ fontSize: 16 }} />
@@ -206,6 +197,13 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const isDark = theme.palette.mode === "dark";
 
+    // ── Older (paginated) messages loaded via infinite scroll ─────────────────
+    // `messages` prop is the source of truth for the current page.
+    // `olderMessages` holds pages loaded by scrolling up.
+    const [olderMessages, setOlderMessages] = useState<Message[]>([]);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    // ── UI state ──────────────────────────────────────────────────────────────
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
     const [hoveredMessage, setHoveredMessage] = useState<number | null>(null);
@@ -213,111 +211,76 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     const [moreMenuOpen, setMoreMenuOpen] = useState(false);
     const [selectedMessageForAction, setSelectedMessageForAction] = useState<Message | null>(null);
     const [emojiAnchorEl, setEmojiAnchorEl] = useState<null | HTMLElement>(null);
-    const emojiPickerOpen = Boolean(emojiAnchorEl);
     const [selectedMessageForReaction, setSelectedMessageForReaction] = useState<Message | null>(null);
     const [reactionAnchor, setReactionAnchor] = useState<HTMLElement | null>(null);
     const [selectedReactions, setSelectedReactions] = useState<ReactionDetail[] | null>(null);
     const [isScrolledUp, setIsScrolledUp] = useState(false);
-    const [allMessages, setAllMessages] = useState<Message[]>(messages);
-    const [isLoading, setIsLoading] = useState(false);
 
+    const emojiPickerOpen = Boolean(emojiAnchorEl);
+
+    // ── Pagination refs ───────────────────────────────────────────────────────
     const offsetRef = useRef(0);
     const isLoadingRef = useRef(false);
     const hasMoreRef = useRef(true);
-    const loadedForUserRef = useRef<number | null>(null);
 
+    // ── Reset older messages when the selected user changes ───────────────────
     useEffect(() => {
-        if (!selectedUser) return;
+        setOlderMessages([]);
         offsetRef.current = 0;
         isLoadingRef.current = false;
         hasMoreRef.current = true;
-        loadedForUserRef.current = selectedUser.id;
-        setIsLoading(false);
-        setAllMessages(messages);
-    }, [selectedUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+        setIsLoadingMore(false);
+    }, [selectedUser?.id]);
 
-    useEffect(() => {
-        if (!selectedUser) return;
-        if (loadedForUserRef.current !== selectedUser.id) return;
+    // ── Merge older pages: exclude IDs already present in `messages` prop ─────
+    // This prevents duplicates when the initial fetch and paginated fetch overlap.
+    const currentIds = new Set(messages.map((m) => m.message_id));
+    const dedupedOlder = olderMessages.filter((m) => !currentIds.has(m.message_id));
 
-        setAllMessages((prev) => {
-            const prevIds = new Set(prev.map((m) => m.message_id));
-            const fingerprintToIndex = new Map(prev.map((m, i) => [`${m.sender_id}|${m.message_text}|${m.receiver_id}`, i]));
+    // Final list in chronological order: older first, then current messages
+    const allMessages = [...dedupedOlder, ...messages];
 
-            let updated = [...prev];
-            let didChange = false;
+    // ── Load older messages on scroll-to-top ─────────────────────────────────
+    const loadMoreMessages = useCallback(
+        async (userId: number) => {
+            if (isLoadingRef.current || !hasMoreRef.current) return;
+            isLoadingRef.current = true;
+            setIsLoadingMore(true);
 
-            for (const m of messages) {
-                if (prevIds.has(m.message_id)) {
-                    const idx = updated.findIndex((p) => p.message_id === m.message_id);
-                    if (idx !== -1) {
-                        const existing = updated[idx];
+            const nextOffset = offsetRef.current + 20;
+            try {
+                const res = await getMessagesDataForSelectedUser(userId, nextOffset, 20);
+                const fetched: Message[] = res.data ?? [];
 
-                        // Serialize reactions to detect changes
-                        const reactionsChanged = JSON.stringify(existing.reactions) !== JSON.stringify(m.reactions);
-
-                        if (
-                            existing.saved !== m.saved ||
-                            existing.delivered !== m.delivered ||
-                            existing.read !== m.read ||
-                            existing.read_timestamp !== m.read_timestamp ||
-                            existing.delivered_timestamp !== m.delivered_timestamp ||
-                            reactionsChanged
-                        ) {
-                            updated[idx] = { ...existing, ...m };
-                            didChange = true;
-                        }
-                    }
-                    continue;
-                }
-
-                const fp = `${m.sender_id}|${m.message_text}|${m.receiver_id}`;
-                const existingIdx = fingerprintToIndex.get(fp);
-
-                if (existingIdx !== undefined) {
-                    updated[existingIdx] = { ...updated[existingIdx], ...m };
-                    didChange = true;
+                if (fetched.length === 0) {
+                    hasMoreRef.current = false;
                 } else {
-                    updated = [...updated, m];
-                    didChange = true;
+                    // API returns newest-first; reverse so oldest is first
+                    const chronological = [...fetched].reverse();
+                    setOlderMessages((prev) => {
+                        const prevIds = new Set(prev.map((m) => m.message_id));
+                        const unique = chronological.filter((m) => !prevIds.has(m.message_id));
+                        return [...unique, ...prev];
+                    });
+                    offsetRef.current = nextOffset;
+                    if (fetched.length < 20) hasMoreRef.current = false;
                 }
+            } catch (err) {
+                console.error("Error loading more messages:", err);
+            } finally {
+                isLoadingRef.current = false;
+                setIsLoadingMore(false);
             }
+        },
+        [],
+    );
 
-            return didChange ? updated : prev;
-        });
-    }, [messages]); // messages changes when parent updates reactions
-
-    const loadMoreMessages = useCallback(async (userId: number) => {
-        if (isLoadingRef.current || !hasMoreRef.current) return;
-        isLoadingRef.current = true;
-        setIsLoading(true);
-        const nextOffset = offsetRef.current + 20;
-        try {
-            const res = await getMessagesDataForSelectedUser(userId, nextOffset, 20);
-            const fetched: Message[] = res.data ?? [];
-            if (fetched.length === 0) {
-                hasMoreRef.current = false;
-            } else {
-                setAllMessages((prev) => {
-                    const prevIds = new Set(prev.map((m) => m.message_id));
-                    const unique = fetched.filter((m: Message) => !prevIds.has(m.message_id));
-                    if (unique.length === 0) return prev;
-                    return [[...unique].reverse(), ...prev].flat();
-                });
-                offsetRef.current = nextOffset;
-                if (fetched.length < 20) hasMoreRef.current = false;
-            }
-        } catch (err) {
-            console.error("Error loading more messages:", err);
-        } finally {
-            isLoadingRef.current = false;
-            setIsLoading(false);
-        }
-    }, []);
-
+    // ── Scroll handler ────────────────────────────────────────────────────────
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        // Container uses flex-direction: column-reverse, so scrollTop is negative when scrolled up
         setIsScrolledUp(scrollTop < -80);
+        // Distance from the top of content (in reversed layout)
         const distanceFromTop = scrollHeight - clientHeight + scrollTop;
         if (distanceFromTop < 200 && selectedUser && !isLoadingRef.current && hasMoreRef.current) {
             loadMoreMessages(selectedUser.id);
@@ -325,6 +288,17 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     };
 
     const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    const findOriginalMessage = (replyToId: number | null) =>
+        allMessages.find((m) => m.message_id === replyToId);
+
+    const handleEmojiClick = (emojiObject: { emoji: string }) => {
+        if (selectedMessageForReaction) {
+            handleReaction(selectedMessageForReaction.message_id, emojiObject.emoji);
+            setEmojiAnchorEl(null);
+        }
+    };
 
     const handleReactionPopoverOpen = (e: React.MouseEvent<HTMLElement>, reactions: ReactionDetail[]) => {
         setReactionAnchor(e.currentTarget);
@@ -336,38 +310,26 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
         setSelectedReactions(null);
     };
 
-    const findOriginalMessage = (replyToId: number | null) => allMessages.find((m) => m.message_id === replyToId);
-
-    const handleEmojiClick = (emojiObject: { emoji: string }) => {
-        if (selectedMessageForReaction) {
-            handleReaction(selectedMessageForReaction.message_id, emojiObject.emoji);
-            setEmojiAnchorEl(null);
-        }
-    };
-
     const isSelf = (msg: Message) => msg.sender_id === currentUser.id;
 
-    // ── Skeleton loader ────────────────────────────────────────────────────────
+    // ── Design tokens ─────────────────────────────────────────────────────────
+    const ACCENT = "#7c5cfc";
+    const selfBg = ACCENT;
+    const otherBg = theme.palette.background.paper;
+    const selfTextColor = "#fff";
+    const otherTextColor = theme.palette.text.primary;
+    const selfTimeColor = "rgba(255,255,255,0.65)";
+    const otherTimeColor = theme.palette.text.disabled;
+    const mediaW = isMobile ? 220 : 280;
+
+    // ── Skeleton loader ───────────────────────────────────────────────────────
     if (initialMessageLoading) {
         return (
-            <Box
-                sx={{
-                    flexGrow: 1,
-                    p: isMobile ? 1.5 : 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 1.5,
-                }}
-            >
+            <Box sx={{ flexGrow: 1, p: isMobile ? 1.5 : 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
                 {[...Array(7)].map((_, i) => (
                     <Box
                         key={i}
-                        sx={{
-                            display: "flex",
-                            justifyContent: i % 2 === 0 ? "flex-end" : "flex-start",
-                            alignItems: "flex-end",
-                            gap: 1,
-                        }}
+                        sx={{ display: "flex", justifyContent: i % 2 === 0 ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 1 }}
                     >
                         {i % 2 !== 0 && (
                             <Skeleton variant="circular" width={28} height={28} sx={{ bgcolor: (t) => t.palette.action.hover, flexShrink: 0 }} />
@@ -387,18 +349,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
         );
     }
 
-    // ── Bubble palette ─────────────────────────────────────────────────────────
-    const ACCENT = "#7c5cfc";
-    const selfBg = ACCENT;
-    const otherBg = isDark ? theme.palette.background.paper : theme.palette.background.paper;
-    const selfTextColor = "#fff";
-    const otherTextColor = theme.palette.text.primary;
-    const selfTimeColor = "rgba(255,255,255,0.65)";
-    const otherTimeColor = theme.palette.text.disabled;
-
-    // ── Media width helpers ────────────────────────────────────────────────────
-    const mediaW = isMobile ? 220 : 280;
-
+    // ── Main render ───────────────────────────────────────────────────────────
     return (
         <Box
             sx={{
@@ -410,22 +361,20 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                 flexDirection: "column-reverse",
                 position: "relative",
                 backgroundColor: isDark ? theme.palette.background.default : "#f7f7f8",
-                // Custom scrollbar
                 "&::-webkit-scrollbar": { width: 4 },
                 "&::-webkit-scrollbar-track": { background: "transparent" },
-                "&::-webkit-scrollbar-thumb": {
-                    background: theme.palette.action.disabled,
-                    borderRadius: 4,
-                },
+                "&::-webkit-scrollbar-thumb": { background: theme.palette.action.disabled, borderRadius: 4 },
             }}
             onScroll={handleScroll}
         >
+            {/* Scroll anchor */}
             <div ref={messagesEndRef} />
 
             {selectedUser ? (
                 <>
-                    {typingUser === selectedUser?.id && <TypingIndicator />}
+                    {typingUser === selectedUser.id && <TypingIndicator />}
 
+                    {/* Render in reverse because of flex-direction: column-reverse */}
                     {[...allMessages].reverse().map((msg, index) => {
                         const originalMessage = msg.reply_to ? findOriginalMessage(msg.reply_to) : null;
                         const self = isSelf(msg);
@@ -444,11 +393,11 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                 onMouseEnter={() => setHoveredMessage(msg.message_id)}
                                 onMouseLeave={() => setHoveredMessage(null)}
                             >
-                                {/* Other user avatar — only on non-self messages */}
+                                {/* Avatar for received messages */}
                                 {!self && (
                                     <Box
                                         component="img"
-                                        src={selectedUser?.profile_picture || BlankProfileImage}
+                                        src={selectedUser.profile_picture || BlankProfileImage}
                                         sx={{
                                             width: 26,
                                             height: 26,
@@ -492,13 +441,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                     }}
                                                 >
                                                     <CircularProgress
-                                                        sx={{
-                                                            position: "absolute",
-                                                            top: "50%",
-                                                            left: "50%",
-                                                            transform: "translate(-50%,-50%)",
-                                                            color: "#fff",
-                                                        }}
+                                                        sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", color: "#fff" }}
                                                         size={22}
                                                     />
                                                     <Box
@@ -545,9 +488,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                         width: "240px",
                                                         backgroundColor: (t) => t.palette.background.paper,
                                                         cursor: "pointer",
-                                                        "&:hover": {
-                                                            backgroundColor: (t) => t.palette.action.hover,
-                                                        },
+                                                        "&:hover": { backgroundColor: (t) => t.palette.action.hover },
                                                     }}
                                                     onClick={() => {
                                                         if (msg.file_url.match(/\.pdf$/i)) {
@@ -563,30 +504,11 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                         }
                                                     }}
                                                 >
-                                                    <Box
-                                                        sx={{
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            gap: 1.5,
-                                                            p: 1.25,
-                                                        }}
-                                                    >
+                                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.25 }}>
                                                         {msg.file_url.match(/\.pdf$/i) ? (
-                                                            <PdfIcon
-                                                                sx={{
-                                                                    color: (t) => t.palette.error.main,
-                                                                    fontSize: 28,
-                                                                    flexShrink: 0,
-                                                                }}
-                                                            />
+                                                            <PdfIcon sx={{ color: (t) => t.palette.error.main, fontSize: 28, flexShrink: 0 }} />
                                                         ) : (
-                                                            <FolderIcon
-                                                                sx={{
-                                                                    color: (t) => t.palette.warning.main,
-                                                                    fontSize: 28,
-                                                                    flexShrink: 0,
-                                                                }}
-                                                            />
+                                                            <FolderIcon sx={{ color: (t) => t.palette.warning.main, fontSize: 28, flexShrink: 0 }} />
                                                         )}
                                                         <Box sx={{ overflow: "hidden" }}>
                                                             <Typography
@@ -601,12 +523,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                             >
                                                                 {msg.file_name}
                                                             </Typography>
-                                                            <Typography
-                                                                sx={{
-                                                                    fontSize: "0.7rem",
-                                                                    color: (t) => t.palette.text.disabled,
-                                                                }}
-                                                            >
+                                                            <Typography sx={{ fontSize: "0.7rem", color: (t) => t.palette.text.disabled }}>
                                                                 {formatFileSize(msg.file_size)}
                                                             </Typography>
                                                         </Box>
@@ -630,39 +547,21 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                 cursor: "pointer",
                                                 maxWidth: "100%",
                                                 transition: "background 0.15s",
-                                                "&:hover": {
-                                                    backgroundColor: isDark ? "rgba(124,92,252,0.16)" : "rgba(124,92,252,0.12)",
-                                                },
+                                                "&:hover": { backgroundColor: isDark ? "rgba(124,92,252,0.16)" : "rgba(124,92,252,0.12)" },
                                             }}
                                             onClick={() => {
                                                 const el = document.getElementById(`msg-${originalMessage.message_id}`);
                                                 if (el) {
-                                                    el.scrollIntoView({
-                                                        behavior: "smooth",
-                                                        block: "center",
-                                                    });
+                                                    el.scrollIntoView({ behavior: "smooth", block: "center" });
                                                     setHighlightedMessageId(originalMessage.message_id);
                                                     setTimeout(() => setHighlightedMessageId(null), 2000);
                                                 }
                                             }}
                                         >
-                                            <Typography
-                                                sx={{
-                                                    fontSize: "0.7rem",
-                                                    fontWeight: 600,
-                                                    color: ACCENT,
-                                                    mb: "2px",
-                                                }}
-                                            >
+                                            <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: ACCENT, mb: "2px" }}>
                                                 {originalMessage.sender_id === currentUser.id ? "You" : selectedUser.username}
                                             </Typography>
-                                            <Typography
-                                                noWrap
-                                                sx={{
-                                                    fontSize: "0.77rem",
-                                                    color: (t) => t.palette.text.secondary,
-                                                }}
-                                            >
+                                            <Typography noWrap sx={{ fontSize: "0.77rem", color: (t) => t.palette.text.secondary }}>
                                                 {originalMessage.message_text.length > 55
                                                     ? originalMessage.message_text.slice(0, 55) + "…"
                                                     : originalMessage.message_text}
@@ -684,9 +583,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                         >
                                             <Box
                                                 id={`msg-${msg.message_id}-post`}
-                                                onClick={() => {
-                                                    if (msg.post?.post_id) navigate(`/posts/${msg.post.post_id}`);
-                                                }}
+                                                onClick={() => { if (msg.post?.post_id) navigate(`/posts/${msg.post.post_id}`); }}
                                                 sx={{
                                                     backgroundColor: (t) => t.palette.background.paper,
                                                     borderRadius: "14px",
@@ -712,21 +609,9 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                         <Box
                                                             component="img"
                                                             src={msg.post.owner.profile_picture || BlankProfileImage}
-                                                            sx={{
-                                                                width: 24,
-                                                                height: 24,
-                                                                borderRadius: "50%",
-                                                                mr: 0.875,
-                                                                objectFit: "cover",
-                                                            }}
+                                                            sx={{ width: 24, height: 24, borderRadius: "50%", mr: 0.875, objectFit: "cover" }}
                                                         />
-                                                        <Typography
-                                                            sx={{
-                                                                fontSize: "0.8rem",
-                                                                fontWeight: 500,
-                                                                color: (t) => t.palette.text.primary,
-                                                            }}
-                                                        >
+                                                        <Typography sx={{ fontSize: "0.8rem", fontWeight: 500, color: (t) => t.palette.text.primary }}>
                                                             {msg.post.owner.username}
                                                         </Typography>
                                                     </Box>
@@ -781,19 +666,10 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                 )}
                                                 {msg.post.content && (
                                                     <Box sx={{ px: 1.25, py: 0.875 }}>
-                                                        <Typography
-                                                            sx={{
-                                                                fontSize: "0.8rem",
-                                                                color: (t) => t.palette.text.secondary,
-                                                            }}
-                                                        >
+                                                        <Typography sx={{ fontSize: "0.8rem", color: (t) => t.palette.text.secondary }}>
                                                             <Box
                                                                 component="span"
-                                                                sx={{
-                                                                    fontWeight: 500,
-                                                                    color: (t) => t.palette.text.primary,
-                                                                    mr: 0.5,
-                                                                }}
+                                                                sx={{ fontWeight: 500, color: (t) => t.palette.text.primary, mr: 0.5 }}
                                                             >
                                                                 {msg.post.owner.username}
                                                             </Box>
@@ -806,15 +682,9 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                             {hoveredMessage === msg.message_id && (
                                                 <HoverActions
                                                     self={self}
-                                                    onMore={() => {
-                                                        setSelectedMessageForAction(msg);
-                                                        setMoreMenuOpen(true);
-                                                    }}
+                                                    onMore={() => { setSelectedMessageForAction(msg); setMoreMenuOpen(true); }}
                                                     onReply={() => handleReply(msg)}
-                                                    onEmoji={(e) => {
-                                                        setSelectedMessageForReaction(msg);
-                                                        setEmojiAnchorEl(e.currentTarget);
-                                                    }}
+                                                    onEmoji={(e) => { setSelectedMessageForReaction(msg); setEmojiAnchorEl(e.currentTarget); }}
                                                 />
                                             )}
                                         </Box>
@@ -848,8 +718,8 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                     boxShadow: self
                                                         ? "0 1px 4px rgba(124,92,252,0.2)"
                                                         : isDark
-                                                          ? "0 1px 3px rgba(0,0,0,0.2)"
-                                                          : "0 1px 3px rgba(0,0,0,0.06)",
+                                                            ? "0 1px 3px rgba(0,0,0,0.2)"
+                                                            : "0 1px 3px rgba(0,0,0,0.06)",
                                                     border: self ? "none" : "1px solid",
                                                     borderColor: self ? "transparent" : (t: any) => t.palette.divider,
                                                 }}
@@ -878,15 +748,9 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                             {hoveredMessage === msg.message_id && (
                                                 <HoverActions
                                                     self={self}
-                                                    onMore={() => {
-                                                        setSelectedMessageForAction(msg);
-                                                        setMoreMenuOpen(true);
-                                                    }}
+                                                    onMore={() => { setSelectedMessageForAction(msg); setMoreMenuOpen(true); }}
                                                     onReply={() => handleReply(msg)}
-                                                    onEmoji={(e) => {
-                                                        setSelectedMessageForReaction(msg);
-                                                        setEmojiAnchorEl(e.currentTarget);
-                                                    }}
+                                                    onEmoji={(e) => { setSelectedMessageForReaction(msg); setEmojiAnchorEl(e.currentTarget); }}
                                                 />
                                             )}
                                         </Box>
@@ -917,20 +781,14 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                             }}
                                         >
                                             {msg.reactions.map((r, i) => (
-                                                <Typography
-                                                    key={i}
-                                                    sx={{
-                                                        fontSize: isMobile ? "0.85rem" : "1rem",
-                                                        lineHeight: 1.4,
-                                                    }}
-                                                >
+                                                <Typography key={i} sx={{ fontSize: isMobile ? "0.85rem" : "1rem", lineHeight: 1.4 }}>
                                                     {r.reaction}
                                                 </Typography>
                                             ))}
                                         </Box>
                                     )}
 
-                                    {/* Reaction popover */}
+                                    {/* ── Reaction detail popover ── */}
                                     <Popover
                                         open={Boolean(reactionAnchor)}
                                         anchorEl={reactionAnchor}
@@ -957,37 +815,18 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                         px: 1,
                                                         py: 0.625,
                                                         justifyContent: "space-between",
-                                                        "&:hover": {
-                                                            backgroundColor: (t) => t.palette.action.hover,
-                                                        },
+                                                        "&:hover": { backgroundColor: (t) => t.palette.action.hover },
                                                     }}
                                                 >
-                                                    <Box
-                                                        sx={{
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            gap: 1,
-                                                        }}
-                                                    >
+                                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                                         <ListItemAvatar sx={{ minWidth: "unset" }}>
                                                             <Avatar src={r.profile_picture} sx={{ width: 28, height: 28 }} />
                                                         </ListItemAvatar>
-                                                        <Typography
-                                                            sx={{
-                                                                fontSize: "0.82rem",
-                                                                color: (t) => t.palette.text.primary,
-                                                            }}
-                                                        >
+                                                        <Typography sx={{ fontSize: "0.82rem", color: (t) => t.palette.text.primary }}>
                                                             {r.username || "Unknown"}
                                                         </Typography>
                                                     </Box>
-                                                    <Box
-                                                        sx={{
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            gap: 0.5,
-                                                        }}
-                                                    >
+                                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                                                         <Typography sx={{ fontSize: "1.1rem" }}>{r.reaction}</Typography>
                                                         {r.user_id === currentUser.id.toString() && (
                                                             <IconButton
@@ -996,22 +835,15 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                                                     width: 24,
                                                                     height: 24,
                                                                     color: (t) => t.palette.text.disabled,
-                                                                    "&:hover": {
-                                                                        color: (t) => t.palette.error.main,
-                                                                        backgroundColor: "transparent",
-                                                                    },
+                                                                    "&:hover": { color: (t) => t.palette.error.main, backgroundColor: "transparent" },
                                                                 }}
                                                                 onClick={() => {
                                                                     if (selectedMessageForReaction) {
-                                                                        handleReaction(selectedMessageForReaction.message_id, "");
-                                                                        // Update popover state immediately so blank reaction disappears
+                                                                        handleReaction(selectedMessageForReaction.message_id, null);
                                                                         setSelectedReactions((prev) =>
-                                                                            prev ? prev.filter((r) => r.user_id !== currentUser.id.toString()) : prev,
+                                                                            prev ? prev.filter((x) => x.user_id !== currentUser.id.toString()) : prev,
                                                                         );
-                                                                        // Close popover if no reactions remain
-                                                                        if ((selectedReactions?.length ?? 0) <= 1) {
-                                                                            handleReactionPopoverClose();
-                                                                        }
+                                                                        if ((selectedReactions?.length ?? 0) <= 1) handleReactionPopoverClose();
                                                                     }
                                                                 }}
                                                             >
@@ -1025,35 +857,17 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                     </Popover>
                                 </Box>
 
-                                {/* ── Read/delivered tick ── */}
+                                {/* ── Read / delivered tick ── */}
                                 {self && (
                                     <Box sx={{ pb: "4px", flexShrink: 0 }}>
                                         {msg.read ? (
                                             <DoneAllIcon sx={{ color: ACCENT, fontSize: 14, ml: 0.5 }} />
                                         ) : msg.delivered ? (
-                                            <DoneAllIcon
-                                                sx={{
-                                                    color: (t) => t.palette.text.disabled,
-                                                    fontSize: 14,
-                                                    ml: 0.5,
-                                                }}
-                                            />
+                                            <DoneAllIcon sx={{ color: (t) => t.palette.text.disabled, fontSize: 14, ml: 0.5 }} />
                                         ) : msg.saved ? (
-                                            <DoneIcon
-                                                sx={{
-                                                    color: (t) => t.palette.text.disabled,
-                                                    fontSize: 14,
-                                                    ml: 0.5,
-                                                }}
-                                            />
+                                            <DoneIcon sx={{ color: (t) => t.palette.text.disabled, fontSize: 14, ml: 0.5 }} />
                                         ) : (
-                                            <AccessTimeIcon
-                                                sx={{
-                                                    color: (t) => t.palette.text.disabled,
-                                                    fontSize: 13,
-                                                    ml: 0.5,
-                                                }}
-                                            />
+                                            <AccessTimeIcon sx={{ color: (t) => t.palette.text.disabled, fontSize: 13, ml: 0.5 }} />
                                         )}
                                     </Box>
                                 )}
@@ -1061,13 +875,15 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                         );
                     })}
 
-                    {isLoading && (
+                    {/* Load-more spinner (shown at the top of the list) */}
+                    {isLoadingMore && (
                         <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
                             <CircularProgress size={18} sx={{ color: (t) => t.palette.text.disabled }} />
                         </Box>
                     )}
 
-                    {!isLoading && !hasMoreRef.current && allMessages.length > 0 && (
+                    {/* "Beginning of conversation" pill */}
+                    {!isLoadingMore && !hasMoreRef.current && allMessages.length > 0 && (
                         <Box sx={{ display: "flex", justifyContent: "center", py: 1.5 }}>
                             <Box
                                 sx={{
@@ -1084,6 +900,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                         </Box>
                     )}
 
+                    {/* Emoji picker popover */}
                     <Popover
                         open={emojiPickerOpen}
                         anchorEl={emojiAnchorEl}
@@ -1122,22 +939,10 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                         <ChatIcon sx={{ fontSize: 30, color: ACCENT, opacity: 0.8 }} />
                     </Box>
                     <Box sx={{ textAlign: "center" }}>
-                        <Typography
-                            sx={{
-                                fontWeight: 500,
-                                fontSize: "0.95rem",
-                                color: (t) => t.palette.text.primary,
-                                mb: 0.5,
-                            }}
-                        >
+                        <Typography sx={{ fontWeight: 500, fontSize: "0.95rem", color: (t) => t.palette.text.primary, mb: 0.5 }}>
                             No conversation selected
                         </Typography>
-                        <Typography
-                            sx={{
-                                fontSize: "0.82rem",
-                                color: (t) => t.palette.text.disabled,
-                            }}
-                        >
+                        <Typography sx={{ fontSize: "0.82rem", color: (t) => t.palette.text.disabled }}>
                             Pick someone to message or start a new one
                         </Typography>
                     </Box>
@@ -1153,10 +958,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                             px: 2,
                             borderColor: ACCENT,
                             color: ACCENT,
-                            "&:hover": {
-                                borderColor: ACCENT,
-                                backgroundColor: "rgba(124,92,252,0.08)",
-                            },
+                            "&:hover": { borderColor: ACCENT, backgroundColor: "rgba(124,92,252,0.08)" },
                         }}
                         onClick={(e) => setAnchorEl(e.currentTarget)}
                     >
@@ -1165,7 +967,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                 </Box>
             )}
 
-            {/* ── Scroll to bottom ── */}
+            {/* ── Scroll-to-bottom FAB ── */}
             {isScrolledUp && (
                 <IconButton
                     sx={{
@@ -1180,11 +982,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                         height: 32,
                         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                         transition: "all 0.15s",
-                        "&:hover": {
-                            backgroundColor: (t) => t.palette.action.hover,
-                            color: (t) => t.palette.text.primary,
-                            borderColor: ACCENT,
-                        },
+                        "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary, borderColor: ACCENT },
                     }}
                     onClick={scrollToBottom}
                 >
@@ -1195,15 +993,8 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
             <MessageOptionsDialog
                 open={moreMenuOpen}
                 onClose={() => setMoreMenuOpen(false)}
-                onDelete={() => {
-                    handleDeleteMessage(selectedMessageForAction);
-                    setMoreMenuOpen(false);
-                }}
-                onInfo={() => {
-                    setSelectedMessage(selectedMessageForAction);
-                    setDrawerOpen(true);
-                    setMoreMenuOpen(false);
-                }}
+                onDelete={() => { handleDeleteMessage(selectedMessageForAction); setMoreMenuOpen(false); }}
+                onInfo={() => { setSelectedMessage(selectedMessageForAction); setDrawerOpen(true); setMoreMenuOpen(false); }}
             />
             <MessageDetailsDrawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} selectedMessage={selectedMessage} />
         </Box>

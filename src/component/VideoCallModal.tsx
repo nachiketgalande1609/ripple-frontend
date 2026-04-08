@@ -82,14 +82,14 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({ open, onClose, localStr
         if (localStream && localVideoRef.current) {
             localVideoRef.current.srcObject = localStream;
         }
-    }, [localStream]);
+    }, [localStream, open]);
 
     // Handle remote stream
     useEffect(() => {
         if (remoteStream && remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = remoteStream;
         }
-    }, [remoteStream]);
+    }, [remoteStream, open]);
 
     const toggleMute = () => {
         if (localStream) {

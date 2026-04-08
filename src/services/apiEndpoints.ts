@@ -41,6 +41,8 @@ export const SAVE_POST_ENDPOINT: string = "/api/posts/save-post";
 // Notifications Endpoints
 export const GET_NOTIFICATIONS_ENDPOINT: string = "/api/notifications/fetch-notifications";
 export const GET_NOTIFICATIONS_COUNT: string = "/api/notifications/fetch-notifications-count";
+export const MUTED_USERS_ENDPOINT = "/api/notifications/muted-users";
+export const MUTE_USER_ENDPOINT = "/api/notifications/mute-user";
 
 // Search Endpoints
 export const SEARCH_ENDPOINT: string = "/api/search/search-users";

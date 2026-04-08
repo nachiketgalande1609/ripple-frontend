@@ -47,6 +47,8 @@ import {
     DELETE_HASHTAG_SEARCH_HISTORY_ENDPOINT,
     UPDATE_HASHTAG_SEARCH_HISTORY_ENDPOINT,
     FETCH_HASHTAG_SEARCH_HISTORY_ENDPOINT,
+    MUTE_USER_ENDPOINT,
+    MUTED_USERS_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -632,6 +634,36 @@ export const getNotificationsCount = async () => {
             console.error(error.message);
         } else {
             console.error("Unknown Error");
+        }
+        throw error;
+    }
+};
+
+// In api.ts — Notifications section
+
+export const getMutedUsers = async (): Promise<number[]> => {
+    try {
+        const response = await api.get(MUTED_USERS_ENDPOINT);
+        return response.data.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("Failed to fetch muted users:", error.message);
+        } else {
+            console.error("Failed to fetch muted users: Unknown error");
+        }
+        throw error;
+    }
+};
+
+export const toggleMuteUser = async (mutedUserId: number): Promise<{ muted: boolean }> => {
+    try {
+        const response = await api.post(MUTE_USER_ENDPOINT, { muted_user_id: mutedUserId });
+        return response.data.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("Failed to toggle mute:", error.message);
+        } else {
+            console.error("Failed to toggle mute: Unknown error");
         }
         throw error;
     }
