@@ -444,28 +444,38 @@ const Messages: React.FC<MessageProps> = ({ onlineUsers, selectedUser, setSelect
 
                 const prevReactions = Array.isArray(message.reactions) ? message.reactions : [];
 
-                const alreadyReacted = prevReactions.some((r) => r.user_id === currentUser.id.toString());
+                const existingReaction = prevReactions.find((r) => r.user_id === currentUser.id.toString());
 
-                const updatedReactions = alreadyReacted
-                    ? prevReactions.map((r) => (r.user_id === currentUser.id.toString() ? { ...r, reaction } : r))
-                    : [
-                          ...prevReactions, // ✅ Keep existing reactions
-                          {
-                              user_id: currentUser.id.toString(),
-                              reaction,
-                              username: currentUser.username,
-                              profile_picture: currentUser.profile_picture_url,
-                          },
-                      ];
+                // If same reaction clicked again, remove it
+                const isSameReaction = existingReaction?.reaction === reaction;
+
+                const updatedReactions =
+                    isSameReaction || reaction === ""
+                        ? prevReactions.filter((r) => r.user_id !== currentUser.id.toString()) // Remove
+                        : existingReaction
+                          ? prevReactions.map((r) => (r.user_id === currentUser.id.toString() ? { ...r, reaction } : r)) // Update
+                          : [
+                                ...prevReactions,
+                                {
+                                    user_id: currentUser.id.toString(),
+                                    reaction,
+                                    username: currentUser.username,
+                                    profile_picture: currentUser.profile_picture_url,
+                                },
+                            ]; // Add
 
                 return { ...message, reactions: updatedReactions };
             }),
         );
 
+        const existingReaction = messages.find((m) => m.message_id === messageId)?.reactions?.find((r) => r.user_id === currentUser.id.toString());
+
+        const isSameReaction = existingReaction?.reaction === reaction;
+
         socket.emit("send-reaction", {
             messageId,
             senderUserId: currentUser.id,
-            reaction,
+            reaction: isSameReaction ? null : reaction, // Send null to remove
         });
     };
 
