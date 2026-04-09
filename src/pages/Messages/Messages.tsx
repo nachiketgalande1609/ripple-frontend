@@ -505,7 +505,7 @@ const Messages: React.FC<MessageProps> = ({
     };
   }, []);
 
-  const handleReaction = (messageId: number, reaction: string) => {
+  const handleReaction = (messageId: number, reaction: string | null) => {
     if (!selectedUser) return;
 
     setMessages((prevMessages) =>

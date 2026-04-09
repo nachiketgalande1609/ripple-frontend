@@ -325,7 +325,9 @@ const AppContent = () => {
         .setRemoteDescription(new RTCSessionDescription(incomingCall.signal))
         .then(() => {
           pendingCandidates.current.forEach((candidate) => {
-            newPc.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
+            newPc
+              .addIceCandidate(new RTCIceCandidate(candidate))
+              .catch(console.error);
           });
           pendingCandidates.current = [];
           return newPc.createAnswer();
@@ -658,6 +660,19 @@ const AppContent = () => {
         remoteStream={remoteStream}
         pc={pc}
         handleEndCall={handleEndCall}
+        // ── NEW: real user info ──
+        localUsername={currentUser.username}
+        localProfilePicture={currentUser.profile_picture_url}
+        remoteUsername={
+          incomingCall?.callerUsername ?? // when receiving a call
+          selectedUser?.username ?? // when making a call
+          "Remote"
+        }
+        remoteProfilePicture={
+          incomingCall?.callerProfilePicture ?? // when receiving a call
+          selectedUser?.profile_picture ?? // when making a call
+          undefined
+        }
       />
 
       <audio

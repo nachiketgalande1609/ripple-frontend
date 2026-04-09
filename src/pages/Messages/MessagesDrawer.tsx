@@ -15,7 +15,7 @@ import {
   Search as SearchIcon,
 } from "@mui/icons-material";
 import NotificationsOffRoundedIcon from "@mui/icons-material/NotificationsOffRounded";
-import { getFollowingUsers, getMutedUsers } from "../../services/api";
+import { getFollowingUsers } from "../../services/api";
 import NewChatUsersList from "./NewChatUsersList";
 import BlankProfileImage from "../../static/profile_blank.png";
 import { timeAgo } from "../../utils/utils";
