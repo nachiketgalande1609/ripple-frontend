@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Box, Modal, IconButton, Tooltip } from "@mui/material";
+import { Box, Modal, IconButton, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import {
     CallEnd,
     Mic,
@@ -60,7 +60,6 @@ interface VideoCallModalProps {
     remoteStream: MediaStream | null;
     pc: RTCPeerConnection | null;
     handleEndCall: () => void;
-    // Real user info passed from AppContent
     localUsername?: string;
     localProfilePicture?: string;
     remoteUsername?: string;
@@ -73,24 +72,24 @@ const ModalRoot = styled(Box)({
     position: "fixed",
     inset: 0,
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.92)",
+    alignItems: "stretch",
+    justifyContent: "stretch",
+    backgroundColor: "#000",
     zIndex: 1300,
 });
 
-const CallContainer = styled(Box)<{ ref?: React.Ref<HTMLDivElement> }>({
+const CallContainer = styled(Box)({
     position: "relative",
-    width: "100%",
-    maxWidth: 920,
-    height: 580,
+    width: "100vw",
+    height: "100dvh",
     background: "#0e0e0e",
-    borderRadius: 16,
+    borderRadius: 0,
     overflow: "hidden",
-    border: "0.5px solid rgba(255,255,255,0.08)",
+    border: "none",
     display: "flex",
     flexDirection: "column",
-    margin: "0 16px",
+    margin: 0,
+    flex: 1,
 });
 
 const RemoteVideo = styled("video")({
@@ -111,25 +110,23 @@ const VideoPlaceholder = styled(Box)({
     gap: 12,
 });
 
-const AvatarCircle = styled(Box)<{ size?: number; color?: string }>(
-    ({ size = 72, color = "#378ADD" }) => ({
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        background: `${color}22`,
-        border: `2px solid ${color}44`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: size * 0.33,
-        color,
-        fontWeight: 600,
-        flexShrink: 0,
-        fontFamily: "'DM Mono', monospace",
-    })
-);
+const AvatarCircle = styled(Box)<{ size?: number; color?: string }>(({ size = 72, color = "#378ADD" }) => ({
+    width: size,
+    height: size,
+    borderRadius: "50%",
+    background: `${color}22`,
+    border: `2px solid ${color}44`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: size * 0.33,
+    color,
+    fontWeight: 600,
+    flexShrink: 0,
+    fontFamily: "'DM Mono', monospace",
+}));
 
-const PiPWrapper = styled(Box)({
+const PiPWrapper = styled(Box)(({ theme }) => ({
     position: "absolute",
     width: 160,
     height: 110,
@@ -140,7 +137,12 @@ const PiPWrapper = styled(Box)({
     background: "#1e2a38",
     zIndex: 10,
     userSelect: "none",
-});
+    [theme.breakpoints.down("sm")]: {
+        width: 100,
+        height: 70,
+        borderRadius: 6,
+    },
+}));
 
 const PiPVideo = styled("video")({
     width: "100%",
@@ -191,36 +193,47 @@ const CallerName = styled(Box)({
     letterSpacing: "0.02em",
 });
 
-const BottomBar = styled(Box)({
+const BottomBar = styled(Box)(({ theme }) => ({
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    height: 76,
+    minHeight: 76,
+    height: "auto",
     background: "rgba(5,5,5,0.88)",
     backdropFilter: "blur(12px)",
     borderTop: "0.5px solid rgba(255,255,255,0.07)",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 16px",
+    flexWrap: "wrap",
+    gap: 8,
+    padding: "12px 16px",
+    paddingBottom: "calc(12px + env(safe-area-inset-bottom))",
     zIndex: 20,
-});
+    [theme.breakpoints.down("sm")]: {
+        justifyContent: "center",
+        gap: 6,
+        padding: "10px 12px",
+        paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
+    },
+}));
 
-const ControlGroup = styled(Box)({
+const ControlGroup = styled(Box)(({ theme }) => ({
     display: "flex",
     alignItems: "center",
     gap: 6,
-});
+    [theme.breakpoints.down("sm")]: {
+        gap: 4,
+    },
+}));
 
 const ControlBtn = styled(IconButton)<{ active?: boolean }>(({ active }) => ({
     width: 40,
     height: 40,
     borderRadius: 8,
     background: active ? "rgba(55,138,221,0.25)" : "rgba(255,255,255,0.08)",
-    border: active
-        ? "0.5px solid rgba(55,138,221,0.4)"
-        : "0.5px solid rgba(255,255,255,0.12)",
+    border: active ? "0.5px solid rgba(55,138,221,0.4)" : "0.5px solid rgba(255,255,255,0.12)",
     color: active ? "#378ADD" : "rgba(255,255,255,0.75)",
     transition: "all 0.15s ease",
     "&:hover": {
@@ -228,34 +241,20 @@ const ControlBtn = styled(IconButton)<{ active?: boolean }>(({ active }) => ({
     },
 }));
 
-const RoundBtn = styled(IconButton)<{ danger?: boolean; off?: boolean }>(
-    ({ danger, off }) => ({
-        width: 48,
-        height: 48,
-        borderRadius: "50%",
-        background: danger
-            ? "#E24B4A"
-            : off
-            ? "#E24B4A"
-            : "rgba(255,255,255,0.1)",
-        border: danger
-            ? "none"
-            : off
-            ? "none"
-            : "0.5px solid rgba(255,255,255,0.15)",
-        color: "#fff",
-        transition: "all 0.15s ease",
-        "&:hover": {
-            background: danger
-                ? "#c73a39"
-                : off
-                ? "#c73a39"
-                : "rgba(255,255,255,0.18)",
-            transform: "scale(1.05)",
-        },
-        "&:active": { transform: "scale(0.95)" },
-    })
-);
+const RoundBtn = styled(IconButton)<{ danger?: boolean; off?: boolean }>(({ danger, off }) => ({
+    width: 48,
+    height: 48,
+    borderRadius: "50%",
+    background: danger ? "#E24B4A" : off ? "#E24B4A" : "rgba(255,255,255,0.1)",
+    border: danger ? "none" : off ? "none" : "0.5px solid rgba(255,255,255,0.15)",
+    color: "#fff",
+    transition: "all 0.15s ease",
+    "&:hover": {
+        background: danger ? "#c73a39" : off ? "#c73a39" : "rgba(255,255,255,0.18)",
+        transform: "scale(1.05)",
+    },
+    "&:active": { transform: "scale(0.95)" },
+}));
 
 const EndBtn = styled(IconButton)({
     width: 52,
@@ -272,7 +271,7 @@ const EndBtn = styled(IconButton)({
     "&:active": { transform: "scale(0.95)" },
 });
 
-const SidePanel = styled(Box)({
+const SidePanel = styled(Box)(({ theme }) => ({
     position: "absolute",
     top: 0,
     right: 0,
@@ -285,7 +284,17 @@ const SidePanel = styled(Box)({
     flexDirection: "column",
     zIndex: 15,
     animation: `${fadeSlideUp} 0.2s ease`,
-});
+    [theme.breakpoints.down("sm")]: {
+        width: "100%",
+        top: "auto",
+        bottom: 0,
+        right: 0,
+        height: "60%",
+        borderLeft: "none",
+        borderTop: "0.5px solid rgba(255,255,255,0.1)",
+        borderRadius: "12px 12px 0 0",
+    },
+}));
 
 const PanelHeader = styled(Box)({
     display: "flex",
@@ -311,9 +320,7 @@ const ParticipantRow = styled(Box)<{ speaking?: boolean }>(({ speaking }) => ({
     padding: "8px 10px",
     borderRadius: 8,
     background: speaking ? "rgba(55,138,221,0.08)" : "rgba(255,255,255,0.03)",
-    border: speaking
-        ? "0.5px solid rgba(55,138,221,0.2)"
-        : "0.5px solid transparent",
+    border: speaking ? "0.5px solid rgba(55,138,221,0.2)" : "0.5px solid transparent",
     marginBottom: 6,
     transition: "all 0.2s",
 }));
@@ -381,7 +388,6 @@ function now(): string {
     return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-/** Returns up to 2 uppercase initials from a display name */
 function getInitials(name: string): string {
     return name
         .trim()
@@ -404,16 +410,17 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
     remoteUsername = "Remote",
     remoteProfilePicture,
 }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const chatBottomRef = useRef<HTMLDivElement>(null);
     const chatInputRef = useRef<HTMLInputElement>(null);
 
-    // Derived display values
     const localInitials = getInitials(localUsername);
     const remoteInitials = getInitials(remoteUsername);
 
-    // Participants panel — built from real prop data (1-on-1 call)
     const participants: Participant[] = [
         { id: 1, initials: remoteInitials, name: remoteUsername, role: "Host" },
         { id: 2, initials: localInitials, name: localUsername },
@@ -430,21 +437,25 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
     const [toast, setToast] = useState<string | null>(null);
     const [showHandOverlay, setShowHandOverlay] = useState(false);
 
-    // PiP corner: "bottom-right" | "bottom-left" | "top-right" | "top-left"
     type Corner = "bottom-right" | "bottom-left" | "top-right" | "top-left";
     const [pipCorner, setPipCorner] = useState<Corner>("bottom-right");
     const [isDragging, setIsDragging] = useState(false);
-    const [isSwapped, setIsSwapped] = useState(false); // swap local <-> remote in main view
+    const [isSwapped, setIsSwapped] = useState(false);
     const dragStartRef = useRef<{ x: number; y: number } | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Corner snap positions (offset from edges, accounting for bottom bar)
-    const MARGIN = 16, BAR_H = 76;
+    // Responsive PiP dimensions\
+    const MARGIN = isMobile ? 8 : 16;
+
+    // Bottom bar height — accounts for safe area dynamically via CSS but we
+    // need a JS number for the snap-corner calculation.
+    const BAR_H = isMobile ? 88 : 76;
+
     const cornerStyles: Record<Corner, React.CSSProperties> = {
         "bottom-right": { bottom: BAR_H + MARGIN, right: MARGIN, top: "auto", left: "auto" },
-        "bottom-left":  { bottom: BAR_H + MARGIN, left: MARGIN, top: "auto", right: "auto" },
-        "top-right":    { top: 56, right: MARGIN, bottom: "auto", left: "auto" },
-        "top-left":     { top: 56, left: MARGIN, bottom: "auto", right: "auto" },
+        "bottom-left": { bottom: BAR_H + MARGIN, left: MARGIN, top: "auto", right: "auto" },
+        "top-right": { top: 56, right: MARGIN, bottom: "auto", left: "auto" },
+        "top-left": { top: 56, left: MARGIN, bottom: "auto", right: "auto" },
     };
 
     const snapToCorner = useCallback((clientX: number, clientY: number) => {
@@ -458,84 +469,83 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
         const isRight = relX > midX;
         const isBottom = relY > midY;
         const corner: Corner =
-            isBottom && isRight ? "bottom-right"
-            : isBottom && !isRight ? "bottom-left"
-            : !isBottom && isRight ? "top-right"
-            : "top-left";
+            isBottom && isRight ? "bottom-right" : isBottom && !isRight ? "bottom-left" : !isBottom && isRight ? "top-right" : "top-left";
         setPipCorner(corner);
     }, []);
 
-    // Toast helper
     const showToast = useCallback((msg: string) => {
         setToast(msg);
         setTimeout(() => setToast(null), 2200);
     }, []);
 
-    const handlePipMouseDown = useCallback((e: React.MouseEvent) => {
-        e.preventDefault();
-        dragStartRef.current = { x: e.clientX, y: e.clientY };
-        setIsDragging(false);
-
-        const onMouseMove = (me: MouseEvent) => {
-            if (!dragStartRef.current) return;
-            const dx = Math.abs(me.clientX - dragStartRef.current.x);
-            const dy = Math.abs(me.clientY - dragStartRef.current.y);
-            if (dx > 6 || dy > 6) setIsDragging(true);
-            snapToCorner(me.clientX, me.clientY);
-        };
-
-        const onMouseUp = (me: MouseEvent) => {
-            window.removeEventListener("mousemove", onMouseMove);
-            window.removeEventListener("mouseup", onMouseUp);
-            const wasDragging = dragStartRef.current &&
-                (Math.abs(me.clientX - dragStartRef.current.x) > 6 ||
-                 Math.abs(me.clientY - dragStartRef.current.y) > 6);
-            dragStartRef.current = null;
+    const handlePipMouseDown = useCallback(
+        (e: React.MouseEvent) => {
+            e.preventDefault();
+            dragStartRef.current = { x: e.clientX, y: e.clientY };
             setIsDragging(false);
-            if (!wasDragging) {
-                // It was a click — swap views
-                setIsSwapped((v) => !v);
-                showToast("Views swapped");
-            }
-        };
 
-        window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("mouseup", onMouseUp);
-    }, [snapToCorner, showToast]);
+            const onMouseMove = (me: MouseEvent) => {
+                if (!dragStartRef.current) return;
+                const dx = Math.abs(me.clientX - dragStartRef.current.x);
+                const dy = Math.abs(me.clientY - dragStartRef.current.y);
+                if (dx > 6 || dy > 6) setIsDragging(true);
+                snapToCorner(me.clientX, me.clientY);
+            };
 
-    // Touch support
-    const handlePipTouchStart = useCallback((e: React.TouchEvent) => {
-        const touch = e.touches[0];
-        dragStartRef.current = { x: touch.clientX, y: touch.clientY };
-        setIsDragging(false);
+            const onMouseUp = (me: MouseEvent) => {
+                window.removeEventListener("mousemove", onMouseMove);
+                window.removeEventListener("mouseup", onMouseUp);
+                const wasDragging =
+                    dragStartRef.current && (Math.abs(me.clientX - dragStartRef.current.x) > 6 || Math.abs(me.clientY - dragStartRef.current.y) > 6);
+                dragStartRef.current = null;
+                setIsDragging(false);
+                if (!wasDragging) {
+                    setIsSwapped((v) => !v);
+                    showToast("Views swapped");
+                }
+            };
 
-        const onTouchMove = (te: TouchEvent) => {
-            const t = te.touches[0];
-            if (!dragStartRef.current) return;
-            const dx = Math.abs(t.clientX - dragStartRef.current.x);
-            const dy = Math.abs(t.clientY - dragStartRef.current.y);
-            if (dx > 6 || dy > 6) setIsDragging(true);
-            snapToCorner(t.clientX, t.clientY);
-        };
+            window.addEventListener("mousemove", onMouseMove);
+            window.addEventListener("mouseup", onMouseUp);
+        },
+        [snapToCorner, showToast],
+    );
 
-        const onTouchEnd = (te: TouchEvent) => {
-            window.removeEventListener("touchmove", onTouchMove);
-            window.removeEventListener("touchend", onTouchEnd);
-            const lastTouch = te.changedTouches[0];
-            const wasDragging = dragStartRef.current &&
-                (Math.abs(lastTouch.clientX - dragStartRef.current.x) > 6 ||
-                 Math.abs(lastTouch.clientY - dragStartRef.current.y) > 6);
-            dragStartRef.current = null;
+    const handlePipTouchStart = useCallback(
+        (e: React.TouchEvent) => {
+            const touch = e.touches[0];
+            dragStartRef.current = { x: touch.clientX, y: touch.clientY };
             setIsDragging(false);
-            if (!wasDragging) {
-                setIsSwapped((v) => !v);
-                showToast("Views swapped");
-            }
-        };
 
-        window.addEventListener("touchmove", onTouchMove, { passive: true });
-        window.addEventListener("touchend", onTouchEnd);
-    }, [snapToCorner, showToast]);
+            const onTouchMove = (te: TouchEvent) => {
+                const t = te.touches[0];
+                if (!dragStartRef.current) return;
+                const dx = Math.abs(t.clientX - dragStartRef.current.x);
+                const dy = Math.abs(t.clientY - dragStartRef.current.y);
+                if (dx > 6 || dy > 6) setIsDragging(true);
+                snapToCorner(t.clientX, t.clientY);
+            };
+
+            const onTouchEnd = (te: TouchEvent) => {
+                window.removeEventListener("touchmove", onTouchMove);
+                window.removeEventListener("touchend", onTouchEnd);
+                const lastTouch = te.changedTouches[0];
+                const wasDragging =
+                    dragStartRef.current &&
+                    (Math.abs(lastTouch.clientX - dragStartRef.current.x) > 6 || Math.abs(lastTouch.clientY - dragStartRef.current.y) > 6);
+                dragStartRef.current = null;
+                setIsDragging(false);
+                if (!wasDragging) {
+                    setIsSwapped((v) => !v);
+                    showToast("Views swapped");
+                }
+            };
+
+            window.addEventListener("touchmove", onTouchMove, { passive: true });
+            window.addEventListener("touchend", onTouchEnd);
+        },
+        [snapToCorner, showToast],
+    );
 
     // Timer
     useEffect(() => {
@@ -544,17 +554,31 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
         return () => clearInterval(interval);
     }, [open]);
 
-    
+    // Reset state when modal opens
+    useEffect(() => {
+        if (open) {
+            setCallSeconds(0);
+            setIsMuted(false);
+            setIsVideoOn(true);
+            setIsSharing(false);
+            setIsHandRaised(false);
+            setActivePanel(null);
+            setMessages([]);
+            setChatText("");
+            setToast(null);
+            setShowHandOverlay(false);
+            setIsSwapped(false);
+            setPipCorner("bottom-right");
+        }
+    }, [open]);
 
     // Stream binding
     useEffect(() => {
-        if (localStream && localVideoRef.current)
-            localVideoRef.current.srcObject = localStream;
+        if (localStream && localVideoRef.current) localVideoRef.current.srcObject = localStream;
     }, [localStream, open]);
 
     useEffect(() => {
-        if (remoteStream && remoteVideoRef.current)
-            remoteVideoRef.current.srcObject = remoteStream;
+        if (remoteStream && remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
     }, [remoteStream, open]);
 
     // Scroll chat to bottom
@@ -595,10 +619,7 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
     const sendMessage = () => {
         const text = chatText.trim();
         if (!text) return;
-        setMessages((prev) => [
-            ...prev,
-            { id: Date.now(), sender: "You", text, isSelf: true, timestamp: now() },
-        ]);
+        setMessages((prev) => [...prev, { id: Date.now(), sender: "You", text, isSelf: true, timestamp: now() }]);
         setChatText("");
         chatInputRef.current?.focus();
     };
@@ -606,59 +627,78 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
     if (!open) return null;
 
     return (
-        <Modal open={open} onClose={onClose} closeAfterTransition>
+        <Modal
+            open={open}
+            onClose={onClose}
+            closeAfterTransition
+            slotProps={{
+                backdrop: {
+                    style: { touchAction: "none", backgroundColor: "#000" },
+                },
+            }}
+            sx={{ margin: 0, padding: 0 }}
+        >
             <ModalRoot>
                 <CallContainer ref={containerRef}>
                     {/* ── Main Video Area ── */}
                     <Box sx={{ flex: 1, position: "relative", overflow: "hidden" }}>
-                        {/* Main feed: remote normally, local when swapped */}
+                        {/* Main feed */}
                         {isSwapped ? (
                             localStream ? (
-                                <RemoteVideo
-                                    ref={localVideoRef}
-                                    autoPlay
-                                    muted
-                                    playsInline
-                                    style={{ transform: "scaleX(-1)" }}
-                                />
+                                <RemoteVideo ref={localVideoRef} autoPlay muted playsInline style={{ transform: "scaleX(-1)" }} />
                             ) : (
                                 <VideoPlaceholder>
                                     {localProfilePicture ? (
                                         <Box
                                             component="img"
                                             src={localProfilePicture}
-                                            sx={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(74,222,128,0.4)" }}
+                                            sx={{
+                                                width: { xs: 64, sm: 80 },
+                                                height: { xs: 64, sm: 80 },
+                                                borderRadius: "50%",
+                                                objectFit: "cover",
+                                                border: "2px solid rgba(74,222,128,0.4)",
+                                            }}
                                         />
                                     ) : (
-                                        <AvatarCircle size={80} color="#4ade80">{localInitials}</AvatarCircle>
+                                        <AvatarCircle size={isMobile ? 64 : 80} color="#4ade80">
+                                            {localInitials}
+                                        </AvatarCircle>
                                     )}
-                                    <Box sx={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontFamily: "'DM Mono', monospace" }}>
+                                    <Box
+                                        sx={{
+                                            color: "rgba(255,255,255,0.4)",
+                                            fontSize: { xs: 12, sm: 13 },
+                                            fontFamily: "'DM Mono', monospace",
+                                        }}
+                                    >
                                         {localUsername} · Camera {isVideoOn ? "on" : "off"}
                                     </Box>
                                 </VideoPlaceholder>
                             )
                         ) : remoteStream ? (
-                            <RemoteVideo
-                                ref={remoteVideoRef}
-                                autoPlay
-                                playsInline
-                                style={{ transform: "scaleX(-1)" }}
-                            />
+                            <RemoteVideo ref={remoteVideoRef} autoPlay playsInline style={{ transform: "scaleX(-1)" }} />
                         ) : (
                             <VideoPlaceholder>
                                 {remoteProfilePicture ? (
                                     <Box
                                         component="img"
                                         src={remoteProfilePicture}
-                                        sx={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(55,138,221,0.4)" }}
+                                        sx={{
+                                            width: { xs: 64, sm: 80 },
+                                            height: { xs: 64, sm: 80 },
+                                            borderRadius: "50%",
+                                            objectFit: "cover",
+                                            border: "2px solid rgba(55,138,221,0.4)",
+                                        }}
                                     />
                                 ) : (
-                                    <AvatarCircle size={80}>{remoteInitials}</AvatarCircle>
+                                    <AvatarCircle size={isMobile ? 64 : 80}>{remoteInitials}</AvatarCircle>
                                 )}
                                 <Box
                                     sx={{
                                         color: "rgba(255,255,255,0.4)",
-                                        fontSize: 13,
+                                        fontSize: { xs: 12, sm: 13 },
                                         fontFamily: "'DM Mono', monospace",
                                     }}
                                 >
@@ -669,24 +709,32 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
 
                         {/* ── Top Bar ── */}
                         <TopBar>
-                            {/* Left: REC + timer */}
                             <Box sx={{ display: "flex", gap: 1, pointerEvents: "auto" }}>
                                 <Badge>
                                     <Box
                                         component="span"
-                                        sx={{ color: "rgba(255,255,255,0.5)", fontSize: 11, fontFamily: "'DM Mono', monospace" }}
+                                        sx={{
+                                            color: "rgba(255,255,255,0.5)",
+                                            fontSize: 11,
+                                            fontFamily: "'DM Mono', monospace",
+                                        }}
                                     >
                                         {formatTime(callSeconds)}
                                     </Box>
                                 </Badge>
                             </Box>
 
-                            {/* Right: quality + signal */}
                             <Box sx={{ display: "flex", gap: 1, pointerEvents: "auto" }}>
-                                <Badge>
+                                {/* Hide HD badge on very small screens */}
+                                <Badge sx={{ display: { xs: "none", sm: "flex" } }}>
                                     <Box
                                         component="span"
-                                        sx={{ color: "#4ade80", fontSize: 11, fontWeight: 600, fontFamily: "'DM Mono', monospace" }}
+                                        sx={{
+                                            color: "#4ade80",
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            fontFamily: "'DM Mono', monospace",
+                                        }}
                                     >
                                         HD · 1080p
                                     </Box>
@@ -695,7 +743,12 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
                                     <SignalCellularAlt sx={{ fontSize: 14, color: "#4ade80" }} />
                                     <Box
                                         component="span"
-                                        sx={{ color: "#4ade80", fontSize: 11, fontFamily: "'DM Mono', monospace" }}
+                                        sx={{
+                                            color: "#4ade80",
+                                            fontSize: 11,
+                                            fontFamily: "'DM Mono', monospace",
+                                            display: { xs: "none", sm: "inline" },
+                                        }}
                                     >
                                         Strong
                                     </Box>
@@ -709,7 +762,7 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
                         {/* Hand overlay */}
                         {showHandOverlay && <HandOverlay>✋</HandOverlay>}
 
-                        {/* PiP — draggable to 4 corners, click to swap */}
+                        {/* PiP */}
                         <Tooltip title={isDragging ? "" : "Drag to move · Click to swap"} placement="top">
                             <PiPWrapper
                                 onMouseDown={handlePipMouseDown}
@@ -727,14 +780,28 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
                                     },
                                 }}
                             >
-                                {/* PiP shows the opposite of main: remote when swapped, local normally */}
                                 {isSwapped ? (
                                     remoteStream ? (
                                         <PiPVideo ref={remoteVideoRef} autoPlay playsInline />
                                     ) : (
-                                        <Box sx={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1, background: "linear-gradient(135deg, #1e3a5f, #1a2a40)" }}>
+                                        <Box
+                                            sx={{
+                                                width: "100%",
+                                                height: "100%",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                gap: 1,
+                                                background: "linear-gradient(135deg, #1e3a5f, #1a2a40)",
+                                            }}
+                                        >
                                             {remoteProfilePicture ? (
-                                                <Box component="img" src={remoteProfilePicture} sx={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
+                                                <Box
+                                                    component="img"
+                                                    src={remoteProfilePicture}
+                                                    sx={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }}
+                                                />
                                             ) : (
                                                 <AvatarCircle size={32}>{remoteInitials}</AvatarCircle>
                                             )}
@@ -743,23 +810,49 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
                                 ) : localStream ? (
                                     <PiPVideo ref={localVideoRef} autoPlay muted playsInline />
                                 ) : (
-                                    <Box sx={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1, background: "linear-gradient(135deg, #1e3a5f, #1a2a40)" }}>
+                                    <Box
+                                        sx={{
+                                            width: "100%",
+                                            height: "100%",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            gap: 1,
+                                            background: "linear-gradient(135deg, #1e3a5f, #1a2a40)",
+                                        }}
+                                    >
                                         {localProfilePicture ? (
-                                            <Box component="img" src={localProfilePicture} sx={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
+                                            <Box
+                                                component="img"
+                                                src={localProfilePicture}
+                                                sx={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }}
+                                            />
                                         ) : (
-                                            <AvatarCircle size={32} color="#4ade80">{localInitials}</AvatarCircle>
+                                            <AvatarCircle size={32} color="#4ade80">
+                                                {localInitials}
+                                            </AvatarCircle>
                                         )}
                                     </Box>
                                 )}
 
                                 {/* Label */}
-                                <Box sx={{ position: "absolute", bottom: 4, left: 6, background: "rgba(0,0,0,0.65)", borderRadius: 1, px: 0.6, py: 0.3, fontSize: 10, color: "rgba(255,255,255,0.7)", fontFamily: "'DM Mono', monospace", pointerEvents: "none" }}>
+                                <Box
+                                    sx={{
+                                        position: "absolute",
+                                        bottom: 4,
+                                        left: 6,
+                                        background: "rgba(0,0,0,0.65)",
+                                        borderRadius: 1,
+                                        px: 0.6,
+                                        py: 0.3,
+                                        fontSize: 10,
+                                        color: "rgba(255,255,255,0.7)",
+                                        fontFamily: "'DM Mono', monospace",
+                                        pointerEvents: "none",
+                                    }}
+                                >
                                     {isSwapped ? remoteUsername : localUsername}
-                                </Box>
-
-                                {/* Swap hint icon on hover */}
-                                <Box sx={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.55)", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.15s", ".MuiBox-root:hover > &": { opacity: 1 }, pointerEvents: "none" }}>
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
                                 </Box>
                             </PiPWrapper>
                         </Tooltip>
@@ -770,46 +863,31 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
 
                     {/* ── Bottom Controls ── */}
                     <BottomBar>
-                        {/* Left */}
+                        {/* Left group */}
                         <ControlGroup>
                             <Tooltip title="Participants" placement="top">
-                                <ControlBtn
-                                    active={activePanel === "participants"}
-                                    onClick={() => togglePanel("participants")}
-                                    size="small"
-                                >
+                                <ControlBtn active={activePanel === "participants"} onClick={() => togglePanel("participants")} size="small">
                                     <People sx={{ fontSize: 18 }} />
                                 </ControlBtn>
                             </Tooltip>
                             <Tooltip title="Chat" placement="top">
-                                <ControlBtn
-                                    active={activePanel === "chat"}
-                                    onClick={() => togglePanel("chat")}
-                                    size="small"
-                                >
+                                <ControlBtn active={activePanel === "chat"} onClick={() => togglePanel("chat")} size="small">
                                     <Chat sx={{ fontSize: 18 }} />
                                 </ControlBtn>
                             </Tooltip>
+                            {/* Hide screen share on mobile (not meaningful) */}
                             <Tooltip title={isSharing ? "Stop sharing" : "Share screen"} placement="top">
-                                <ControlBtn active={isSharing} onClick={toggleShare} size="small">
-                                    {isSharing ? (
-                                        <StopScreenShare sx={{ fontSize: 18 }} />
-                                    ) : (
-                                        <ScreenShare sx={{ fontSize: 18 }} />
-                                    )}
+                                <ControlBtn active={isSharing} onClick={toggleShare} size="small" sx={{ display: { xs: "none", sm: "flex" } }}>
+                                    {isSharing ? <StopScreenShare sx={{ fontSize: 18 }} /> : <ScreenShare sx={{ fontSize: 18 }} />}
                                 </ControlBtn>
                             </Tooltip>
                         </ControlGroup>
 
-                        {/* Center */}
+                        {/* Center group */}
                         <ControlGroup sx={{ gap: "10px" }}>
                             <Tooltip title={isMuted ? "Unmute" : "Mute"} placement="top">
                                 <RoundBtn off={isMuted} onClick={toggleMic}>
-                                    {isMuted ? (
-                                        <MicOff sx={{ fontSize: 20 }} />
-                                    ) : (
-                                        <Mic sx={{ fontSize: 20 }} />
-                                    )}
+                                    {isMuted ? <MicOff sx={{ fontSize: 20 }} /> : <Mic sx={{ fontSize: 20 }} />}
                                 </RoundBtn>
                             </Tooltip>
 
@@ -821,16 +899,12 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
 
                             <Tooltip title={isVideoOn ? "Turn off camera" : "Turn on camera"} placement="top">
                                 <RoundBtn off={!isVideoOn} onClick={toggleVideo}>
-                                    {isVideoOn ? (
-                                        <Videocam sx={{ fontSize: 20 }} />
-                                    ) : (
-                                        <VideocamOff sx={{ fontSize: 20 }} />
-                                    )}
+                                    {isVideoOn ? <Videocam sx={{ fontSize: 20 }} /> : <VideocamOff sx={{ fontSize: 20 }} />}
                                 </RoundBtn>
                             </Tooltip>
                         </ControlGroup>
 
-                        {/* Right */}
+                        {/* Right group */}
                         <ControlGroup>
                             <Tooltip title={isHandRaised ? "Lower hand" : "Raise hand"} placement="top">
                                 <ControlBtn
@@ -863,23 +937,24 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
                         <SidePanel>
                             <PanelHeader>
                                 <PanelTitle>Participants ({participants.length})</PanelTitle>
-                                <IconButton
-                                    size="small"
-                                    onClick={() => setActivePanel(null)}
-                                    sx={{ color: "rgba(255,255,255,0.4)", p: 0.4 }}
-                                >
+                                <IconButton size="small" onClick={() => setActivePanel(null)} sx={{ color: "rgba(255,255,255,0.4)", p: 0.4 }}>
                                     <Close sx={{ fontSize: 16 }} />
                                 </IconButton>
                             </PanelHeader>
                             <Box sx={{ flex: 1, overflowY: "auto", padding: "10px" }}>
                                 {participants.map((p) => (
                                     <ParticipantRow key={p.id} speaking={p.isSpeaking}>
-                                        {/* Show real profile picture if available, else initials */}
                                         {(p.id === 1 ? remoteProfilePicture : localProfilePicture) ? (
                                             <Box
                                                 component="img"
                                                 src={p.id === 1 ? remoteProfilePicture : localProfilePicture}
-                                                sx={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+                                                sx={{
+                                                    width: 34,
+                                                    height: 34,
+                                                    borderRadius: "50%",
+                                                    objectFit: "cover",
+                                                    flexShrink: 0,
+                                                }}
                                             />
                                         ) : (
                                             <AvatarCircle size={34} color={p.id === 2 ? "#4ade80" : "#378ADD"}>
@@ -902,19 +977,27 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
                                             <Box
                                                 sx={{
                                                     fontSize: 11,
-                                                    color: p.isSpeaking
-                                                        ? "#4ade80"
-                                                        : "rgba(255,255,255,0.35)",
+                                                    color: p.isSpeaking ? "#4ade80" : "rgba(255,255,255,0.35)",
                                                 }}
                                             >
                                                 {p.role ?? (p.isMuted ? "Muted" : p.isSpeaking ? "Speaking" : "")}
                                             </Box>
                                         </Box>
                                         {p.isMuted && (
-                                            <MicOff sx={{ fontSize: 14, color: "rgba(226,75,74,0.7)" }} />
+                                            <MicOff
+                                                sx={{
+                                                    fontSize: 14,
+                                                    color: "rgba(226,75,74,0.7)",
+                                                }}
+                                            />
                                         )}
                                         {!p.isMuted && !p.isSpeaking && (
-                                            <Mic sx={{ fontSize: 14, color: "rgba(255,255,255,0.3)" }} />
+                                            <Mic
+                                                sx={{
+                                                    fontSize: 14,
+                                                    color: "rgba(255,255,255,0.3)",
+                                                }}
+                                            />
                                         )}
                                     </ParticipantRow>
                                 ))}
@@ -927,11 +1010,7 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
                         <SidePanel>
                             <PanelHeader>
                                 <PanelTitle>Chat</PanelTitle>
-                                <IconButton
-                                    size="small"
-                                    onClick={() => setActivePanel(null)}
-                                    sx={{ color: "rgba(255,255,255,0.4)", p: 0.4 }}
-                                >
+                                <IconButton size="small" onClick={() => setActivePanel(null)} sx={{ color: "rgba(255,255,255,0.4)", p: 0.4 }}>
                                     <Close sx={{ fontSize: 16 }} />
                                 </IconButton>
                             </PanelHeader>
@@ -992,6 +1071,7 @@ const VideoCallModal: React.FC<VideoCallModalProps> = ({
                                     gap: 1,
                                     alignItems: "center",
                                     padding: "10px",
+                                    paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
                                     borderTop: "0.5px solid rgba(255,255,255,0.07)",
                                 }}
                             >
