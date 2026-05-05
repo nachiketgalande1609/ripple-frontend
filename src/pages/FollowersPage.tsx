@@ -54,16 +54,15 @@ const RemoveConfirmDialog = ({
         fullWidth
         sx={{
             "& .MuiDialog-paper": {
-                borderRadius: "16px",
+                borderRadius: "20px",
                 p: 0,
                 overflow: "hidden",
-                border: "1px solid",
-                borderColor: (t) => t.palette.divider,
-                boxShadow: "0 16px 40px rgba(0,0,0,0.2)",
-                transform: "translateZ(0)",
-                willChange: "transform",
+                background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+                color: "white",
             },
-            "& .MuiBackdrop-root": { backgroundColor: "rgba(0,0,0,0.4)" },
+            "& .MuiBackdrop-root": { backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.6)" },
         }}
     >
         <DialogContent sx={{ p: 2.5, textAlign: "center" }}>
@@ -74,8 +73,7 @@ const RemoveConfirmDialog = ({
                     height: 54,
                     mx: "auto",
                     mb: 1.75,
-                    border: "1px solid",
-                    borderColor: (t) => t.palette.divider,
+                    border: "1px solid rgba(255,255,255,0.1)",
                 }}
             />
             <Typography
@@ -84,7 +82,7 @@ const RemoveConfirmDialog = ({
                     fontSize: "0.95rem",
                     fontWeight: 500,
                     mb: 0.5,
-                    color: (t) => t.palette.text.primary,
+                    color: "rgba(255,255,255,0.9)",
                 }}
             >
                 Remove follower?
@@ -93,12 +91,12 @@ const RemoveConfirmDialog = ({
                 sx={{
                     fontFamily: "'Inter', sans-serif",
                     fontSize: "0.8rem",
-                    color: (t) => t.palette.text.secondary,
+                    color: "rgba(255,255,255,0.5)",
                     mb: 2.5,
                     lineHeight: 1.6,
                 }}
             >
-                <strong>@{username}</strong> will be removed from your followers. They won't be notified.
+                <strong style={{ color: "rgba(255,255,255,0.75)" }}>@{username}</strong> will be removed from your followers. They won't be notified.
             </Typography>
 
             <Stack spacing={0.875}>
@@ -113,12 +111,11 @@ const RemoveConfirmDialog = ({
                         fontSize: "0.84rem",
                         borderRadius: "10px",
                         py: 0.875,
-                        backgroundColor: (t) => `${t.palette.error.main}14`,
-                        color: (t) => t.palette.error.main,
-                        border: "1px solid",
-                        borderColor: (t) => `${t.palette.error.main}30`,
-                        "&:hover": { backgroundColor: (t) => `${t.palette.error.main}20` },
-                        "&:disabled": { opacity: 0.6 },
+                        background: "rgba(255,59,48,0.1)",
+                        color: "rgba(255,100,100,0.85)",
+                        border: "1px solid rgba(255,100,100,0.2)",
+                        "&:hover": { background: "rgba(255,59,48,0.18)", color: "#ff6b6b" },
+                        "&:disabled": { opacity: 0.5 },
                     }}
                 >
                     {loading ? "Removing…" : "Remove"}
@@ -134,12 +131,11 @@ const RemoveConfirmDialog = ({
                         fontSize: "0.84rem",
                         borderRadius: "10px",
                         py: 0.875,
-                        color: (t) => t.palette.text.secondary,
-                        border: "1px solid",
-                        borderColor: (t) => t.palette.divider,
+                        color: "rgba(255,255,255,0.3)",
+                        border: "1px solid rgba(255,255,255,0.08)",
                         "&:hover": {
-                            backgroundColor: (t) => t.palette.action.hover,
-                            borderColor: (t) => t.palette.text.disabled,
+                            background: "rgba(255,255,255,0.04)",
+                            color: "rgba(255,255,255,0.55)",
                         },
                     }}
                 >

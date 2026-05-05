@@ -285,17 +285,14 @@ const ProfileDetails = () => {
   };
 
   const dialogPaperSx = {
-    borderRadius: "16px",
-    backgroundColor: (t: any) => t.palette.background.paper,
-    border: "1px solid",
-    borderColor: (t: any) => t.palette.divider,
-    boxShadow: "0 16px 40px rgba(0,0,0,0.2)",
-    color: (t: any) => t.palette.text.primary,
+    borderRadius: "20px",
+    background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+    color: "white",
     overflow: "hidden",
     width: "calc(100% - 32px)",
     m: 2,
-    transform: "translateZ(0)",
-    willChange: "transform",
   };
 
   return (
@@ -733,7 +730,7 @@ const ProfileDetails = () => {
         onClose={handleCloseDialog}
         fullWidth
         maxWidth="sm"
-        BackdropProps={{ sx: { backgroundColor: "rgba(0,0,0,0.4)" } }}
+        BackdropProps={{ sx: { backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.6)" } }}
         TransitionComponent={Fade}
         transitionDuration={200}
         sx={{ "& .MuiDialog-paper": dialogPaperSx }}

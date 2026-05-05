@@ -47,17 +47,17 @@ const NewChatUsersList = ({ open, setAnchorEl, usersList }: NewChatUsersListProp
             onClose={handleClose}
             PaperProps={{
                 sx: {
-                    backgroundColor: (t) => t.palette.background.paper,
-                    border: "1px solid",
-                    borderColor: (t) => t.palette.divider,
-                    borderRadius: "16px",
+                    background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
+                    border: "1px solid rgba(255,255,255,0.07)",
+                    borderRadius: "20px",
                     width: 380,
                     maxWidth: "95vw",
                     overflow: "hidden",
-                    boxShadow: "0 24px 48px rgba(0,0,0,0.4)",
+                    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+                    color: "white",
                 },
             }}
-            BackdropProps={{ sx: { backgroundColor: "rgba(0,0,0,0.6)" } }}
+            BackdropProps={{ sx: { backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.6)" } }}
         >
             {/* Header */}
             <Box

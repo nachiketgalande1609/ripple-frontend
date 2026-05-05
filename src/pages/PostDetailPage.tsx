@@ -75,7 +75,7 @@ function useTokens() {
 
 /* ─── Dialog backdrop ──────────────────────────────────────────── */
 const backdropProps = {
-  sx: { backdropFilter: "blur(12px)", backgroundColor: "rgba(0,0,0,0.65)" },
+  sx: { backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.6)" },
 };
 
 /* ─── Small reusable pieces ──────────────────────────────────── */
@@ -84,7 +84,7 @@ function Divider() {
     <Box
       sx={{
         height: "1px",
-        backgroundColor: (t) => t.palette.divider,
+        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)",
         mx: 1.5,
         my: 0.5,
       }}
@@ -103,30 +103,11 @@ function SheetButton({
   onClick: () => void;
   variant?: "default" | "danger" | "warning" | "muted";
 }) {
-  const theme = useTheme();
-  const p = theme.palette;
-
   const colors = {
-    default: {
-      color: p.text.secondary,
-      hover: p.action.hover,
-      hoverColor: p.text.primary,
-    },
-    danger: {
-      color: p.error.main,
-      hover: `${p.error.main}1f`,
-      hoverColor: p.error.light,
-    },
-    warning: {
-      color: p.warning.main,
-      hover: `${p.warning.main}26`,
-      hoverColor: p.warning.light,
-    },
-    muted: {
-      color: p.text.disabled,
-      hover: p.action.hover,
-      hoverColor: p.text.secondary,
-    },
+    default: { color: "rgba(255,255,255,0.8)", hover: "rgba(124,92,252,0.12)", hoverColor: "#fff", iconBg: "rgba(255,255,255,0.06)", iconColor: "rgba(255,255,255,0.5)" },
+    danger: { color: "rgba(255,100,100,0.85)", hover: "rgba(255,59,48,0.1)", hoverColor: "#ff6b6b", iconBg: "rgba(255,59,48,0.08)", iconColor: "rgba(255,100,100,0.6)" },
+    warning: { color: "#fff", hover: "rgba(230,57,70,0.28)", hoverColor: "#ff6b6b", iconBg: "rgba(230,57,70,0.15)", iconColor: "rgba(255,100,100,0.6)" },
+    muted: { color: "rgba(255,255,255,0.3)", hover: "rgba(255,255,255,0.04)", hoverColor: "rgba(255,255,255,0.55)", iconBg: "rgba(255,255,255,0.04)", iconColor: "rgba(255,255,255,0.25)" },
   };
   const c = colors[variant];
 
@@ -143,13 +124,13 @@ function SheetButton({
         borderRadius: "12px",
         textTransform: "none",
         justifyContent: "flex-start",
-        fontFamily: "'DM Sans', sans-serif",
-        fontWeight: 500,
+        fontFamily: "'Inter', sans-serif",
+        fontWeight: variant === "warning" ? 600 : 500,
         fontSize: "0.875rem",
         color: c.color,
-        bgcolor: "transparent",
+        bgcolor: variant === "warning" ? "rgba(230,57,70,0.18)" : "transparent",
         transition: "all 0.18s ease",
-        "&:hover": { bgcolor: c.hover, color: c.hoverColor },
+        "&:hover": { background: c.hover, color: c.hoverColor },
       }}
     >
       <Box
@@ -157,13 +138,12 @@ function SheetButton({
           width: 32,
           height: 32,
           borderRadius: "9px",
-          bgcolor: (t) => t.palette.action.hover,
-          border: "1px solid",
-          borderColor: (t) => t.palette.divider,
+          background: c.iconBg,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
+          color: c.iconColor,
         }}
       >
         {icon}
@@ -327,13 +307,12 @@ const PostDetailPage = () => {
 
   const isOwner = currentUser?.id === post?.user_id;
 
-  // paperSx inside component so tokens are available
   const paperSx = {
-    borderRadius: "18px",
-    backgroundColor: tokens.bg2,
-    border: `1px solid ${tokens.border}`,
-    boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
-    color: tokens.textPrimary,
+    borderRadius: "20px",
+    background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+    color: "white",
     overflow: "hidden",
     p: "6px",
     width: "90%",

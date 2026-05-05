@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme } from "@mui/material";
+import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
 import VideoPlayer from "../../component/VideoPlayer";
 import {
@@ -93,7 +93,8 @@ function DialogBtn({
     muted?: boolean;
     disabled?: boolean;
 }) {
-    const theme = useTheme();
+    const iconBg = danger ? "rgba(255,59,48,0.08)" : warning ? "rgba(230,57,70,0.15)" : muted ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.06)";
+    const iconColor = danger || warning ? "rgba(255,100,100,0.6)" : muted ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.5)";
     return (
         <Button
             fullWidth
@@ -109,22 +110,16 @@ function DialogBtn({
                 textTransform: "none",
                 justifyContent: "flex-start",
                 fontFamily: "'Inter', -apple-system, sans-serif",
-                fontWeight: 500,
+                fontWeight: warning ? 600 : 500,
                 fontSize: "0.875rem",
-                color: warning
-                    ? theme.palette.text.primary
-                    : danger
-                      ? theme.palette.error.main
-                      : muted
-                        ? theme.palette.text.disabled
-                        : theme.palette.text.secondary,
-                backgroundColor: warning ? `${theme.palette.error.main}18` : "transparent",
+                color: warning ? "#fff" : danger ? "rgba(255,100,100,0.85)" : muted ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.8)",
+                backgroundColor: warning ? "rgba(230,57,70,0.18)" : "transparent",
                 transition: "background 0.15s",
                 "&:hover": {
-                    backgroundColor: warning || danger ? `${theme.palette.error.main}14` : muted ? theme.palette.action.hover : `${ACCENT}12`,
-                    color: warning || danger ? theme.palette.error.main : muted ? theme.palette.text.secondary : theme.palette.text.primary,
+                    background: warning ? "rgba(230,57,70,0.28)" : danger ? "rgba(255,59,48,0.1)" : muted ? "rgba(255,255,255,0.04)" : "rgba(124,92,252,0.12)",
+                    color: warning || danger ? "#ff6b6b" : muted ? "rgba(255,255,255,0.55)" : "#fff",
                 },
-                "&:disabled": { color: theme.palette.action.disabled },
+                "&:disabled": { color: "rgba(255,255,255,0.2)" },
             }}
         >
             <Box
@@ -133,11 +128,11 @@ function DialogBtn({
                     height: 32,
                     borderRadius: "9px",
                     flexShrink: 0,
-                    backgroundColor: danger || warning ? `${theme.palette.error.main}14` : theme.palette.action.hover,
+                    background: iconBg,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: danger || warning ? theme.palette.error.main : muted ? theme.palette.text.disabled : theme.palette.text.secondary,
+                    color: iconColor,
                 }}
             >
                 {icon}
@@ -148,11 +143,10 @@ function DialogBtn({
 }
 
 function DialogDivider() {
-    return <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 0.5, my: 0.375 }} />;
+    return <Box sx={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)", mx: 0.5, my: 0.375 }} />;
 }
 
 const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
-    const theme = useTheme();
     const navigate = useNavigate();
     const notifications = useAppNotifications();
 
@@ -184,17 +178,17 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const isOwner = currentUser?.id === post.user_id;
 
     const dialogPaperSx = {
-        borderRadius: "16px",
-        backgroundColor: theme.palette.background.paper,
-        border: `1px solid ${theme.palette.divider}`,
-        boxShadow: "0 16px 40px rgba(0,0,0,0.2)",
-        color: theme.palette.text.primary,
+        borderRadius: "20px",
+        background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+        color: "white",
         overflow: "hidden",
         padding: "6px",
     };
 
     const dialogBackdrop = {
-        sx: { backdropFilter: "blur(4px)", backgroundColor: "rgba(0,0,0,0.4)" },
+        sx: { backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.6)" },
     };
 
     const handleUserClick = (user: User) => {

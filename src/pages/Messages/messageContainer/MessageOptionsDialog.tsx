@@ -1,4 +1,4 @@
-import { Dialog, Box, Button, useTheme } from "@mui/material";
+import { Dialog, Box, Button } from "@mui/material";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -15,18 +15,19 @@ const dialogBackdrop = {
 };
 
 function DialogIconWrap({ children, danger = false, muted = false }: { children: React.ReactNode; danger?: boolean; muted?: boolean }) {
-    const theme = useTheme();
+    const bg = danger ? "rgba(255,59,48,0.08)" : muted ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.06)";
+    const color = danger ? "rgba(255,100,100,0.6)" : muted ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.5)";
     return (
         <Box
             sx={{
                 width: 34,
                 height: 34,
                 borderRadius: "10px",
-                backgroundColor: danger ? `${theme.palette.error.main}14` : theme.palette.action.hover,
+                background: bg,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: danger ? theme.palette.error.light : muted ? theme.palette.text.disabled : theme.palette.text.secondary,
+                color,
                 transition: "all 0.2s ease",
                 flexShrink: 0,
             }}
@@ -49,7 +50,6 @@ function DialogButton({
     danger?: boolean;
     muted?: boolean;
 }) {
-    const theme = useTheme();
     return (
         <Button
             fullWidth
@@ -63,14 +63,14 @@ function DialogButton({
                 borderRadius: "12px",
                 textTransform: "none",
                 justifyContent: "flex-start",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 fontWeight: 500,
                 fontSize: "0.875rem",
-                color: danger ? theme.palette.error.light : muted ? theme.palette.text.disabled : theme.palette.text.secondary,
+                color: danger ? "rgba(255,100,100,0.85)" : muted ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.8)",
                 transition: "all 0.2s ease",
                 "&:hover": {
-                    backgroundColor: danger ? `${theme.palette.error.main}1a` : muted ? theme.palette.action.hover : "rgba(124,92,252,0.12)",
-                    color: danger ? theme.palette.error.light : muted ? theme.palette.text.secondary : theme.palette.text.primary,
+                    background: danger ? "rgba(255,59,48,0.1)" : muted ? "rgba(255,255,255,0.04)" : "rgba(124,92,252,0.12)",
+                    color: danger ? "#ff6b6b" : muted ? "rgba(255,255,255,0.55)" : "#fff",
                 },
             }}
         >
@@ -83,18 +83,16 @@ function DialogButton({
 }
 
 function DialogDivider() {
-    return <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 1, my: 0.5 }} />;
+    return <Box sx={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)", mx: 1, my: 0.5 }} />;
 }
 
 const MessageOptionsDialog = ({ open, onClose, onDelete, onInfo }: MessageOptionsDialogProps) => {
-    const theme = useTheme();
-
     const dialogPaperSx = {
         borderRadius: "20px",
-        backgroundColor: theme.palette.background.paper,
-        border: `1px solid ${theme.palette.divider}`,
-        boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
-        color: theme.palette.text.primary,
+        background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+        color: "white",
         overflow: "hidden",
         padding: "6px",
     };

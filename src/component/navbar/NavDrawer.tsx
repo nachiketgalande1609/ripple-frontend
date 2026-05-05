@@ -916,81 +916,82 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 fullWidth
                 sx={{
                     "& .MuiDialog-paper": {
-                        borderRadius: "16px",
-                        backgroundColor: (t) => t.palette.background.paper,
-                        border: "1px solid",
-                        borderColor: (t) => t.palette.divider,
-                        padding: "8px",
-                        boxShadow: "0 16px 40px rgba(0,0,0,0.2)",
+                        borderRadius: "20px",
+                        background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
+                        border: "1px solid rgba(255,255,255,0.07)",
+                        boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+                        color: "white",
+                        overflow: "hidden",
+                        padding: "6px",
                     },
                 }}
                 BackdropProps={{
                     sx: {
-                        backgroundColor: "rgba(0,0,0,0.4)",
-                        backdropFilter: "blur(4px)",
+                        backgroundColor: "rgba(0,0,0,0.6)",
+                        backdropFilter: "blur(8px)",
                     },
                 }}
             >
-                <Box sx={{ px: 2, pt: 1.5, pb: 1 }}>
-                    <Typography
-                        sx={{
-                            fontFamily: "'Inter',sans-serif",
-                            fontWeight: 500,
-                            fontSize: "0.95rem",
-                            color: (t) => t.palette.text.primary,
-                            mb: 0.5,
-                        }}
-                    >
-                        Log out of Ripple?
-                    </Typography>
-                    <Typography
-                        sx={{
-                            fontFamily: "'Inter',sans-serif",
-                            fontSize: "0.83rem",
-                            color: (t) => t.palette.text.secondary,
-                        }}
-                    >
-                        You can always log back in.
-                    </Typography>
+                {/* User info header */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.75, mb: 0.5 }}>
+                    <img
+                        src={currentUser?.profile_picture_url || BlankProfileImage}
+                        alt="Profile"
+                        style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(124,92,252,0.5)" }}
+                    />
+                    <Box>
+                        <Box sx={{ fontWeight: 600, fontSize: "0.9rem", color: "#fff", lineHeight: 1.3 }}>
+                            {currentUser?.username}
+                        </Box>
+                        <Box sx={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)" }}>
+                            Log out of Ripple?
+                        </Box>
+                    </Box>
                 </Box>
-                <Box sx={{ display: "flex", gap: 1, px: 1, pt: 1, pb: 0.5 }}>
-                    <Button
-                        fullWidth
-                        variant="outlined"
-                        onClick={() => setMoreOpen(false)}
-                        sx={{
-                            borderRadius: "10px",
-                            textTransform: "none",
-                            fontFamily: "'Inter',sans-serif",
-                            fontWeight: 500,
-                            fontSize: "0.875rem",
-                            borderColor: (t) => t.palette.divider,
-                            color: (t) => t.palette.text.secondary,
-                            "&:hover": {
-                                borderColor: (t) => t.palette.text.secondary,
-                                background: "transparent",
-                            },
-                        }}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        fullWidth
-                        onClick={handleLogout}
-                        sx={{
-                            borderRadius: "10px",
-                            textTransform: "none",
-                            fontFamily: "'Inter',sans-serif",
-                            fontWeight: 500,
-                            fontSize: "0.875rem",
-                            background: (t) => t.palette.error.main,
-                            color: "#fff",
-                            "&:hover": { background: (t) => t.palette.error.dark },
-                        }}
-                    >
-                        Log out
-                    </Button>
-                </Box>
+
+                {/* Divider */}
+                <Box sx={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)", mx: 1, my: 0.5 }} />
+
+                {/* Log out action */}
+                <Button
+                    fullWidth
+                    onClick={handleLogout}
+                    sx={{
+                        display: "flex", alignItems: "center", gap: 1.5,
+                        px: 2, py: 1.4, borderRadius: "12px",
+                        textTransform: "none", justifyContent: "flex-start",
+                        fontWeight: 500, fontSize: "0.875rem",
+                        color: "rgba(255,100,100,0.85)",
+                        "&:hover": { background: "rgba(255,59,48,0.1)", color: "#ff6b6b" },
+                    }}
+                >
+                    <Box sx={{ width: 34, height: 34, borderRadius: "10px", background: "rgba(255,59,48,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,100,100,0.6)", flexShrink: 0 }}>
+                        <LogoutOutlined sx={{ fontSize: "1.1rem" }} />
+                    </Box>
+                    Log out
+                </Button>
+
+                {/* Divider */}
+                <Box sx={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)", mx: 1, my: 0.5 }} />
+
+                {/* Cancel */}
+                <Button
+                    fullWidth
+                    onClick={() => setMoreOpen(false)}
+                    sx={{
+                        display: "flex", alignItems: "center", gap: 1.5,
+                        px: 2, py: 1.4, borderRadius: "12px",
+                        textTransform: "none", justifyContent: "flex-start",
+                        fontWeight: 500, fontSize: "0.875rem",
+                        color: "rgba(255,255,255,0.3)",
+                        "&:hover": { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.55)" },
+                    }}
+                >
+                    <Box sx={{ width: 34, height: 34, borderRadius: "10px", background: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.25)", flexShrink: 0 }}>
+                        <CloseIcon sx={{ fontSize: "1.1rem" }} />
+                    </Box>
+                    Cancel
+                </Button>
             </Dialog>
 
             <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />
