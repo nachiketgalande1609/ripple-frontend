@@ -1,11 +1,13 @@
-import { Container, Box, Typography, useMediaQuery, useTheme, Skeleton } from "@mui/material";
+import { Container, Box, Typography, useMediaQuery, useTheme, Skeleton, CircularProgress } from "@mui/material";
 import { SentimentDissatisfied, Add } from "@mui/icons-material";
 import Post from "../component/post/Post";
 import StoryDialog from "../component/stories/StoryDialog";
 import UploadStoryDialog from "../component/stories/UploadStoryDialog";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { getPosts, getStories } from "../services/api";
 import BlankProfileImage from "../static/profile_blank.png";
+
+const POSTS_PER_PAGE = 3;
 
 const ACCENT = "#7c5cfc";
 
@@ -173,6 +175,12 @@ const HomePage = () => {
 
     const [posts, setPosts] = useState<any[]>([]);
     const [loadingPosts, setLoadingPosts] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const offsetRef = useRef(0);
+    const sentinelRef = useRef<HTMLDivElement | null>(null);
+    const fetchingRef = useRef(false);
+
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
 
     const theme = useTheme();
@@ -188,18 +196,36 @@ const HomePage = () => {
 
     const avatarSize = isMobile ? 52 : 58;
 
-    const fetchPosts = async () => {
-        try {
-            if (currentUser?.id) {
-                const res = await getPosts();
-                setPosts(res.data);
+    const fetchPosts = useCallback(
+        async (reset = false) => {
+            if (fetchingRef.current) return;
+            if (!reset && !hasMore) return;
+            fetchingRef.current = true;
+
+            const offset = reset ? 0 : offsetRef.current;
+            const isInitial = offset === 0;
+
+            if (isInitial) setLoadingPosts(true);
+            else setLoadingMore(true);
+
+            try {
+                if (currentUser?.id) {
+                    const res = await getPosts(offset, POSTS_PER_PAGE);
+                    const newPosts: any[] = res.data ?? [];
+                    setPosts((prev) => (reset ? newPosts : [...prev, ...newPosts]));
+                    setHasMore(res.hasMore ?? false);
+                    offsetRef.current = offset + newPosts.length;
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoadingPosts(false);
+                setLoadingMore(false);
+                fetchingRef.current = false;
             }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoadingPosts(false);
-        }
-    };
+        },
+        [hasMore],
+    );
 
     const fetchStories = async () => {
         try {
@@ -224,9 +250,24 @@ const HomePage = () => {
     };
 
     useEffect(() => {
-        fetchPosts();
+        fetchPosts(true);
         fetchStories();
     }, []);
+
+    useEffect(() => {
+        const sentinel = sentinelRef.current;
+        if (!sentinel) return;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !fetchingRef.current) {
+                    fetchPosts();
+                }
+            },
+            { threshold: 0.1 },
+        );
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [fetchPosts]);
 
     return (
         <Box
@@ -351,7 +392,7 @@ const HomePage = () => {
                                         mb: isMobile ? 0 : index !== posts.length - 1 ? "10px" : 0,
                                     }}
                                 >
-                                    <Post post={post} fetchPosts={fetchPosts} borderRadius={isMobile ? "0px" : "14px"} />
+                                    <Post post={post} fetchPosts={() => fetchPosts(true)} borderRadius={isMobile ? "0px" : "14px"} />
                                 </Box>
                             ))}
                         </Box>
@@ -425,6 +466,29 @@ const HomePage = () => {
                                 Share a story
                             </Box>
                         </Box>
+                    )}
+
+                    {/* Sentinel is always in the DOM so IntersectionObserver can attach on mount */}
+                    <div ref={sentinelRef} style={{ height: 1 }} />
+
+                    {loadingMore && (
+                        <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                            <CircularProgress size={28} sx={{ color: ACCENT }} />
+                        </Box>
+                    )}
+
+                    {!hasMore && posts.length > 0 && (
+                        <Typography
+                            sx={{
+                                textAlign: "center",
+                                py: 3,
+                                fontSize: "0.78rem",
+                                color: (t) => t.palette.text.disabled,
+                                fontFamily: "'Inter', sans-serif",
+                            }}
+                        >
+                            You're all caught up
+                        </Typography>
                     )}
                 </Box>
             </Container>

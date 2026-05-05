@@ -416,9 +416,9 @@ export const getPost = async (postId: string) => {
     }
 };
 
-export const getPosts = async () => {
+export const getPosts = async (offset = 0, limit = 10) => {
     try {
-        const response = await api.get(GET_POSTS_ENDPOINT);
+        const response = await api.get(GET_POSTS_ENDPOINT, { params: { offset, limit } });
 
         return response.data;
     } catch (error: unknown) {
