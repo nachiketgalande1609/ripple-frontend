@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Box, Typography, IconButton, InputBase, CircularProgress, Skeleton, Badge } from "@mui/material";
-import {
-    ChatBubbleOutlineRounded,
-    Close as CloseIcon,
-    ArrowBack as ArrowBackIcon,
-    Send as SendIcon,
-} from "@mui/icons-material";
+import { ChatBubbleOutlineRounded, Close as CloseIcon, ArrowBack as ArrowBackIcon, Send as SendIcon } from "@mui/icons-material";
 import socket from "../../services/socket";
 import { getAllMessageUsersData, getMessagesDataForSelectedUser } from "../../services/api";
 import BlankProfileImage from "../../static/profile_blank.png";
@@ -83,45 +78,48 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
     }, [open]);
 
     // ── Fetch messages (initial or older) ───────────────────────────
-    const fetchMessages = useCallback(async (userId: number, offset: number, prepend: boolean) => {
-        if (offset === 0) {
-            setLoadingMessages(true);
-        } else {
-            if (fetchingOlderRef.current) return;
-            fetchingOlderRef.current = true;
-            setLoadingOlder(true);
-        }
-
-        try {
-            const res = await getMessagesDataForSelectedUser(userId, offset, MSG_PAGE);
-            const batch: Message[] = (res.data || []).slice().reverse();
-            hasMoreRef.current = res.data?.length === MSG_PAGE;
-
+    const fetchMessages = useCallback(
+        async (userId: number, offset: number, _prepend: boolean) => {
             if (offset === 0) {
-                setMessages(batch);
-                // Scroll to bottom after initial load
-                requestAnimationFrame(() => scrollToBottom());
+                setLoadingMessages(true);
             } else {
-                // Preserve scroll position when prepending older messages
-                const container = msgListRef.current;
-                const prevScrollHeight = container?.scrollHeight ?? 0;
-                setMessages((prev) => [...batch, ...prev]);
-                requestAnimationFrame(() => {
-                    if (container) {
-                        container.scrollTop += container.scrollHeight - prevScrollHeight;
-                    }
-                });
+                if (fetchingOlderRef.current) return;
+                fetchingOlderRef.current = true;
+                setLoadingOlder(true);
             }
 
-            msgOffsetRef.current = offset + batch.length;
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoadingMessages(false);
-            setLoadingOlder(false);
-            fetchingOlderRef.current = false;
-        }
-    }, [scrollToBottom]);
+            try {
+                const res = await getMessagesDataForSelectedUser(userId, offset, MSG_PAGE);
+                const batch: Message[] = (res.data || []).slice().reverse();
+                hasMoreRef.current = res.data?.length === MSG_PAGE;
+
+                if (offset === 0) {
+                    setMessages(batch);
+                    // Scroll to bottom after initial load
+                    requestAnimationFrame(() => scrollToBottom());
+                } else {
+                    // Preserve scroll position when prepending older messages
+                    const container = msgListRef.current;
+                    const prevScrollHeight = container?.scrollHeight ?? 0;
+                    setMessages((prev) => [...batch, ...prev]);
+                    requestAnimationFrame(() => {
+                        if (container) {
+                            container.scrollTop += container.scrollHeight - prevScrollHeight;
+                        }
+                    });
+                }
+
+                msgOffsetRef.current = offset + batch.length;
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoadingMessages(false);
+                setLoadingOlder(false);
+                fetchingOlderRef.current = false;
+            }
+        },
+        [scrollToBottom],
+    );
 
     // ── Scroll handler: load older on approach top ───────────────────
     const handleMsgScroll = useCallback(() => {
@@ -158,16 +156,12 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                 });
                 requestAnimationFrame(() => scrollToBottom());
             } else {
-                setUsers((prev) =>
-                    prev.map((u) => (u.id === data.senderId ? { ...u, unread_count: (u.unread_count || 0) + 1 } : u)),
-                );
+                setUsers((prev) => prev.map((u) => (u.id === data.senderId ? { ...u, unread_count: (u.unread_count || 0) + 1 } : u)));
             }
         };
 
         const onSaved = (data: any) => {
-            setMessages((prev) =>
-                prev.map((m) => (m.message_id === data.tempId ? { ...m, message_id: data.messageId, saved: true } : m)),
-            );
+            setMessages((prev) => prev.map((m) => (m.message_id === data.tempId ? { ...m, message_id: data.messageId, saved: true } : m)));
         };
 
         socket.on("receiveMessage", onReceive);
@@ -235,9 +229,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
     };
 
     const totalUnread = users.reduce((sum, u) => sum + (u.unread_count || 0), 0) || unreadMessagesCount || 0;
-    const sortedUsers = [...users].sort(
-        (a, b) => new Date(b.latest_message_timestamp).getTime() - new Date(a.latest_message_timestamp).getTime(),
-    );
+    const sortedUsers = [...users].sort((a, b) => new Date(b.latest_message_timestamp).getTime() - new Date(a.latest_message_timestamp).getTime());
 
     // Stop wheel events from escaping the PIP and scrolling the page behind it
     const stopWheel = (e: React.WheelEvent) => e.stopPropagation();
@@ -272,16 +264,10 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                         "&:active": { transform: "scale(0.97)" },
                     }}
                 >
-                    <Badge
-                        badgeContent={totalUnread}
-                        color="error"
-                        sx={{ "& .MuiBadge-badge": { fontSize: "0.58rem", minWidth: 14, height: 14 } }}
-                    >
+                    <Badge badgeContent={totalUnread} color="error" sx={{ "& .MuiBadge-badge": { fontSize: "0.58rem", minWidth: 14, height: 14 } }}>
                         <ChatBubbleOutlineRounded sx={{ fontSize: "1.05rem" }} />
                     </Badge>
-                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: "0.875rem" }}>
-                        Messages
-                    </Typography>
+                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: "0.875rem" }}>Messages</Typography>
                 </Box>
             )}
 
@@ -336,7 +322,9 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                     src={selectedUser.profile_picture || BlankProfileImage}
                                     alt={selectedUser.username}
                                     style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", display: "block" }}
-                                    onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }}
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = BlankProfileImage;
+                                    }}
                                 />
                                 <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "0.875rem", flex: 1 }}>
                                     {selectedUser.username}
@@ -387,7 +375,15 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                         <CircularProgress size={22} sx={{ color: ACCENT }} />
                                     </Box>
                                 ) : messages.length === 0 ? (
-                                    <Typography sx={{ textAlign: "center", color: (t) => t.palette.text.disabled, fontSize: "0.8rem", mt: 6, fontFamily: "'Inter', sans-serif" }}>
+                                    <Typography
+                                        sx={{
+                                            textAlign: "center",
+                                            color: (t) => t.palette.text.disabled,
+                                            fontSize: "0.8rem",
+                                            mt: 6,
+                                            fontFamily: "'Inter', sans-serif",
+                                        }}
+                                    >
                                         No messages yet
                                     </Typography>
                                 ) : (
@@ -406,10 +402,26 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                                     }}
                                                 >
                                                     {msg.file_url && (
-                                                        <Box component="img" src={msg.file_url} sx={{ maxWidth: "100%", borderRadius: "8px", display: "block", mb: msg.message_text ? 0.5 : 0 }} />
+                                                        <Box
+                                                            component="img"
+                                                            src={msg.file_url}
+                                                            sx={{
+                                                                maxWidth: "100%",
+                                                                borderRadius: "8px",
+                                                                display: "block",
+                                                                mb: msg.message_text ? 0.5 : 0,
+                                                            }}
+                                                        />
                                                     )}
                                                     {msg.message_text && (
-                                                        <Typography sx={{ fontSize: "0.82rem", lineHeight: 1.45, wordBreak: "break-word", fontFamily: "'Inter', sans-serif" }}>
+                                                        <Typography
+                                                            sx={{
+                                                                fontSize: "0.82rem",
+                                                                lineHeight: 1.45,
+                                                                wordBreak: "break-word",
+                                                                fontFamily: "'Inter', sans-serif",
+                                                            }}
+                                                        >
                                                             {msg.message_text}
                                                         </Typography>
                                                     )}
@@ -439,7 +451,10 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                     value={inputText}
                                     onChange={(e) => setInputText(e.target.value)}
                                     onKeyDown={(e) => {
-                                        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+                                        if (e.key === "Enter" && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSend();
+                                        }
                                     }}
                                     multiline
                                     maxRows={3}
@@ -476,7 +491,14 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                         </>
                     ) : (
                         /* User list */
-                        <Box sx={{ flex: 1, overflowY: "auto", "&::-webkit-scrollbar": { width: 4 }, "&::-webkit-scrollbar-thumb": { borderRadius: 4, backgroundColor: (t) => t.palette.divider } }}>
+                        <Box
+                            sx={{
+                                flex: 1,
+                                overflowY: "auto",
+                                "&::-webkit-scrollbar": { width: 4 },
+                                "&::-webkit-scrollbar-thumb": { borderRadius: 4, backgroundColor: (t) => t.palette.divider },
+                            }}
+                        >
                             {loadingUsers ? (
                                 [...Array(5)].map((_, i) => (
                                     <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.25 }}>
@@ -488,7 +510,15 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                     </Box>
                                 ))
                             ) : sortedUsers.length === 0 ? (
-                                <Typography sx={{ textAlign: "center", color: (t) => t.palette.text.disabled, fontSize: "0.8rem", mt: 6, fontFamily: "'Inter', sans-serif" }}>
+                                <Typography
+                                    sx={{
+                                        textAlign: "center",
+                                        color: (t) => t.palette.text.disabled,
+                                        fontSize: "0.8rem",
+                                        mt: 6,
+                                        fontFamily: "'Inter', sans-serif",
+                                    }}
+                                >
                                     No conversations yet
                                 </Typography>
                             ) : (
@@ -515,28 +545,79 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                                 src={user.profile_picture || BlankProfileImage}
                                                 alt={user.username}
                                                 style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", display: "block" }}
-                                                onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }}
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).src = BlankProfileImage;
+                                                }}
                                             />
                                             {user.isOnline && (
-                                                <Box sx={{ position: "absolute", bottom: 0, right: 0, width: 9, height: 9, borderRadius: "50%", backgroundColor: (t) => t.palette.success.main, border: "2px solid", borderColor: (t) => t.palette.background.paper }} />
+                                                <Box
+                                                    sx={{
+                                                        position: "absolute",
+                                                        bottom: 0,
+                                                        right: 0,
+                                                        width: 9,
+                                                        height: 9,
+                                                        borderRadius: "50%",
+                                                        backgroundColor: (t) => t.palette.success.main,
+                                                        border: "2px solid",
+                                                        borderColor: (t) => t.palette.background.paper,
+                                                    }}
+                                                />
                                             )}
                                         </Box>
 
                                         <Box sx={{ flex: 1, overflow: "hidden" }}>
                                             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", mb: 0.25 }}>
-                                                <Typography sx={{ fontSize: "0.845rem", fontWeight: user.unread_count > 0 ? 600 : 500, color: (t) => t.palette.text.primary, fontFamily: "'Inter', sans-serif" }}>
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: "0.845rem",
+                                                        fontWeight: user.unread_count > 0 ? 600 : 500,
+                                                        color: (t) => t.palette.text.primary,
+                                                        fontFamily: "'Inter', sans-serif",
+                                                    }}
+                                                >
                                                     {user.username}
                                                 </Typography>
-                                                <Typography sx={{ fontSize: "0.68rem", color: (t) => user.unread_count > 0 ? t.palette.primary.main : t.palette.text.disabled, flexShrink: 0, fontWeight: user.unread_count > 0 ? 600 : 400, fontFamily: "'Inter', sans-serif" }}>
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: "0.68rem",
+                                                        color: (t) => (user.unread_count > 0 ? t.palette.primary.main : t.palette.text.disabled),
+                                                        flexShrink: 0,
+                                                        fontWeight: user.unread_count > 0 ? 600 : 400,
+                                                        fontFamily: "'Inter', sans-serif",
+                                                    }}
+                                                >
                                                     {timeAgo(user.latest_message_timestamp)}
                                                 </Typography>
                                             </Box>
                                             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                                <Typography noWrap sx={{ fontSize: "0.76rem", color: (t) => user.unread_count > 0 ? t.palette.text.secondary : t.palette.text.disabled, fontWeight: user.unread_count > 0 ? 500 : 400, flex: 1, fontFamily: "'Inter', sans-serif" }}>
+                                                <Typography
+                                                    noWrap
+                                                    sx={{
+                                                        fontSize: "0.76rem",
+                                                        color: (t) => (user.unread_count > 0 ? t.palette.text.secondary : t.palette.text.disabled),
+                                                        fontWeight: user.unread_count > 0 ? 500 : 400,
+                                                        flex: 1,
+                                                        fontFamily: "'Inter', sans-serif",
+                                                    }}
+                                                >
                                                     {user.latest_message}
                                                 </Typography>
                                                 {user.unread_count > 0 && (
-                                                    <Box sx={{ ml: 1, flexShrink: 0, minWidth: 17, height: 17, borderRadius: "9px", backgroundColor: (t) => t.palette.primary.main, display: "flex", alignItems: "center", justifyContent: "center", px: 0.5 }}>
+                                                    <Box
+                                                        sx={{
+                                                            ml: 1,
+                                                            flexShrink: 0,
+                                                            minWidth: 17,
+                                                            height: 17,
+                                                            borderRadius: "9px",
+                                                            backgroundColor: (t) => t.palette.primary.main,
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            px: 0.5,
+                                                        }}
+                                                    >
                                                         <Typography sx={{ fontSize: "0.62rem", fontWeight: 600, color: "#fff", lineHeight: 1 }}>
                                                             {user.unread_count > 99 ? "99+" : user.unread_count}
                                                         </Typography>

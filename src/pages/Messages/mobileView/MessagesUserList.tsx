@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import BlankProfileImage from "../../../static/profile_blank.png";
 import { timeAgo } from "../../../utils/utils";
 
