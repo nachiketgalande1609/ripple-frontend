@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import {
   Box,
   Button,
@@ -25,6 +25,7 @@ import Notifications from "./pages/notifications/Notifications";
 import SettingsPage from "./pages/SettingsPage";
 import { getNotificationsCount } from "./services/api";
 import NavDrawer from "./component/navbar/NavDrawer";
+import MessagesPip from "./component/messages/MessagesPip";
 import VideoCallModal from "./component/VideoCallModal";
 import Ringtone from "./static/ringtone.mp3";
 import HangUpTone from "./static/hangup.mp3";
@@ -49,6 +50,7 @@ type User = {
 
 const AppContent = () => {
   const theme = useTheme();
+  const location = useLocation();
   const currentUser = useRef(
     localStorage.getItem("user")
       ? JSON.parse(localStorage.getItem("user") || "")
@@ -674,6 +676,10 @@ const AppContent = () => {
           undefined
         }
       />
+
+      {!location.pathname.startsWith("/messages") && (
+        <MessagesPip unreadMessagesCount={unreadMessagesCount} />
+      )}
 
       <audio
         ref={audioRef}
