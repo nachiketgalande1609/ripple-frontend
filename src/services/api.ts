@@ -536,9 +536,9 @@ export const savePost = async (postId: string) => {
     }
 };
 
-export const getUserPosts = async (userId: string) => {
+export const getUserPosts = async (userId: string, offset = 0, limit = 9) => {
     try {
-        const response = await api.get(GET_PROFILE_POSTS_ENDPOINT, { params: { userId } });
+        const response = await api.get(GET_PROFILE_POSTS_ENDPOINT, { params: { userId, offset, limit } });
         return response.data;
     } catch (error: unknown) {
         if (error instanceof Error) {
