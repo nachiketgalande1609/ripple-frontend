@@ -808,17 +808,19 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
                 sx={{
-                    width: DRAWER_CLOSED,
+                    width: hovered ? DRAWER_OPEN : DRAWER_CLOSED,
                     minWidth: DRAWER_CLOSED,
                     flexShrink: 0,
+                    transition: "width 0.2s ease",
                     "& .MuiDrawer-paper": {
                         width: hovered ? DRAWER_OPEN : DRAWER_CLOSED,
                         minWidth: DRAWER_CLOSED,
-                        transition: "width 0.2s ease",
+                        transition: "width 0.2s ease, border-color 0.25s ease",
                         boxSizing: "border-box",
                         overflowX: "hidden",
                         backgroundColor: (t) => t.palette.background.default,
-                        borderRight: "none",
+                        borderRight: "1px solid",
+                        borderColor: hovered ? theme.palette.divider : "transparent",
                         boxShadow: "none",
                         zIndex: 1201,
                     },
@@ -862,7 +864,9 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                     sx={{ display: "flex" }}
                                 >
                                     <span className="nav-icon">{active ? it.activeIcon : it.icon}</span>
-                                    <span className="nav-label" style={labelStyle}>{it.title}</span>
+                                    <span className="nav-label" style={labelStyle}>
+                                        {it.title}
+                                    </span>
                                 </Box>
                             );
                         })}
@@ -872,7 +876,9 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                 <span className="nav-icon">
                                     <AddIcon sx={{ fontSize: "1.5rem" }} />
                                 </span>
-                                <span className="nav-label" style={labelStyle}>Create</span>
+                                <span className="nav-label" style={labelStyle}>
+                                    Create
+                                </span>
                             </Box>
                         )}
                     </Box>
@@ -883,13 +889,17 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                 <span className="nav-icon">
                                     <SettingsOutlined sx={{ fontSize: "1.5rem" }} />
                                 </span>
-                                <span className="nav-label" style={labelStyle}>Settings</span>
+                                <span className="nav-label" style={labelStyle}>
+                                    Settings
+                                </span>
                             </Box>
                             <Box className="nav-item danger" onClick={() => setMoreOpen(true)} sx={{ display: "flex" }}>
                                 <span className="nav-icon">
                                     <LogoutOutlined sx={{ fontSize: "1.5rem" }} />
                                 </span>
-                                <span className="nav-label" style={labelStyle}>Log out</span>
+                                <span className="nav-label" style={labelStyle}>
+                                    Log out
+                                </span>
                             </Box>
                         </>
                     )}
