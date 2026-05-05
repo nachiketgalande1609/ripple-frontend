@@ -5,6 +5,9 @@ import AppContent from "./AppContent";
 const demoTheme = extendTheme({
     colorSchemes: { light: true, dark: true },
     colorSchemeSelector: "class",
+    typography: {
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+    },
 });
 
 const App = () => {
