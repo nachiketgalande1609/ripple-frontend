@@ -49,6 +49,8 @@ import {
     FETCH_HASHTAG_SEARCH_HISTORY_ENDPOINT,
     MUTE_USER_ENDPOINT,
     MUTED_USERS_ENDPOINT,
+    REGISTER_DEVICE_KEY_ENDPOINT,
+    GET_DEVICE_KEYS_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -874,6 +876,29 @@ export const shareChatMedia = async (mediaMessageData: FormData): Promise<any> =
         } else {
             console.error("Unknown error occurred");
         }
+        throw error;
+    }
+};
+
+////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// E2E KEY APIS //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+export const registerDeviceKey = async (deviceId: string, publicKey: string): Promise<void> => {
+    try {
+        await api.post(REGISTER_DEVICE_KEY_ENDPOINT, { deviceId, publicKey });
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error("registerDeviceKey failed:", error.message);
+        throw error;
+    }
+};
+
+export const getDeviceKeys = async (userId: number | string): Promise<{ device_id: string; public_key: string }[]> => {
+    try {
+        const response = await api.get(`${GET_DEVICE_KEYS_ENDPOINT}/${userId}`);
+        return response.data.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error("getDeviceKeys failed:", error.message);
         throw error;
     }
 };

@@ -63,6 +63,10 @@ export const GET_ALL_MESSAGES_ENDPOINT: string = "/api/messages/fetch-messages";
 export const DELETE_MESSAGE_ENDPOINT: string = "/api/messages/delete-message";
 export const SHARE_MEDIA_ENDPOINT: string = "/api/messages/send-media";
 
+// E2E Encryption Key Endpoints
+export const REGISTER_DEVICE_KEY_ENDPOINT: string = "/api/keys/register";
+export const GET_DEVICE_KEYS_ENDPOINT: string = "/api/keys";
+
 // Stories Endpoints
 export const UPLOAD_STORY_ENDPOINT: string = "/api/stories/upload-story";
 export const FETCH_USER_STORIES_ENDPOINT: string = "/api/stories/fetch-user-stories";
