@@ -15,6 +15,7 @@ import {
   useTheme,
   Chip,
   InputAdornment,
+  Popover,
 } from "@mui/material";
 import {
   ArrowBack,
@@ -28,6 +29,7 @@ import {
   Close,
   SendRounded,
   PersonAdd as TagPeopleIcon,
+  PersonRounded as TaggedIcon,
 } from "@mui/icons-material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
@@ -360,6 +362,7 @@ const PostDetailPage = () => {
   const [newCommentIds, setNewCommentIds] = useState<Set<number>>(new Set());
   const [deletingCommentIds, setDeletingCommentIds] = useState<Set<number>>(new Set());
   const [tagDialogOpen, setTagDialogOpen] = useState(false);
+  const [tagAnchorEl, setTagAnchorEl] = useState<HTMLElement | null>(null);
   const [taggedUsers, setTaggedUsers] = useState<{ id: number; username: string; profile_picture?: string }[]>([]);
   const [tagSearch, setTagSearch] = useState("");
   const [tagResults, setTagResults] = useState<{ id: number; username: string; profile_picture?: string }[]>([]);
@@ -686,7 +689,7 @@ const PostDetailPage = () => {
     <Box
       sx={{
         flex: 1,
-        bgcolor: (t) => t.palette.background.paper,
+        bgcolor: "#0a0a0a",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -694,8 +697,6 @@ const PostDetailPage = () => {
         minHeight: { xs: 300, md: "auto" },
         overflow: "hidden",
         cursor: "default",
-        py: 3,
-        px: 3,
       }}
       onDoubleClick={!isVideo ? handleDoubleClickLike : undefined}
     >
@@ -710,25 +711,47 @@ const PostDetailPage = () => {
         />
       )}
       {post.file_url && !isVideo && (
-        <Box
-          component="img"
-          src={post.file_url}
-          alt="Post"
-          sx={{
-            position: "relative",
-            zIndex: 1,
-            maxWidth: "100%",
-            maxWidth: "100%",
-            maxHeight: "100%",
-            objectFit: "contain",
-            borderRadius: "12px",
-            opacity: isImageLoaded ? 1 : 0,
-            transition: "opacity 0.45s ease",
-            display: "block",
-            userSelect: "none",
-          }}
-          onLoad={() => setIsImageLoaded(true)}
-        />
+        <Box sx={{ position: "relative", maxWidth: "100%", maxHeight: "100%", display: "flex" }}>
+          <Box
+            component="img"
+            src={post.file_url}
+            alt="Post"
+            sx={{
+              zIndex: 1,
+              maxWidth: "100%",
+              maxHeight: "100%",
+              objectFit: "contain",
+              opacity: isImageLoaded ? 1 : 0,
+              transition: "opacity 0.45s ease",
+              display: "block",
+              userSelect: "none",
+            }}
+            onLoad={() => setIsImageLoaded(true)}
+          />
+          {/* ── Tagged people overlay ── */}
+          {taggedUsers.length > 0 && isImageLoaded && (
+            <Box
+              onClick={(e) => { e.stopPropagation(); setTagAnchorEl(e.currentTarget); }}
+              sx={{
+                position: "absolute", bottom: 10, right: 10,
+                bgcolor: "rgba(0,0,0,0.45)",
+                backdropFilter: "blur(6px)",
+                borderRadius: "20px",
+                display: "flex", alignItems: "center", gap: 0.5,
+                px: 0.9, py: 0.7,
+                cursor: "pointer",
+                zIndex: 3,
+                transition: "background 0.15s",
+                "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
+              }}
+            >
+              <TaggedIcon sx={{ fontSize: 13, color: "#fff" }} />
+              <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: "#fff", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
+                {taggedUsers.length}
+              </Typography>
+            </Box>
+          )}
+        </Box>
       )}
       {post.file_url && isVideo && <VideoPlayer src={post.file_url} />}
       {heartVisible && !isVideo && (
@@ -748,6 +771,40 @@ const PostDetailPage = () => {
           ❤️
         </Box>
       )}
+
+      {/* ── Tagged people popover ── */}
+      <Popover
+        open={Boolean(tagAnchorEl)}
+        anchorEl={tagAnchorEl}
+        onClose={() => setTagAnchorEl(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+        PaperProps={{
+          sx: {
+            borderRadius: "14px",
+            border: "1px solid",
+            borderColor: (t) => t.palette.divider,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.14)",
+            overflow: "hidden",
+            minWidth: 180,
+          }
+        }}
+      >
+        {taggedUsers.map((u) => (
+          <Box
+            key={u.id}
+            onClick={() => { setTagAnchorEl(null); navigate(`/profile/${u.id}`); }}
+            sx={{ display: "flex", alignItems: "center", gap: 1, px: 1.5, py: 0.875, cursor: "pointer", "&:hover": { bgcolor: (t) => t.palette.action.hover } }}
+          >
+            <Avatar src={u.profile_picture} sx={{ width: 28, height: 28, fontSize: "0.7rem" }}>
+              {u.username.slice(0, 2).toUpperCase()}
+            </Avatar>
+            <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.83rem", fontWeight: 500, color: (t) => t.palette.text.primary }}>
+              {u.username}
+            </Typography>
+          </Box>
+        ))}
+      </Popover>
     </Box>
   );
 
@@ -755,12 +812,13 @@ const PostDetailPage = () => {
   const SidePanel = (
     <Box
       sx={{
-        width: { xs: "100%", md: 380 },
+        width: { xs: "100%", md: 360 },
         flexShrink: 0,
         display: "flex",
         flexDirection: "column",
         bgcolor: (t) => t.palette.background.paper,
         borderTop: { xs: "1px solid", md: "none" },
+        borderColor: { md: (t) => t.palette.divider },
         height: { xs: "auto", md: "100%" },
         overflow: "hidden",
       }}
@@ -768,68 +826,32 @@ const PostDetailPage = () => {
       {/* ── Post author header ── */}
       <Box
         sx={{
-          px: 2.5,
-          py: 1.75,
+          px: 2,
+          py: 1.5,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           flexShrink: 0,
+          borderBottom: "1px solid",
+          borderColor: (t) => t.palette.divider,
         }}
       >
         <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1.5,
-            cursor: "pointer",
-            flex: 1,
-            minWidth: 0,
-          }}
+          sx={{ display: "flex", alignItems: "center", gap: 1.25, cursor: "pointer", flex: 1, minWidth: 0 }}
           onClick={() => navigate(`/profile/${post.user_id}`)}
         >
           <Avatar
             src={post.profile_picture || BlankProfileImage}
-            sx={{
-              width: 40,
-              height: 40,
-              border: "2px solid",
-              borderColor: (t) => t.palette.divider,
-            }}
+            sx={{ width: 36, height: 36, border: "2px solid", borderColor: (t) => t.palette.divider }}
           />
           <Box sx={{ minWidth: 0 }}>
-            <Typography
-              sx={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontWeight: 600,
-                fontSize: "0.9rem",
-                color: (t) => t.palette.text.primary,
-                lineHeight: 1.25,
-                letterSpacing: "-0.01em",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
+            <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: "0.875rem", color: (t) => t.palette.text.primary, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {post.username}
             </Typography>
             {post.location && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.3,
-                  mt: 0.15,
-                }}
-              >
-                <LocationOn sx={{ fontSize: "0.75rem", color: tokens.accent }} />
-                <Typography
-                  sx={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: "0.68rem",
-                    color: (t) => t.palette.text.disabled,
-                    letterSpacing: "0.02em",
-                  }}
-                >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.3, mt: 0.2 }}>
+                <LocationOn sx={{ fontSize: "0.65rem", color: tokens.accent }} />
+                <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.65rem", color: (t) => t.palette.text.disabled }}>
                   {post.location}
                 </Typography>
               </Box>
@@ -837,103 +859,33 @@ const PostDetailPage = () => {
           </Box>
         </Box>
         {isOwner && (
-          <IconButton
-            onClick={() => setOptionsOpen(true)}
-            size="small"
-            sx={{
-              color: (t) => t.palette.text.disabled,
-              ml: 1,
-              flexShrink: 0,
-              "&:hover": {
-                bgcolor: (t) => t.palette.action.hover,
-                color: (t) => t.palette.text.secondary,
-              },
-              borderRadius: "10px",
-              p: 0.75,
-            }}
-          >
-            <MoreHoriz sx={{ fontSize: 19 }} />
+          <IconButton onClick={() => setOptionsOpen(true)} size="small" sx={{ color: (t) => t.palette.text.disabled, ml: 1, flexShrink: 0, "&:hover": { bgcolor: (t) => t.palette.action.hover, color: (t) => t.palette.text.secondary }, borderRadius: "8px", p: 0.6 }}>
+            <MoreHoriz sx={{ fontSize: 18 }} />
           </IconButton>
         )}
       </Box>
 
       {/* ── Caption ── */}
       {post.content && (
-        <Box
-          sx={{
-            px: 2.5,
-            py: 1.75,
-            flexShrink: 0,
-          }}
-        >
-          <Typography
-            sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "0.875rem",
-              color: (t) => t.palette.text.secondary,
-              lineHeight: 1.7,
-            }}
-          >
-            <Box
-              component="span"
+        <Box sx={{ px: 2, py: 1.5, flexShrink: 0, borderBottom: "1px solid", borderColor: (t) => t.palette.divider }}>
+          <Box sx={{ display: "flex", gap: 1.25, alignItems: "flex-start" }}>
+            <Avatar
+              src={post.profile_picture || BlankProfileImage}
               onClick={() => navigate(`/profile/${post.user_id}`)}
-              sx={{
-                fontWeight: 600,
-                color: (t) => t.palette.text.primary,
-                mr: 0.75,
-                cursor: "pointer",
-                transition: "color 0.15s",
-                "&:hover": { color: tokens.accent },
-              }}
-            >
-              {post.username}
-            </Box>
-            {post.content}
-          </Typography>
-          <Typography
-            sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "0.65rem",
-              color: (t) => t.palette.text.disabled,
-              mt: 0.75,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-            }}
-          >
-            {post.timeAgo}
-          </Typography>
-        </Box>
-      )}
-
-      {/* ── Tagged users ── */}
-      {taggedUsers.length > 0 && (
-        <Box sx={{ px: 2.5, py: 1.25, flexShrink: 0, display: "flex", flexWrap: "wrap", gap: 0.75, alignItems: "center" }}>
-          <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.disabled, mr: 0.25 }}>
-            with
-          </Typography>
-          {taggedUsers.map((u, i) => (
-            <Box
-              key={u.id}
-              onClick={() => navigate(`/profile/${u.id}`)}
-              sx={{ display: "flex", alignItems: "center", gap: 0.5, cursor: "pointer" }}
-            >
-              <Avatar src={u.profile_picture} sx={{ width: 18, height: 18, fontSize: "0.6rem" }}>
-                {u.username.slice(0, 1).toUpperCase()}
-              </Avatar>
-              <Typography sx={{
-                fontFamily: "'DM Sans', sans-serif", fontSize: "0.8rem", fontWeight: 600,
-                color: tokens.accent,
-                "&:hover": { textDecoration: "underline" },
-              }}>
-                @{u.username}
+              sx={{ width: 28, height: 28, cursor: "pointer", flexShrink: 0, mt: 0.2 }}
+            />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.84rem", color: (t) => t.palette.text.secondary, lineHeight: 1.65 }}>
+                <Box component="span" onClick={() => navigate(`/profile/${post.user_id}`)} sx={{ fontWeight: 700, color: (t) => t.palette.text.primary, mr: 0.75, cursor: "pointer", "&:hover": { color: tokens.accent } }}>
+                  {post.username}
+                </Box>
+                {post.content}
               </Typography>
-              {i < taggedUsers.length - 1 && (
-                <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.disabled }}>
-                  ,
-                </Typography>
-              )}
+              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.62rem", color: (t) => t.palette.text.disabled, mt: 0.5, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                {post.timeAgo}
+              </Typography>
             </Box>
-          ))}
+          </Box>
         </Box>
       )}
 
@@ -943,7 +895,7 @@ const PostDetailPage = () => {
           flex: 1,
           overflowY: "auto",
           px: 1.5,
-          py: 0.75,
+          py: 1,
           "&::-webkit-scrollbar": { width: 3 },
           "&::-webkit-scrollbar-track": { bgcolor: "transparent" },
           "&::-webkit-scrollbar-thumb": {
@@ -1024,6 +976,8 @@ const PostDetailPage = () => {
         sx={{
           flexShrink: 0,
           bgcolor: (t) => t.palette.background.paper,
+          borderTop: "1px solid",
+          borderColor: (t) => t.palette.divider,
         }}
       >
         {/* Actions row */}
@@ -1304,14 +1258,12 @@ const PostDetailPage = () => {
                 minHeight: 0,
                 display: "flex",
                 flexDirection: { xs: "column", md: "row" },
-                borderRadius: "20px",
+                borderRadius: "16px",
                 overflow: "hidden",
-                border: "1px solid",
-                borderColor: (t) => t.palette.divider,
                 boxShadow: (t) =>
                   t.palette.mode === "dark"
-                    ? "0 4px 32px rgba(0,0,0,0.45)"
-                    : "0 4px 32px rgba(0,0,0,0.10)",
+                    ? "0 8px 48px rgba(0,0,0,0.65)"
+                    : "0 4px 40px rgba(0,0,0,0.13)",
               }}
             >
               {ImageSection}
