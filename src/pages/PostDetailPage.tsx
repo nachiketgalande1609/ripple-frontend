@@ -353,6 +353,8 @@ const PostDetailPage = () => {
   const [comments, setComments] = useState<any[]>([]);
   const [commentCount, setCommentCount] = useState(0);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [mediaFiles, setMediaFiles] = useState<string[]>([]);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -420,6 +422,7 @@ const PostDetailPage = () => {
       setComments(data.comments || []);
       setCommentCount(data.comment_count || 0);
       setTaggedUsers(data.tagged_users || []);
+      setMediaFiles(data.media_files || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -682,7 +685,9 @@ const PostDetailPage = () => {
     );
   }
 
-  const isVideo = post.file_url && /\.(mp4|mov|webm)$/i.test(post.file_url);
+  const allMedia = mediaFiles.length > 1 ? mediaFiles : (post.file_url ? [post.file_url] : []);
+  const currentSrc = allMedia[carouselIndex] ?? post.file_url ?? "";
+  const isVideo = currentSrc && /\.(mp4|mov|webm)$/i.test(currentSrc);
 
   /* ── Media section ── */
   const ImageSection = (
@@ -698,53 +703,59 @@ const PostDetailPage = () => {
         overflow: "hidden",
         cursor: "default",
       }}
-      onDoubleClick={!isVideo ? handleDoubleClickLike : undefined}
+      onDoubleClick={(!isVideo && currentSrc) ? handleDoubleClickLike : undefined}
     >
       {!isVideo && !isImageLoaded && (
-        <CircularProgress
-          size={22}
-          sx={{
-            color: (t) => t.palette.text.disabled,
-            position: "absolute",
-            zIndex: 2,
-          }}
-        />
+        <CircularProgress size={22} sx={{ color: (t) => t.palette.text.disabled, position: "absolute", zIndex: 2 }} />
       )}
-      {post.file_url && !isVideo && (
+      {currentSrc && !isVideo && (
         <Box sx={{ position: "relative", maxWidth: "100%", maxHeight: "100%", display: "flex" }}>
           <Box
             component="img"
-            src={post.file_url}
+            key={currentSrc}
+            src={currentSrc}
             alt="Post"
-            sx={{
-              zIndex: 1,
-              maxWidth: "100%",
-              maxHeight: "100%",
-              objectFit: "contain",
-              opacity: isImageLoaded ? 1 : 0,
-              transition: "opacity 0.45s ease",
-              display: "block",
-              userSelect: "none",
-            }}
+            sx={{ zIndex: 1, maxWidth: "100%", maxHeight: "100%", objectFit: "contain", opacity: isImageLoaded ? 1 : 0, transition: "opacity 0.45s ease", display: "block", userSelect: "none" }}
             onLoad={() => setIsImageLoaded(true)}
           />
-          {/* ── Tagged people overlay ── */}
+
+          {/* Carousel arrows */}
+          {allMedia.length > 1 && carouselIndex > 0 && (
+            <IconButton onClick={() => { setIsImageLoaded(false); setCarouselIndex((i) => i - 1); }}
+              sx={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 32, height: 32, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
+              <ArrowBack sx={{ fontSize: 15 }} />
+            </IconButton>
+          )}
+          {allMedia.length > 1 && carouselIndex < allMedia.length - 1 && (
+            <IconButton onClick={() => { setIsImageLoaded(false); setCarouselIndex((i) => i + 1); }}
+              sx={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 32, height: 32, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
+              <ArrowBack sx={{ fontSize: 15, transform: "rotate(180deg)" }} />
+            </IconButton>
+          )}
+
+          {/* Dot indicators */}
+          {allMedia.length > 1 && (
+            <Box sx={{ position: "absolute", bottom: 14, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 0.5, zIndex: 4 }}>
+              {allMedia.map((_, i) => (
+                <Box key={i} onClick={() => { setIsImageLoaded(false); setCarouselIndex(i); }}
+                  sx={{ width: i === carouselIndex ? 16 : 6, height: 6, borderRadius: "3px", bgcolor: i === carouselIndex ? "#fff" : "rgba(255,255,255,0.45)", cursor: "pointer", transition: "all 0.2s" }} />
+              ))}
+            </Box>
+          )}
+
+          {/* Slide counter */}
+          {allMedia.length > 1 && (
+            <Box sx={{ position: "absolute", top: 12, right: 12, bgcolor: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", borderRadius: "20px", px: 1.25, py: 0.4, zIndex: 4 }}>
+              <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "#fff", fontFamily: "'Inter', sans-serif" }}>
+                {carouselIndex + 1}/{allMedia.length}
+              </Typography>
+            </Box>
+          )}
+
+          {/* Tagged overlay */}
           {taggedUsers.length > 0 && isImageLoaded && (
-            <Box
-              onClick={(e) => { e.stopPropagation(); setTagAnchorEl(e.currentTarget); }}
-              sx={{
-                position: "absolute", bottom: 10, right: 10,
-                bgcolor: "rgba(0,0,0,0.45)",
-                backdropFilter: "blur(6px)",
-                borderRadius: "20px",
-                display: "flex", alignItems: "center", gap: 0.5,
-                px: 0.9, py: 0.7,
-                cursor: "pointer",
-                zIndex: 3,
-                transition: "background 0.15s",
-                "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
-              }}
-            >
+            <Box onClick={(e) => { e.stopPropagation(); setTagAnchorEl(e.currentTarget); }}
+              sx={{ position: "absolute", bottom: 10, right: 10, bgcolor: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", borderRadius: "20px", display: "flex", alignItems: "center", gap: 0.5, px: 0.9, py: 0.7, cursor: "pointer", zIndex: 3, transition: "background 0.15s", "&:hover": { bgcolor: "rgba(0,0,0,0.65)" } }}>
               <TaggedIcon sx={{ fontSize: 13, color: "#fff" }} />
               <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: "#fff", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
                 {taggedUsers.length}
@@ -753,7 +764,7 @@ const PostDetailPage = () => {
           )}
         </Box>
       )}
-      {post.file_url && isVideo && <VideoPlayer src={post.file_url} />}
+      {currentSrc && isVideo && <VideoPlayer src={currentSrc} />}
       {heartVisible && !isVideo && (
         <Box
           sx={{

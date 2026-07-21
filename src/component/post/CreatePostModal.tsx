@@ -34,13 +34,16 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
     ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
   const [postContent, setPostContent] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [emojiAnchorEl, setEmojiAnchorEl] = useState<null | HTMLElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isPreviewHovered, setIsPreviewHovered] = useState(false);
   const [posted, setPosted] = useState(false);
+  // keep backward-compat alias
+  const imageFile = imageFiles[0] ?? null;
   const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
   const [tagSearch, setTagSearch] = useState("");
   const [tagResults, setTagResults] = useState<TaggedUser[]>([]);
@@ -54,13 +57,13 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
   const isDark = theme.palette.mode === "dark";
 
   const hasCaption = postContent.trim().length > 0;
-  const hasFile = imageFile !== null;
+  const hasFile = imageFiles.length > 0;
   const isReady = hasCaption && hasFile;
 
   useEffect(() => {
     if (!open) {
       setTimeout(() => {
-        setImageFile(null); setPostContent(""); setLocation("");
+        setImageFiles([]); setActiveIndex(0); setPostContent(""); setLocation("");
         setIsDragging(false); setPosted(false);
         setTaggedUsers([]); setTagSearch(""); setTagResults([]);
       }, 300);
@@ -85,11 +88,17 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
 
   const onDrop = (acceptedFiles: File[]) => {
     setIsDragging(false);
-    if (acceptedFiles.length > 0) setImageFile(acceptedFiles[0]);
+    if (acceptedFiles.length > 0) {
+      setImageFiles((prev) => {
+        const merged = [...prev, ...acceptedFiles].slice(0, 10);
+        setActiveIndex(merged.length - 1);
+        return merged;
+      });
+    }
   };
 
   const handleModalClose = () => {
-    setImageFile(null); setPostContent(""); setLocation(""); handleClose();
+    setImageFiles([]); setActiveIndex(0); setPostContent(""); setLocation(""); handleClose();
   };
 
   const { getRootProps, getInputProps, open: openFileDialog } = useDropzone({
@@ -100,8 +109,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
       "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"],
       "video/*": [".mp4", ".mov", ".webm"],
     },
-    multiple: false,
-    noClick: !!imageFile,
+    multiple: true,
+    noClick: imageFiles.length > 0,
   });
 
   const handleEmojiClick = (emojiData: any) => setPostContent((p) => p + emojiData.emoji);
@@ -112,7 +121,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
       setLoading(true); setPostUploading(true);
       navigate(`/profile/${currentUser?.id}`);
       if (postContent.trim() && user) {
-        const res = await createPost({ user_id: user.id, content: postContent, media: imageFile || undefined, location, taggedUsers: taggedUsers.map((u) => u.id) });
+        const res = await createPost({ user_id: user.id, content: postContent, media: imageFiles.length > 0 ? imageFiles : undefined, location, taggedUsers: taggedUsers.map((u) => u.id) });
         if (res?.success) {
           setPosted(true);
           setTimeout(() => {
@@ -201,53 +210,73 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
               >
                 <input {...getInputProps()} />
 
-                {imageFile ? (
+                {imageFiles.length > 0 ? (
                   <>
-                    {imageFile.type.startsWith("video/") ? (
+                    {/* Current slide */}
+                    {imageFiles[activeIndex]?.type.startsWith("video/") ? (
                       <Box component="video"
-                        src={URL.createObjectURL(imageFile)}
+                        key={activeIndex}
+                        src={URL.createObjectURL(imageFiles[activeIndex])}
                         autoPlay muted loop playsInline
-                        sx={{
-                          width: "100%", height: "100%", objectFit: "cover",
-                          position: "absolute", inset: 0,
-                          transition: "filter 0.2s",
-                          filter: isPreviewHovered ? "brightness(0.55)" : "brightness(1)",
-                        }}
+                        sx={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, transition: "filter 0.2s", filter: isPreviewHovered ? "brightness(0.55)" : "brightness(1)" }}
                       />
                     ) : (
                       <Box component="img"
-                        src={URL.createObjectURL(imageFile)} alt="Preview"
-                        sx={{
-                          width: "100%", height: "100%", objectFit: "cover",
-                          position: "absolute", inset: 0,
-                          transition: "filter 0.2s",
-                          filter: isPreviewHovered ? "brightness(0.55)" : "brightness(1)",
-                        }}
+                        key={activeIndex}
+                        src={URL.createObjectURL(imageFiles[activeIndex])} alt="Preview"
+                        sx={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, transition: "filter 0.2s", filter: isPreviewHovered ? "brightness(0.55)" : "brightness(1)" }}
                       />
                     )}
-                    <Box sx={{
-                      position: "absolute", inset: 0,
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 1,
-                      opacity: isPreviewHovered ? 1 : 0, transition: "opacity 0.2s",
-                    }}>
-                      <IconButton
-                        onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
-                        sx={{
-                          backgroundColor: "rgba(255,255,255,0.92)",
-                          color: "#111", width: 38, height: 38,
-                          "&:hover": { backgroundColor: "#fff" },
-                        }}
-                      >
+
+                    {/* Slide counter badge */}
+                    {imageFiles.length > 1 && (
+                      <Box sx={{ position: "absolute", top: 10, right: 10, bgcolor: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", borderRadius: "20px", px: 1, py: 0.35, zIndex: 4 }}>
+                        <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "#fff", fontFamily: "'Inter', sans-serif" }}>
+                          {activeIndex + 1}/{imageFiles.length}
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {/* Prev/Next arrows */}
+                    {imageFiles.length > 1 && activeIndex > 0 && (
+                      <IconButton onClick={(e) => { e.stopPropagation(); setActiveIndex((i) => i - 1); }}
+                        sx={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
+                        <ArrowIcon sx={{ fontSize: 14, transform: "rotate(180deg)" }} />
+                      </IconButton>
+                    )}
+                    {imageFiles.length > 1 && activeIndex < imageFiles.length - 1 && (
+                      <IconButton onClick={(e) => { e.stopPropagation(); setActiveIndex((i) => i + 1); }}
+                        sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
+                        <ArrowIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    )}
+
+                    {/* Dot indicators */}
+                    {imageFiles.length > 1 && (
+                      <Box sx={{ position: "absolute", bottom: 10, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 0.5, zIndex: 4 }}>
+                        {imageFiles.map((_, i) => (
+                          <Box key={i} onClick={(e) => { e.stopPropagation(); setActiveIndex(i); }}
+                            sx={{ width: i === activeIndex ? 14 : 6, height: 6, borderRadius: "3px", bgcolor: i === activeIndex ? "#fff" : "rgba(255,255,255,0.5)", cursor: "pointer", transition: "all 0.2s" }} />
+                        ))}
+                      </Box>
+                    )}
+
+                    {/* Hover controls */}
+                    <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 1, opacity: isPreviewHovered ? 1 : 0, transition: "opacity 0.2s" }}>
+                      <IconButton onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
+                        sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#111", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}>
                         <EditIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                       <IconButton
-                        onClick={(e) => { e.stopPropagation(); setImageFile(null); }}
-                        sx={{
-                          backgroundColor: "rgba(255,255,255,0.92)",
-                          color: "#dc2626", width: 38, height: 38,
-                          "&:hover": { backgroundColor: "#fff" },
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageFiles((prev) => {
+                            const next = prev.filter((_, i) => i !== activeIndex);
+                            setActiveIndex((idx) => Math.min(idx, next.length - 1));
+                            return next;
+                          });
                         }}
-                      >
+                        sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#dc2626", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}>
                         <DeleteIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                     </Box>
@@ -291,33 +320,28 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                 )}
               </Box>
 
-              {/* File strip */}
-              {imageFile && (
-                <Box sx={{
-                  px: 2, py: 0.875,
-                  borderTop: "1px solid", borderColor: bc,
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  flexShrink: 0,
-                }}>
-                  <Typography sx={{
-                    fontFamily: "'Inter', sans-serif", fontSize: "0.73rem",
-                    color: (t) => t.palette.text.disabled,
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180,
-                  }}>
-                    {imageFile.name}
-                  </Typography>
-                  <Typography
-                    component="button"
-                    onClick={() => setImageFile(null)}
-                    sx={{
-                      fontFamily: "'Inter', sans-serif", fontSize: "0.73rem",
-                      color: (t) => t.palette.error.main,
-                      background: "none", border: "none", cursor: "pointer", p: 0, ml: 1, flexShrink: 0,
-                      "&:hover": { textDecoration: "underline" },
-                    }}
-                  >
-                    Remove
-                  </Typography>
+              {/* Thumbnail strip */}
+              {imageFiles.length > 0 && (
+                <Box sx={{ px: 1.5, py: 1, borderTop: "1px solid", borderColor: bc, display: "flex", gap: 0.75, alignItems: "center", flexShrink: 0, overflowX: "auto", "&::-webkit-scrollbar": { height: 3 } }}>
+                  {imageFiles.map((f, i) => (
+                    <Box
+                      key={i}
+                      onClick={() => setActiveIndex(i)}
+                      sx={{
+                        width: 44, height: 44, borderRadius: "8px", flexShrink: 0, overflow: "hidden", cursor: "pointer",
+                        border: "2px solid", borderColor: i === activeIndex ? ACCENT : "transparent",
+                        transition: "border-color 0.15s", position: "relative",
+                      }}
+                    >
+                      <Box component="img" src={URL.createObjectURL(f)} sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </Box>
+                  ))}
+                  {imageFiles.length < 10 && (
+                    <Box onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
+                      sx={{ width: 44, height: 44, borderRadius: "8px", flexShrink: 0, border: "1.5px dashed", borderColor: bc, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", "&:hover": { borderColor: ACCENT, bgcolor: `${ACCENT}08` } }}>
+                      <AddPhotoAlternate sx={{ fontSize: 18, color: (t) => t.palette.text.disabled }} />
+                    </Box>
+                  )}
                 </Box>
               )}
             </Box>

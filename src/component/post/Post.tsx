@@ -13,6 +13,8 @@ import {
     ChatBubbleOutline,
     SendOutlined,
     PersonRounded as TaggedIcon,
+    ArrowForwardIos,
+    ArrowBackIos,
 } from "@mui/icons-material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
@@ -47,6 +49,7 @@ interface Post {
     saved_by_current_user: boolean;
     location: string;
     tagged_users?: Array<{ id: number; username: string; profile_picture?: string }>;
+    media_files?: string[];
     comments: Array<{
         id: number;
         post_id: string;
@@ -174,6 +177,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const [isSaved, setIsSaved] = useState(post.saved_by_current_user);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [tagAnchorEl, setTagAnchorEl] = useState<HTMLElement | null>(null);
+    const [carouselIndex, setCarouselIndex] = useState(0);
     const [usersModalOpen, setUsersModalOpen] = useState(false);
     const [usersList, setUsersList] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -402,7 +406,11 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                 {/* ── Media ── */}
                 {post.file_url &&
                     (() => {
-                        const isVideo = /\.(mp4|mov|webm)$/i.test(post.file_url!);
+                        const allMedia = post.media_files && post.media_files.length > 1
+                            ? post.media_files
+                            : [post.file_url!];
+                        const currentSrc = allMedia[carouselIndex] ?? post.file_url!;
+                        const isVideo = /\.(mp4|mov|webm)$/i.test(currentSrc);
                         const height = postWidth ? (post.media_height / post.media_width) * postWidth : 400;
                         return (
                             <Box
@@ -416,76 +424,68 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                 }}
                             >
                                 {isVideo ? (
-                                    <VideoPlayer src={post.file_url!} />
+                                    <VideoPlayer src={currentSrc} />
                                 ) : (
                                     <>
                                         {isImageLoading && (
                                             <>
-                                                <Box
-                                                    component="img"
-                                                    src={post.file_url}
-                                                    sx={{
-                                                        position: "absolute",
-                                                        inset: 0,
-                                                        width: "100%",
-                                                        height: "100%",
-                                                        objectFit: "cover",
-                                                        filter: "blur(20px)",
-                                                        transform: "scale(1.1)",
-                                                    }}
+                                                <Box component="img" src={currentSrc}
+                                                    sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(20px)", transform: "scale(1.1)" }}
                                                 />
-                                                <Box
-                                                    sx={{
-                                                        position: "absolute",
-                                                        inset: 0,
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent: "center",
-                                                        zIndex: 2,
-                                                    }}
-                                                >
+                                                <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
                                                     <CircularProgress size={18} sx={{ color: (t) => t.palette.text.disabled }} />
                                                 </Box>
                                             </>
                                         )}
                                         <Box
                                             component="img"
-                                            src={post.file_url}
+                                            src={currentSrc}
                                             alt="Post"
                                             onClick={() => setOpenImageDialog(true)}
-                                            onDoubleClick={async () => {
-                                                if (!isLiked) await handleLike();
-                                            }}
-                                            sx={{
-                                                width: "100%",
-                                                height: "100%",
-                                                objectFit: "contain",
-                                                opacity: isImageLoading ? 0 : 1,
-                                                transition: "opacity 0.3s ease",
-                                                display: "block",
-                                                cursor: "pointer",
-                                            }}
+                                            onDoubleClick={async () => { if (!isLiked) await handleLike(); }}
+                                            sx={{ width: "100%", height: "100%", objectFit: "contain", opacity: isImageLoading ? 0 : 1, transition: "opacity 0.3s ease", display: "block", cursor: "pointer" }}
                                             onLoad={() => setIsImageLoading(false)}
                                         />
                                     </>
                                 )}
+
+                                {/* Carousel arrows */}
+                                {allMedia.length > 1 && carouselIndex > 0 && (
+                                    <IconButton onClick={(e) => { e.stopPropagation(); setIsImageLoading(true); setCarouselIndex((i) => i - 1); }}
+                                        sx={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
+                                        <ArrowBackIos sx={{ fontSize: 12, ml: 0.5 }} />
+                                    </IconButton>
+                                )}
+                                {allMedia.length > 1 && carouselIndex < allMedia.length - 1 && (
+                                    <IconButton onClick={(e) => { e.stopPropagation(); setIsImageLoading(true); setCarouselIndex((i) => i + 1); }}
+                                        sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
+                                        <ArrowForwardIos sx={{ fontSize: 12 }} />
+                                    </IconButton>
+                                )}
+
+                                {/* Dot indicators */}
+                                {allMedia.length > 1 && (
+                                    <Box sx={{ position: "absolute", bottom: 10, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 0.5, zIndex: 4 }}>
+                                        {allMedia.map((_, i) => (
+                                            <Box key={i} onClick={(e) => { e.stopPropagation(); setIsImageLoading(true); setCarouselIndex(i); }}
+                                                sx={{ width: i === carouselIndex ? 14 : 6, height: 6, borderRadius: "3px", bgcolor: i === carouselIndex ? "#fff" : "rgba(255,255,255,0.5)", cursor: "pointer", transition: "all 0.2s" }} />
+                                        ))}
+                                    </Box>
+                                )}
+
+                                {/* Slide counter badge */}
+                                {allMedia.length > 1 && (
+                                    <Box sx={{ position: "absolute", top: 10, right: 10, bgcolor: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", borderRadius: "20px", px: 1, py: 0.35, zIndex: 4 }}>
+                                        <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "#fff", fontFamily: "'Inter', sans-serif" }}>
+                                            {carouselIndex + 1}/{allMedia.length}
+                                        </Typography>
+                                    </Box>
+                                )}
+
                                 {/* Tagged people icon overlay */}
                                 {post.tagged_users && post.tagged_users.length > 0 && (
-                                    <Box
-                                        onClick={(e) => { e.stopPropagation(); setTagAnchorEl(e.currentTarget); }}
-                                        sx={{
-                                            position: "absolute", bottom: 10, right: 10,
-                                            bgcolor: "rgba(0,0,0,0.45)",
-                                            backdropFilter: "blur(6px)",
-                                            borderRadius: "20px",
-                                            display: "flex", alignItems: "center", gap: 0.5,
-                                            px: 0.9, py: 0.7,
-                                            cursor: "pointer",
-                                            zIndex: 3,
-                                            transition: "background 0.15s",
-                                            "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
-                                        }}
-                                    >
+                                    <Box onClick={(e) => { e.stopPropagation(); setTagAnchorEl(e.currentTarget); }}
+                                        sx={{ position: "absolute", bottom: 10, right: 10, bgcolor: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", borderRadius: "20px", display: "flex", alignItems: "center", gap: 0.5, px: 0.9, py: 0.7, cursor: "pointer", zIndex: 3, transition: "background 0.15s", "&:hover": { bgcolor: "rgba(0,0,0,0.65)" } }}>
                                         <TaggedIcon sx={{ fontSize: 13, color: "#fff" }} />
                                         <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: "#fff", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
                                             {post.tagged_users.length}

@@ -69,7 +69,7 @@ interface UserLoginData {
 interface PostData {
     user_id: string;
     content: string;
-    media?: File;
+    media?: File | File[];
     location: string;
     taggedUsers?: number[];
 }
@@ -598,7 +598,8 @@ export const createPost = async (postData: PostData) => {
         formData.append("content", postData.content);
         formData.append("location", postData.location);
         if (postData.media) {
-            formData.append("image", postData.media); // keep "image" as the field name multer expects
+            const files = Array.isArray(postData.media) ? postData.media : [postData.media];
+            files.forEach((f) => formData.append("images", f));
         }
         if (postData.taggedUsers && postData.taggedUsers.length > 0) {
             formData.append("taggedUsers", JSON.stringify(postData.taggedUsers));
