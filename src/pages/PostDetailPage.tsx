@@ -40,6 +40,7 @@ import {
   deletePost,
   updatePost,
   deleteComment,
+  toggleLikeComment,
 } from "../services/api";
 import { useAppNotifications } from "../hooks/useNotification";
 
@@ -152,100 +153,141 @@ function CommentItem({
   comment,
   isOwner,
   onDelete,
+  onReply,
+  isReply = false,
+  replies = [],
 }: {
   comment: any;
   isOwner: boolean;
   onDelete: (id: number) => void;
+  onReply: (id: number, username: string) => void;
+  isReply?: boolean;
+  replies?: any[];
 }) {
   const navigate = useNavigate();
+  const theme = useTheme();
   const [hovered, setHovered] = useState(false);
+  const [repliesOpen, setRepliesOpen] = useState(false);
+  const [liked, setLiked] = useState<boolean>(!!comment.liked_by_user);
+  const [likeCount, setLikeCount] = useState<number>(comment.likes_count ?? 0);
+  const [likeAnimating, setLikeAnimating] = useState(false);
+
+  const handleLike = async () => {
+    const wasLiked = liked;
+    if (!wasLiked) { setLikeAnimating(true); setTimeout(() => setLikeAnimating(false), 350); }
+    setLiked(!wasLiked);
+    setLikeCount((c) => c + (wasLiked ? -1 : 1));
+    try {
+      const res = await toggleLikeComment(comment.id);
+      if (res?.error) throw new Error();
+    } catch {
+      setLiked(wasLiked);
+      setLikeCount((c) => c + (wasLiked ? 1 : -1));
+    }
+  };
 
   return (
     <Fade in timeout={280}>
-      <Box
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        sx={{
-          display: "flex",
-          gap: 1.5,
-          py: 1.2,
-          px: 1,
-          borderRadius: "12px",
-          position: "relative",
-          transition: "background 0.15s",
-          "&:hover": { bgcolor: (t) => t.palette.action.hover },
-        }}
-      >
-        <Avatar
-          src={comment.commenter_profile_picture || BlankProfileImage}
+      <Box>
+        <Box
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
           sx={{
-            width: 30,
-            height: 30,
-            cursor: "pointer",
-            flexShrink: 0,
-            mt: 0.2,
-            border: "1.5px solid",
-            borderColor: (t) => t.palette.divider,
+            display: "flex", gap: 1.5, py: 1, px: 1,
+            pl: isReply ? 4 : 1,
+            borderRadius: "12px", position: "relative",
+            transition: "background 0.15s",
+            "&:hover": { bgcolor: (t) => t.palette.action.hover },
           }}
-          onClick={() => navigate(`/profile/${comment.user_id}`)}
-        />
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            component="p"
-            sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "0.82rem",
-              color: (t) => t.palette.text.secondary,
-              lineHeight: 1.6,
-              wordBreak: "break-word",
-            }}
-          >
-            <Box
-              component="span"
-              onClick={() => navigate(`/profile/${comment.user_id}`)}
-              sx={{
-                fontWeight: 600,
-                color: (t) => t.palette.text.primary,
-                mr: 0.7,
-                cursor: "pointer",
-                "&:hover": { color: "#D4A96A" },
-                transition: "color 0.15s",
-              }}
-            >
-              {comment.commenter_username}
+        >
+          <Avatar
+            src={comment.commenter_profile_picture || BlankProfileImage}
+            sx={{ width: isReply ? 24 : 30, height: isReply ? 24 : 30, cursor: "pointer", flexShrink: 0, mt: 0.2, border: "1.5px solid", borderColor: (t) => t.palette.divider }}
+            onClick={() => navigate(`/profile/${comment.user_id}`)}
+          />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography component="p" sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", color: (t) => t.palette.text.secondary, lineHeight: 1.6, wordBreak: "break-word" }}>
+              <Box component="span" onClick={() => navigate(`/profile/${comment.user_id}`)} sx={{ fontWeight: 600, color: (t) => t.palette.text.primary, mr: 0.7, cursor: "pointer", "&:hover": { color: "#7c5cfc" }, transition: "color 0.15s" }}>
+                {comment.commenter_username}
+              </Box>
+              {comment.content}
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 0.35 }}>
+              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.68rem", color: (t) => t.palette.text.disabled }}>
+                {comment.timeAgo}
+              </Typography>
+              {!isReply && (
+                <Typography
+                  component="span"
+                  onClick={() => onReply(comment.id, comment.commenter_username)}
+                  sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.68rem", fontWeight: 600, color: (t) => t.palette.text.disabled, cursor: "pointer", "&:hover": { color: "#7c5cfc" }, transition: "color 0.15s" }}
+                >
+                  Reply
+                </Typography>
+              )}
             </Box>
-            {comment.content}
-          </Typography>
-          <Typography
-            sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "0.68rem",
-              color: (t) => t.palette.text.disabled,
-              mt: 0.35,
-            }}
-          >
-            {comment.timeAgo}
-          </Typography>
+          </Box>
+          {/* Right actions — fixed width so layout never shifts */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, flexShrink: 0, alignSelf: "center" }}>
+            {/* Delete — slides in on hover */}
+            {isOwner && (
+              <Tooltip title="Delete">
+                <IconButton
+                  onClick={() => onDelete(comment.id)}
+                  size="small"
+                  sx={{
+                    p: 0.5,
+                    color: (t) => t.palette.text.disabled,
+                    opacity: hovered ? 1 : 0,
+                    transform: hovered ? "translateX(0)" : "translateX(6px)",
+                    transition: "opacity 0.18s ease, transform 0.18s ease, color 0.15s",
+                    pointerEvents: hovered ? "auto" : "none",
+                    "&:hover": { color: (t) => t.palette.error.main, bgcolor: (t) => `${t.palette.error.main}1f` },
+                  }}
+                >
+                  <DeleteRoundedIcon sx={{ fontSize: 14 }} />
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {/* Like */}
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.1 }}>
+              <IconButton
+                size="small"
+                onClick={handleLike}
+                sx={{
+                  p: 0.5,
+                  color: liked ? theme.palette.error.main : (t) => t.palette.text.disabled,
+                  transition: "color 0.15s, transform 0.15s",
+                  transform: likeAnimating ? "scale(1.45)" : "scale(1)",
+                  "&:hover": { backgroundColor: "transparent", color: liked ? theme.palette.error.main : (t) => t.palette.text.secondary },
+                }}
+              >
+                {liked ? <Favorite sx={{ fontSize: 13 }} /> : <FavoriteBorder sx={{ fontSize: 13 }} />}
+              </IconButton>
+              {likeCount > 0 && (
+                <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.6rem", color: liked ? theme.palette.error.light : (t) => t.palette.text.disabled, fontWeight: liked ? 600 : 400, lineHeight: 1 }}>
+                  {likeCount}
+                </Typography>
+              )}
+            </Box>
+          </Box>
         </Box>
-        {isOwner && hovered && (
-          <Tooltip title="Delete">
-            <IconButton
-              onClick={() => onDelete(comment.id)}
-              size="small"
-              sx={{
-                color: (t) => t.palette.text.disabled,
-                p: 0.5,
-                alignSelf: "center",
-                "&:hover": {
-                  color: (t) => t.palette.error.main,
-                  bgcolor: (t) => `${t.palette.error.main}1f`,
-                },
-              }}
-            >
-              <DeleteRoundedIcon sx={{ fontSize: 14 }} />
-            </IconButton>
-          </Tooltip>
+
+        {/* Toggle replies */}
+        {!isReply && replies.length > 0 && (
+          <Box onClick={() => setRepliesOpen((v) => !v)} sx={{ display: "flex", alignItems: "center", gap: 0.75, pl: 4, pb: 0.5, cursor: "pointer", width: "fit-content" }}>
+            <Box sx={{ width: 20, height: "1px", backgroundColor: (t) => t.palette.divider }} />
+            <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.7rem", fontWeight: 600, color: "#7c5cfc" }}>
+              {repliesOpen ? "Hide replies" : `${replies.length} ${replies.length === 1 ? "reply" : "replies"}`}
+            </Typography>
+          </Box>
         )}
+
+        {/* Replies */}
+        {!isReply && repliesOpen && replies.map((r) => (
+          <CommentItem key={r.id} comment={r} isOwner={isOwner} onDelete={onDelete} onReply={onReply} isReply replies={[]} />
+        ))}
       </Box>
     </Fade>
   );
@@ -298,6 +340,7 @@ const PostDetailPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: number; username: string } | null>(null);
 
   const isOwner = currentUser?.id === post?.user_id;
 
@@ -378,14 +421,21 @@ const PostDetailPage = () => {
     }
   };
 
+  const handleReplyTo = (id: number, username: string) => {
+    setReplyingTo({ id, username });
+    setCommentText("");
+    setTimeout(() => commentInputRef.current?.focus(), 100);
+  };
+
   const handleComment = async () => {
     if (!commentText.trim() || submitting) return;
+    const parentId = replyingTo?.id ?? null;
     const newComment = {
       id: Date.now(),
       post_id: post.id,
       user_id: currentUser.id,
       content: commentText,
-      parent_comment_id: null,
+      parent_comment_id: parentId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       commenter_username: currentUser.username,
@@ -394,21 +444,19 @@ const PostDetailPage = () => {
       likes_count: 0,
       liked_by_user: false,
     };
-    setComments((p) => [newComment, ...p]);
+    setComments((p) => [...p, newComment]);
     setCommentCount((c) => c + 1);
     setCommentText("");
+    setReplyingTo(null);
     setSubmitting(true);
     try {
-      const res = await addComment(post.id, commentText);
+      const res = await addComment(post.id, commentText, parentId);
       if (res?.success) fetchPost();
       else throw new Error();
     } catch {
       setComments((p) => p.filter((c) => c.id !== newComment.id));
       setCommentCount((c) => c - 1);
-      notifications.show("Error adding comment.", {
-        severity: "error",
-        autoHideDuration: 3000,
-      });
+      notifications.show("Error adding comment.", { severity: "error", autoHideDuration: 3000 });
     } finally {
       setSubmitting(false);
     }
@@ -891,14 +939,18 @@ const PostDetailPage = () => {
             </Typography>
           </Box>
         ) : (
-          comments.map((comment) => (
-            <CommentItem
-              key={comment.id}
-              comment={comment}
-              isOwner={currentUser?.id === comment.user_id || isOwner}
-              onDelete={handleDeleteComment}
-            />
-          ))
+          comments
+            .filter((c) => !c.parent_comment_id)
+            .map((comment) => (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                isOwner={currentUser?.id === comment.user_id || isOwner}
+                onDelete={handleDeleteComment}
+                onReply={handleReplyTo}
+                replies={comments.filter((c) => c.parent_comment_id === comment.id)}
+              />
+            ))
         )}
       </Box>
 
@@ -1015,6 +1067,24 @@ const PostDetailPage = () => {
           </IconButton>
         </Box>
 
+        {/* Replying to indicator */}
+        {replyingTo && (
+          <Box sx={{
+            mx: 2, mt: 0.75, mb: 0.25,
+            pl: 1.25, py: 0.5,
+            borderLeft: "2px solid #7c5cfc",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.73rem", color: (t) => t.palette.text.disabled }}>
+              Replying to{" "}
+              <Box component="span" sx={{ color: "#7c5cfc", fontWeight: 600 }}>@{replyingTo.username}</Box>
+            </Typography>
+            <IconButton size="small" onClick={() => setReplyingTo(null)} sx={{ p: 0.3, color: (t) => t.palette.text.disabled, "&:hover": { color: (t) => t.palette.text.secondary } }}>
+              <CloseRoundedIcon sx={{ fontSize: 12 }} />
+            </IconButton>
+          </Box>
+        )}
+
         {/* Comment input */}
         <Box
           sx={{
@@ -1048,14 +1118,14 @@ const PostDetailPage = () => {
               px: 1.75,
               py: 0.6,
               transition: "border-color 0.2s",
-              "&:focus-within": { borderColor: "rgba(212,169,106,0.35)" },
+              "&:focus-within": { borderColor: replyingTo ? "rgba(124,92,252,0.4)" : "rgba(124,92,252,0.25)" },
             }}
           >
             <TextField
               inputRef={commentInputRef}
               fullWidth
               variant="standard"
-              placeholder="Add a comment…"
+              placeholder={replyingTo ? `Reply to @${replyingTo.username}…` : "Add a comment…"}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               onKeyDown={(e) => {

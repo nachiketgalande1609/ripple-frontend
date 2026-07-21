@@ -257,14 +257,14 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
         }
     };
 
-    const handleComment = async () => {
+    const handleComment = async (parentCommentId?: number | null) => {
         if (!commentText) return;
         const newComment = {
             id: Date.now(),
             post_id: post.id,
             user_id: currentUser.id,
             content: commentText,
-            parent_comment_id: null,
+            parent_comment_id: parentCommentId ?? null,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             commenter_username: currentUser.username,
@@ -273,11 +273,11 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
             likes_count: 0,
             liked_by_user: false,
         };
-        setPostComments([newComment, ...postComments]);
+        setPostComments([...postComments, newComment]);
         setCommentText("");
         setCommentCount(comment_count + 1);
         try {
-            const res = await addComment(post.id, commentText);
+            const res = await addComment(post.id, commentText, parentCommentId);
             if (res?.success) fetchPosts();
             else throw new Error();
         } catch {

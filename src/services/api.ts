@@ -464,9 +464,9 @@ export const likePost = async (postId: string) => {
     }
 };
 
-export const addComment = async (postId: string, comment: string) => {
+export const addComment = async (postId: string, comment: string, parentCommentId?: number | null) => {
     try {
-        const response = await api.post(COMMENT_ENDPOINT, { postId, comment });
+        const response = await api.post(COMMENT_ENDPOINT, { postId, comment, parentCommentId: parentCommentId ?? null });
         return response.data;
     } catch (error: unknown) {
         if (error instanceof Error) {
