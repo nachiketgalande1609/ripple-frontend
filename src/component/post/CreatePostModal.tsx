@@ -203,7 +203,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                   transition: "background-color 0.15s",
                   outline: isDragging ? `2px dashed ${ACCENT}60` : "none",
                   outlineOffset: "-8px",
-                  ...(!imageFile && { "&:hover": { backgroundColor: `${ACCENT}07` } }),
+                  ...(imageFile ? {} : { "&:hover": { backgroundColor: `${ACCENT}07` } }),
                 }}
                 onMouseEnter={() => setIsPreviewHovered(true)}
                 onMouseLeave={() => setIsPreviewHovered(false)}

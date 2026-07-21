@@ -24,16 +24,16 @@ import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, 
 import ScrollableCommentsDrawer from "./ScrollableCommentsDrawer";
 import { useNavigate } from "react-router-dom";
 import { useAppNotifications } from "../../hooks/useNotification";
+import socket from "../../services/socket";
+import { ACCENT_COLOR } from "../../theme";
+
+const ACCENT = ACCENT_COLOR;
 
 const PaperPlaneIcon = ({ size = 20 }: { size?: number }) => (
     <SvgIcon sx={{ fontSize: size, transform: "rotate(-45deg)" }}>
         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
     </SvgIcon>
 );
-import socket from "../../services/socket";
-import { ACCENT_COLOR } from "../../theme";
-
-const ACCENT = ACCENT_COLOR;
 
 interface Post {
     username: string;
@@ -177,7 +177,6 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const postRef = useRef<HTMLDivElement>(null);
     const postWidth = postRef?.current?.offsetWidth || 0;
     const [isImageLoading, setIsImageLoading] = useState(true);
-    const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null);
     const [isSaved, setIsSaved] = useState(post.saved_by_current_user);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [tagAnchorEl, setTagAnchorEl] = useState<HTMLElement | null>(null);

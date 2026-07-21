@@ -39,7 +39,6 @@ import { useGlobalStore } from "../../store/store";
 import FollowButton from "./FollowButton";
 import BlankProfileImage from "../../static/profile_blank.png";
 import CreatePostModal from "../../component/post/CreatePostModal";
-import VideoThumbnail from "../../component/post/VideoThumbnail";
 
 interface Profile {
     id?: number;
@@ -106,45 +105,6 @@ const postCardCss = `
 .pc:hover .pi { transform:scale(1.06); }
 .med { display:flex; align-items:center; gap:4px; }
 `;
-
-const PostCard = ({
-    post,
-    username,
-    onClick,
-    imageError,
-    onImageError,
-}: {
-    post: any;
-    username?: string;
-    onClick: () => void;
-    imageError: boolean;
-    onImageError: () => void;
-}) => {
-    const isVideo = post.file_url && /\.(mp4|mov|webm)$/i.test(post.file_url);
-    return (
-        <div className="pc" onClick={onClick}>
-            {isVideo ? (
-                <VideoThumbnail src={post.file_url} />
-            ) : !imageError ? (
-                <img className="pi" src={post.file_url} alt={username} onError={onImageError} />
-            ) : (
-                <Box sx={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <PhotoCamera sx={{ fontSize: 20, color: "rgba(255,255,255,0.2)" }} />
-                </Box>
-            )}
-            <div className="ovl">
-                <div className="med">
-                    <Favorite sx={{ color: "#fff", fontSize: 14 }} />
-                    <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.likes_count || 0}</Typography>
-                </div>
-                <div className="med">
-                    <Comment sx={{ color: "#fff", fontSize: 14 }} />
-                    <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.comments_count || 0}</Typography>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 /* ─── Post Grid (masonry) ────────────────────────────────────── */
 const masonryCss = `

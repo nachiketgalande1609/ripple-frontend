@@ -173,8 +173,6 @@ const HomePage = () => {
     const [followingStories, setFollowingStories] = useState<any[]>([]);
     const [fetchingStories, setFetchingStories] = useState(true);
 
-    const avatarSize = isMobile ? 52 : 58;
-
     const fetchPosts = useCallback(
         async (reset = false) => {
             if (fetchingRef.current) return;
