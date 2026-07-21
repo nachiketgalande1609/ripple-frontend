@@ -5,6 +5,7 @@ import socket from "../../services/socket";
 import { getAllMessageUsersData, getMessagesDataForSelectedUser } from "../../services/api";
 import BlankProfileImage from "../../static/profile_blank.png";
 import { timeAgo } from "../../utils/utils";
+import { loadPrivateKey, getOrCreateDeviceId, decryptMessage } from "../../utils/crypto";
 
 const ACCENT = "#7c5cfc";
 const MSG_PAGE = 30;
@@ -49,8 +50,19 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
     const hasMoreRef = useRef(true);
     const fetchingOlderRef = useRef(false);
     const selectedUserRef = useRef<User | null>(null);
+    const privateKeyRef = useRef<CryptoKey | null>(null);
+    const deviceIdRef = useRef<string>("");
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "{}") : null;
+
+    // Load private key once on mount
+    useEffect(() => {
+        (async () => {
+            const deviceId = getOrCreateDeviceId();
+            deviceIdRef.current = deviceId;
+            privateKeyRef.current = await loadPrivateKey(deviceId);
+        })();
+    }, []);
 
     // Keep ref in sync so socket handler can read latest selected user
     useEffect(() => {
@@ -68,7 +80,18 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
             setLoadingUsers(true);
             try {
                 const res = await getAllMessageUsersData();
-                setUsers(res.data || []);
+                const rawUsers: any[] = res.data || [];
+                if (!privateKeyRef.current) { setUsers(rawUsers); return; }
+                const decrypted = await Promise.all(rawUsers.map(async (u) => {
+                    if (!u.latest_message_encrypted_keys || !u.latest_message) return u;
+                    const entry = u.latest_message_encrypted_keys.keys?.find((k: any) => k.deviceId === deviceIdRef.current);
+                    if (!entry) return { ...u, latest_message: "Encrypted message" };
+                    try {
+                        const plain = await decryptMessage(u.latest_message, u.latest_message_encrypted_keys.iv, entry.encryptedKey, privateKeyRef.current!);
+                        return { ...u, latest_message: plain };
+                    } catch { return { ...u, latest_message: "Encrypted message" }; }
+                }));
+                setUsers(decrypted);
             } catch (e) {
                 console.error(e);
             } finally {
@@ -90,7 +113,16 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
 
             try {
                 const res = await getMessagesDataForSelectedUser(userId, offset, MSG_PAGE);
-                const batch: Message[] = (res.data || []).slice().reverse();
+                const raw: Message[] = (res.data || []).slice().reverse();
+                const batch: Message[] = await Promise.all(raw.map(async (msg) => {
+                    if (!(msg as any).encrypted_keys || !privateKeyRef.current) return msg;
+                    const entry = (msg as any).encrypted_keys.keys?.find((k: any) => k.deviceId === deviceIdRef.current);
+                    if (!entry) return { ...msg, message_text: "[Encrypted on another device]" };
+                    try {
+                        const plain = await decryptMessage(msg.message_text, (msg as any).encrypted_keys.iv, entry.encryptedKey, privateKeyRef.current!);
+                        return { ...msg, message_text: plain };
+                    } catch { return { ...msg, message_text: "[Failed to decrypt]" }; }
+                }));
                 hasMoreRef.current = res.data?.length === MSG_PAGE;
 
                 if (offset === 0) {
@@ -135,28 +167,27 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
     useEffect(() => {
         if (!open || !currentUser) return;
 
-        const onReceive = (data: any) => {
+        const onReceive = async (data: any) => {
             if (data.senderId === currentUser.id) return;
+
+            let messageText = data.message_text;
+            if (data.encrypted_keys && privateKeyRef.current) {
+                const entry = data.encrypted_keys.keys?.find((k: any) => k.deviceId === deviceIdRef.current);
+                if (entry) {
+                    try { messageText = await decryptMessage(data.message_text, data.encrypted_keys.iv, entry.encryptedKey, privateKeyRef.current!); }
+                    catch { messageText = "[Failed to decrypt]"; }
+                } else { messageText = "[Encrypted on another device]"; }
+            }
+
             const active = selectedUserRef.current;
             if (active && data.senderId === active.id) {
                 setMessages((prev) => {
                     if (prev.some((m) => m.message_id === data.messageId)) return prev;
-                    return [
-                        ...prev,
-                        {
-                            message_id: data.messageId,
-                            sender_id: data.senderId,
-                            receiver_id: currentUser.id,
-                            message_text: data.message_text,
-                            timestamp: new Date().toISOString(),
-                            file_url: data.fileUrl || null,
-                            saved: true,
-                        },
-                    ];
+                    return [...prev, { message_id: data.messageId, sender_id: data.senderId, receiver_id: currentUser.id, message_text: messageText, timestamp: new Date().toISOString(), file_url: data.fileUrl || null, saved: true }];
                 });
                 requestAnimationFrame(() => scrollToBottom());
             } else {
-                setUsers((prev) => prev.map((u) => (u.id === data.senderId ? { ...u, unread_count: (u.unread_count || 0) + 1 } : u)));
+                setUsers((prev) => prev.map((u) => u.id === data.senderId ? { ...u, unread_count: (u.unread_count || 0) + 1, latest_message: messageText, latest_message_timestamp: new Date().toISOString() } : u));
             }
         };
 
@@ -238,47 +269,49 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
 
     return (
         <>
-            {/* ── Floating pill ── */}
-            {!open && (
-                <Box
-                    onClick={() => setOpen(true)}
-                    onWheel={stopWheel}
-                    sx={{
-                        position: "fixed",
-                        bottom: 24,
-                        right: 24,
-                        zIndex: 1300,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        px: 2,
-                        py: 1,
-                        borderRadius: "999px",
-                        backgroundColor: ACCENT,
-                        color: "#fff",
-                        cursor: "pointer",
-                        boxShadow: "0 4px 20px rgba(124,92,252,0.35)",
-                        userSelect: "none",
-                        transition: "transform 0.15s ease, box-shadow 0.15s ease",
-                        "&:hover": { transform: "scale(1.04)", boxShadow: "0 6px 28px rgba(124,92,252,0.45)" },
-                        "&:active": { transform: "scale(0.97)" },
-                    }}
-                >
-                    <Badge badgeContent={totalUnread} color="error" sx={{ "& .MuiBadge-badge": { fontSize: "0.58rem", minWidth: 14, height: 14 } }}>
-                        <ChatBubbleOutlineRounded sx={{ fontSize: "1.05rem" }} />
-                    </Badge>
-                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: "0.875rem" }}>Messages</Typography>
-                </Box>
-            )}
+            {/* ── Bottom-anchored tab ── */}
+            <Box
+                onClick={() => (open ? handleClose() : setOpen(true))}
+                onWheel={stopWheel}
+                sx={{
+                    position: "fixed",
+                    bottom: 0,
+                    right: 32,
+                    zIndex: 1301,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    px: 2.25,
+                    pt: 1,
+                    pb: 1,
+                    borderRadius: "12px 12px 0 0",
+                    backgroundColor: ACCENT,
+                    border: "none",
+                    color: "#fff",
+                    cursor: "pointer",
+                    boxShadow: "0 -2px 16px rgba(124,92,252,0.35)",
+                    userSelect: "none",
+                    transition: "background 0.15s ease, box-shadow 0.15s ease",
+                    "&:hover": { backgroundColor: "#6b4de0", boxShadow: "0 -4px 20px rgba(124,92,252,0.5)" },
+                    "&:active": { opacity: 0.9 },
+                }}
+            >
+                <Badge badgeContent={!open ? totalUnread : 0} color="error" sx={{ "& .MuiBadge-badge": { fontSize: "0.58rem", minWidth: 14, height: 14 } }}>
+                    <ChatBubbleOutlineRounded sx={{ fontSize: "1rem", color: "#fff", transition: "transform 0.25s ease", transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+                </Badge>
+                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "0.82rem", color: "#fff" }}>
+                    Messages
+                </Typography>
+            </Box>
 
-            {/* ── PIP window ── */}
+            {/* ── Drawer panel — slides up from pill ── */}
             {open && (
                 <Box
                     onWheel={stopWheel}
                     sx={{
                         position: "fixed",
-                        bottom: 24,
-                        right: 24,
+                        bottom: 50,
+                        right: 30,
                         zIndex: 1300,
                         width: 360,
                         height: 500,
@@ -288,12 +321,13 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                         backgroundColor: (t) => t.palette.background.paper,
                         border: "1px solid",
                         borderColor: (t) => t.palette.divider,
-                        boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
+                        boxShadow: "0 -4px 32px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.1)",
                         overflow: "hidden",
-                        animation: "pipIn 0.2s ease both",
-                        "@keyframes pipIn": {
-                            from: { opacity: 0, transform: "scale(0.92) translateY(12px)" },
-                            to: { opacity: 1, transform: "scale(1) translateY(0)" },
+                        transformOrigin: "bottom center",
+                        animation: "drawerUp 0.22s cubic-bezier(0.34,1.56,0.64,1) both",
+                        "@keyframes drawerUp": {
+                            from: { opacity: 0, transform: "translateY(20px) scale(0.96)" },
+                            to: { opacity: 1, transform: "translateY(0) scale(1)" },
                         },
                     }}
                 >
