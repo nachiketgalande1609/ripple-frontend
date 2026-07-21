@@ -40,7 +40,7 @@ const staticStyles = `
     left: -10px;
     top: 50%; transform: translateY(-50%);
     width: 3px; height: 18px;
-    background: #7c5cfc;
+    background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%);
     border-radius: 0 3px 3px 0;
   }
 
@@ -59,7 +59,7 @@ const staticStyles = `
     transform: translateX(-10px);
     transition: opacity 0.2s ease 0.04s, transform 0.22s ease;
   }
-  .nav-item.active .nav-label { font-weight: 600; color: var(--nav-text-active); }
+  .nav-item.active .nav-label { font-weight: 600; background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .nav-item:hover:not(.active) .nav-label { color: var(--nav-text-active); }
 
   .nav-item.create-btn {
@@ -68,13 +68,10 @@ const staticStyles = `
   .nav-item.create-btn:hover { background: var(--nav-hover); }
   .nav-item.create-btn .nav-icon {
     color: #7c5cfc !important;
-    background: rgba(124,92,252,0.1);
-    border-radius: 10px;
     width: 26px; height: 26px;
-    transition: background 0.15s ease;
   }
-  .nav-item.create-btn:hover .nav-icon { background: rgba(124,92,252,0.18) !important; }
-  .nav-item.create-btn .nav-label { color: #7c5cfc !important; font-weight: 600; }
+  .nav-item.create-btn:hover .nav-icon { color: #a78bfa !important; }
+  .nav-item.create-btn .nav-label { background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent !important; font-weight: 600; }
 
   .nav-item.danger .nav-icon,
   .nav-item.danger .nav-label { color: var(--nav-danger) !important; }
@@ -84,7 +81,9 @@ const staticStyles = `
 
   .brand-text {
     font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.25rem;
-    color: #7c5cfc; letter-spacing: -0.5px; white-space: nowrap;
+    background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    letter-spacing: -0.5px; white-space: nowrap;
   }
 
   /* ── desktop toast ── */
@@ -879,7 +878,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         {currentUser?.id && (
                             <Box className="nav-item create-btn" onClick={() => setModalOpen(true)} sx={{ display: "flex", mt: "6px" }}>
                                 <span className="nav-icon">
-                                    <AddIcon sx={{ fontSize: "1.5rem" }} />
+                                    <AddIcon sx={{ fontSize: "2rem" }} />
                                 </span>
                                 <span className="nav-label" style={labelStyle}>
                                     Create

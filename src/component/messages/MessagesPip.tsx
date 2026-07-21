@@ -269,37 +269,39 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
 
     return (
         <>
-            {/* ── Bottom-anchored tab ── */}
+            {/* ── Floating pill ── */}
             <Box
                 onClick={() => (open ? handleClose() : setOpen(true))}
                 onWheel={stopWheel}
                 sx={{
                     position: "fixed",
-                    bottom: 0,
+                    bottom: -2,
                     right: 32,
                     zIndex: 1301,
                     display: "flex",
                     alignItems: "center",
                     gap: 1,
-                    px: 2.25,
-                    pt: 1,
-                    pb: 1,
-                    borderRadius: "12px 12px 0 0",
-                    backgroundColor: ACCENT,
-                    border: "none",
+                    px: 2,
+                    py: 0.85,
+                    borderRadius: "14px 14px 0 0",
+                    background: `linear-gradient(135deg, ${ACCENT} 0%, #a78bfa 100%)`,
+                    backdropFilter: "blur(12px)",
                     color: "#fff",
                     cursor: "pointer",
-                    boxShadow: "0 -2px 16px rgba(124,92,252,0.35)",
+                    boxShadow: "0 4px 24px rgba(124,92,252,0.45), 0 1px 4px rgba(0,0,0,0.15)",
                     userSelect: "none",
-                    transition: "background 0.15s ease, box-shadow 0.15s ease",
-                    "&:hover": { backgroundColor: "#6b4de0", boxShadow: "0 -4px 20px rgba(124,92,252,0.5)" },
-                    "&:active": { opacity: 0.9 },
+                    transition: "transform 0.18s ease, box-shadow 0.18s ease",
+                    "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 8px 32px rgba(124,92,252,0.55), 0 2px 8px rgba(0,0,0,0.2)",
+                    },
+                    "&:active": { opacity: 0.92 },
                 }}
             >
                 <Badge badgeContent={!open ? totalUnread : 0} color="error" sx={{ "& .MuiBadge-badge": { fontSize: "0.58rem", minWidth: 14, height: 14 } }}>
-                    <ChatBubbleOutlineRounded sx={{ fontSize: "1rem", color: "#fff", transition: "transform 0.25s ease", transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+                    <ChatBubbleOutlineRounded sx={{ fontSize: "1.05rem", color: "#fff", transition: "transform 0.28s cubic-bezier(0.34,1.56,0.64,1)", transform: open ? "rotate(180deg) scale(1.1)" : "rotate(0deg) scale(1)" }} />
                 </Badge>
-                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "0.82rem", color: "#fff" }}>
+                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "0.82rem", color: "#fff", letterSpacing: "0.01em" }}>
                     Messages
                 </Typography>
             </Box>
