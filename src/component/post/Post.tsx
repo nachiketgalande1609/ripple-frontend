@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme, Popover } from "@mui/material";
+import SvgIcon from "@mui/material/SvgIcon";
 import BlankProfileImage from "../../static/profile_blank.png";
 import VideoPlayer from "../../component/VideoPlayer";
 import {
@@ -11,7 +12,6 @@ import {
     LocationOn,
     Close,
     ChatBubbleOutline,
-    SendOutlined,
     PersonRounded as TaggedIcon,
     ArrowForwardIos,
     ArrowBackIos,
@@ -24,6 +24,12 @@ import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, 
 import ScrollableCommentsDrawer from "./ScrollableCommentsDrawer";
 import { useNavigate } from "react-router-dom";
 import { useAppNotifications } from "../../hooks/useNotification";
+
+const PaperPlaneIcon = ({ size = 20 }: { size?: number }) => (
+    <SvgIcon sx={{ fontSize: size, transform: "rotate(-45deg)" }}>
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+    </SvgIcon>
+);
 import socket from "../../services/socket";
 import { ACCENT_COLOR } from "../../theme";
 
@@ -562,7 +568,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                 "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
                             }}
                         >
-                            <SendOutlined sx={{ fontSize: 20 }} />
+                            <PaperPlaneIcon size={20} />
                         </IconButton>
                     </Box>
 
