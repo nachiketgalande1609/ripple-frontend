@@ -16,7 +16,7 @@ import { ACCENT_COLOR } from "../../theme";
 const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts } from "../../services/api";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
     Lock,
@@ -31,6 +31,7 @@ import {
     PhotoCamera,
     MoreHoriz,
     ArrowBack,
+    PersonPin,
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import MoreOptionsDialog from "./MoreOptionsDialog";
@@ -265,6 +266,8 @@ const ProfilePage = () => {
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
     const [savedPosts, setSavedPosts] = useState<any[]>([]);
     const [fetchingSavedPosts, setFetchingSavedPosts] = useState(false);
+    const [taggedPosts, setTaggedPosts] = useState<any[]>([]);
+    const [fetchingTaggedPosts, setFetchingTaggedPosts] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -298,8 +301,25 @@ const ProfilePage = () => {
         }
     };
 
+    const fetchTaggedPosts = async () => {
+        if (!userId) return;
+        try {
+            setFetchingTaggedPosts(true);
+            const res = await getTaggedPosts(userId);
+            setTaggedPosts(res.data || []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setFetchingTaggedPosts(false);
+        }
+    };
+
+    const savedTabIndex = isOwnProfile ? 1 : -1;
+    const taggedTabIndex = isOwnProfile ? 2 : 1;
+
     useEffect(() => {
-        if (tabValue === 1 && isOwnProfile && savedPosts.length === 0) fetchSavedPosts();
+        if (tabValue === savedTabIndex && isOwnProfile && savedPosts.length === 0) fetchSavedPosts();
+        if (tabValue === taggedTabIndex && taggedPosts.length === 0) fetchTaggedPosts();
     }, [tabValue, isOwnProfile]);
 
     async function fetchProfile() {
@@ -707,6 +727,7 @@ const ProfilePage = () => {
                     {[
                         { label: "Posts", icon: <GridOn sx={{ fontSize: 15 }} /> },
                         ...(isOwnProfile ? [{ label: "Saved", icon: <BookmarkBorder sx={{ fontSize: 15 }} /> }] : []),
+                        { label: "Tagged", icon: <PersonPin sx={{ fontSize: 15 }} /> },
                     ].map((tab, i) => (
                         <Box
                             key={tab.label}
@@ -816,8 +837,8 @@ const ProfilePage = () => {
 
             {/* ── Saved Tab ── */}
             {isOwnProfile && (
-                <Box sx={{ maxWidth: 600, mx: "auto" }} hidden={tabValue !== 1}>
-                    {tabValue === 1 && (
+                <Box sx={{ maxWidth: 600, mx: "auto" }} hidden={tabValue !== savedTabIndex}>
+                    {tabValue === savedTabIndex && (
                         <Fade in timeout={250}>
                             <div>
                                 {fetchingSavedPosts ? (
@@ -841,6 +862,32 @@ const ProfilePage = () => {
                     )}
                 </Box>
             )}
+
+            {/* ── Tagged Tab ── */}
+            <Box sx={{ maxWidth: 600, mx: "auto" }} hidden={tabValue !== taggedTabIndex}>
+                {tabValue === taggedTabIndex && (
+                    <Fade in timeout={250}>
+                        <div>
+                            {fetchingTaggedPosts ? (
+                                <GridSkeleton count={6} />
+                            ) : taggedPosts.length === 0 ? (
+                                <EmptyState
+                                    icon={<PersonPin sx={{ fontSize: 22, color: ACCENT }} />}
+                                    title="No tagged posts"
+                                    subtitle="Posts where this user is tagged will appear here"
+                                />
+                            ) : (
+                                <PostGrid
+                                    posts={taggedPosts}
+                                    imageErrors={imageErrors}
+                                    onImageError={(id) => setImageErrors((prev) => ({ ...prev, [id]: true }))}
+                                    onPostClick={(id) => navigate(`/posts/${id}`)}
+                                />
+                            )}
+                        </div>
+                    </Fade>
+                )}
+            </Box>
 
             {/* ── More Options ── */}
             <MoreOptionsDialog

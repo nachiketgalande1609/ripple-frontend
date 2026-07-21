@@ -277,7 +277,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
         )}
 
         {/* Post thumbnail */}
-        {(notification.type === "like" || notification.type === "comment") &&
+        {(notification.type === "like" || notification.type === "comment" || notification.type === "tag") &&
           notification.file_url && (
             <Box
               sx={{

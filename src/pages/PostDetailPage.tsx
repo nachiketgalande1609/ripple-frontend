@@ -13,6 +13,8 @@ import {
   Button,
   Tooltip,
   useTheme,
+  Chip,
+  InputAdornment,
 } from "@mui/material";
 import {
   ArrowBack,
@@ -25,6 +27,7 @@ import {
   LocationOn,
   Close,
   SendRounded,
+  PersonAdd as TagPeopleIcon,
 } from "@mui/icons-material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
@@ -41,6 +44,8 @@ import {
   updatePost,
   deleteComment,
   toggleLikeComment,
+  getSearchResults,
+  updatePostTags,
 } from "../services/api";
 import { useAppNotifications } from "../hooks/useNotification";
 
@@ -354,6 +359,13 @@ const PostDetailPage = () => {
   const [replyingTo, setReplyingTo] = useState<{ id: number; username: string } | null>(null);
   const [newCommentIds, setNewCommentIds] = useState<Set<number>>(new Set());
   const [deletingCommentIds, setDeletingCommentIds] = useState<Set<number>>(new Set());
+  const [tagDialogOpen, setTagDialogOpen] = useState(false);
+  const [taggedUsers, setTaggedUsers] = useState<{ id: number; username: string; profile_picture?: string }[]>([]);
+  const [tagSearch, setTagSearch] = useState("");
+  const [tagResults, setTagResults] = useState<{ id: number; username: string; profile_picture?: string }[]>([]);
+  const [tagSearchLoading, setTagSearchLoading] = useState(false);
+  const [savingTags, setSavingTags] = useState(false);
+  const tagSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isOwner = currentUser?.id === post?.user_id;
 
@@ -376,6 +388,22 @@ const PostDetailPage = () => {
     fetchPost();
   }, [postId]);
 
+  useEffect(() => {
+    if (!tagSearch.trim()) { setTagResults([]); return; }
+    if (tagSearchTimer.current) clearTimeout(tagSearchTimer.current);
+    tagSearchTimer.current = setTimeout(async () => {
+      setTagSearchLoading(true);
+      try {
+        const res = await getSearchResults(tagSearch);
+        const filtered = (res?.data?.users || []).filter(
+          (u: any) => u.id !== Number(currentUser?.id) && !taggedUsers.some((t) => t.id === u.id)
+        );
+        setTagResults(filtered);
+      } catch { setTagResults([]); }
+      finally { setTagSearchLoading(false); }
+    }, 300);
+  }, [tagSearch, taggedUsers]);
+
   const fetchPost = async () => {
     if (!postId) return;
     try {
@@ -388,6 +416,7 @@ const PostDetailPage = () => {
       setIsSaved(data.saved_by_current_user);
       setComments(data.comments || []);
       setCommentCount(data.comment_count || 0);
+      setTaggedUsers(data.tagged_users || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -701,15 +730,15 @@ const PostDetailPage = () => {
           src={post.file_url}
           alt="Post"
           sx={{
-            position: "relative",
+            position: "absolute",
+            inset: 0,
             zIndex: 1,
-            maxWidth: "100%",
-            maxHeight: { xs: 420, md: "calc(100vh - 56px)" },
-            objectFit: "contain",
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
             opacity: isImageLoaded ? 1 : 0,
             transition: "opacity 0.45s ease",
             display: "block",
-            borderRadius: { xs: 0, md: "16px" },
             userSelect: "none",
           }}
           onLoad={() => setIsImageLoaded(true)}
@@ -891,6 +920,38 @@ const PostDetailPage = () => {
           >
             {post.timeAgo}
           </Typography>
+        </Box>
+      )}
+
+      {/* ── Tagged users ── */}
+      {taggedUsers.length > 0 && (
+        <Box sx={{ px: 2.5, py: 1.25, borderBottom: "1px solid", borderColor: (t) => t.palette.divider, flexShrink: 0, display: "flex", flexWrap: "wrap", gap: 0.75, alignItems: "center" }}>
+          <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.disabled, mr: 0.25 }}>
+            with
+          </Typography>
+          {taggedUsers.map((u, i) => (
+            <Box
+              key={u.id}
+              onClick={() => navigate(`/profile/${u.id}`)}
+              sx={{ display: "flex", alignItems: "center", gap: 0.5, cursor: "pointer" }}
+            >
+              <Avatar src={u.profile_picture} sx={{ width: 18, height: 18, fontSize: "0.6rem" }}>
+                {u.username.slice(0, 1).toUpperCase()}
+              </Avatar>
+              <Typography sx={{
+                fontFamily: "'DM Sans', sans-serif", fontSize: "0.8rem", fontWeight: 600,
+                color: tokens.accent,
+                "&:hover": { textDecoration: "underline" },
+              }}>
+                @{u.username}
+              </Typography>
+              {i < taggedUsers.length - 1 && (
+                <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.disabled }}>
+                  ,
+                </Typography>
+              )}
+            </Box>
+          ))}
         </Box>
       )}
 
@@ -1310,6 +1371,17 @@ const PostDetailPage = () => {
               }}
             />
             <SheetButton
+              icon={<TagPeopleIcon sx={{ fontSize: "1rem", color: (t: any) => t.palette.text.secondary }} />}
+              label="Tag people"
+              onClick={() => {
+                setTagDialogOpen(true);
+                setOptionsOpen(false);
+                setConfirmDelete(false);
+                setTagSearch("");
+                setTagResults([]);
+              }}
+            />
+            <SheetButton
               icon={
                 confirmDelete ? (
                   <WarningRoundedIcon sx={{ fontSize: "1rem" }} />
@@ -1507,6 +1579,182 @@ const PostDetailPage = () => {
                 Save
               </Button>
             </Box>
+          </Box>
+        </Dialog>
+
+        {/* ── Tag people dialog ── */}
+        <Dialog
+          open={tagDialogOpen}
+          onClose={() => setTagDialogOpen(false)}
+          fullWidth
+          maxWidth="xs"
+          BackdropProps={backdropProps}
+          sx={{ "& .MuiDialog-paper": { ...paperSx, padding: 0, width: "92%", maxWidth: "420px" } }}
+        >
+          {/* Header */}
+          <Box sx={{
+            px: 2.5, pt: 2.25, pb: 1.75,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <Box>
+              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: "1rem", lineHeight: 1.2 }}>
+                Tag people
+              </Typography>
+              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.73rem", color: (t) => t.palette.text.disabled, mt: 0.3 }}>
+                {taggedUsers.length > 0 ? `${taggedUsers.length} tagged` : "Search to tag someone"}
+              </Typography>
+            </Box>
+            <IconButton size="small" onClick={() => setTagDialogOpen(false)}
+              sx={{ borderRadius: "8px", color: (t) => t.palette.text.disabled, "&:hover": { color: (t) => t.palette.text.primary, bgcolor: (t) => t.palette.action.hover } }}>
+              <CloseRoundedIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+          </Box>
+
+          {/* Search bar */}
+          <Box sx={{ px: 2, pb: 1 }}>
+            <Box sx={{
+              display: "flex", alignItems: "center", gap: 1,
+              bgcolor: (t) => t.palette.action.hover,
+              borderRadius: "12px", px: 1.5, py: 0.75,
+              border: "1.5px solid", borderColor: tagSearch ? tokens.accent : "transparent",
+              transition: "border-color 0.15s",
+            }}>
+              <TagPeopleIcon sx={{ fontSize: 16, color: tagSearch ? tokens.accent : (t: any) => t.palette.text.disabled, flexShrink: 0 }} />
+              <Box
+                component="input"
+                autoFocus
+                placeholder="Search users…"
+                value={tagSearch}
+                onChange={(e: any) => setTagSearch(e.target.value)}
+                sx={{
+                  flex: 1, border: "none", outline: "none", background: "transparent",
+                  fontFamily: "'DM Sans', sans-serif", fontSize: "0.875rem",
+                  color: (t: any) => t.palette.text.primary,
+                  "&::placeholder": { color: (t: any) => t.palette.text.disabled },
+                }}
+              />
+              {tagSearchLoading && <CircularProgress size={13} sx={{ color: tokens.accent, flexShrink: 0 }} />}
+              {tagSearch && !tagSearchLoading && (
+                <IconButton size="small" onClick={() => { setTagSearch(""); setTagResults([]); }}
+                  sx={{ p: 0.25, color: (t) => t.palette.text.disabled }}>
+                  <CloseRoundedIcon sx={{ fontSize: 13 }} />
+                </IconButton>
+              )}
+            </Box>
+          </Box>
+
+          {/* Body — search results or tagged list */}
+          <Box sx={{ minHeight: 120, maxHeight: 300, overflowY: "auto" }}>
+            {/* Search results */}
+            {tagResults.length > 0 && tagResults.map((u) => (
+              <Box
+                key={u.id}
+                onClick={() => { setTaggedUsers((p) => [...p, u]); setTagSearch(""); setTagResults([]); }}
+                sx={{
+                  display: "flex", alignItems: "center", gap: 1.5,
+                  px: 2.5, py: 1.125, cursor: "pointer",
+                  transition: "background 0.12s",
+                  "&:hover": { bgcolor: (t) => t.palette.action.hover },
+                }}
+              >
+                <Avatar src={u.profile_picture}
+                  sx={{ width: 36, height: 36, fontSize: "0.8rem", border: "1.5px solid", borderColor: (t) => t.palette.divider }}>
+                  {u.username.slice(0, 2).toUpperCase()}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.875rem", fontWeight: 600, lineHeight: 1.2 }}>
+                    {u.username}
+                  </Typography>
+                </Box>
+                <Box sx={{
+                  fontSize: "0.72rem", fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                  color: tokens.accent, bgcolor: `${tokens.accent}14`,
+                  border: `1px solid ${tokens.accent}28`,
+                  borderRadius: "20px", px: 1.25, py: 0.35,
+                }}>
+                  Tag
+                </Box>
+              </Box>
+            ))}
+
+            {/* Tagged users list */}
+            {!tagSearch && taggedUsers.length > 0 && taggedUsers.map((u) => (
+              <Box
+                key={u.id}
+                sx={{
+                  display: "flex", alignItems: "center", gap: 1.5,
+                  px: 2.5, py: 1.125,
+                }}
+              >
+                <Avatar src={u.profile_picture}
+                  sx={{ width: 36, height: 36, fontSize: "0.8rem", border: `1.5px solid ${tokens.accent}40` }}>
+                  {u.username.slice(0, 2).toUpperCase()}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.875rem", fontWeight: 600, lineHeight: 1.2 }}>
+                    @{u.username}
+                  </Typography>
+                </Box>
+                <IconButton size="small"
+                  onClick={() => setTaggedUsers((p) => p.filter((t) => t.id !== u.id))}
+                  sx={{
+                    width: 28, height: 28, borderRadius: "8px",
+                    color: (t) => t.palette.text.disabled,
+                    "&:hover": { bgcolor: (t) => t.palette.error.main + "18", color: (t) => t.palette.error.main },
+                  }}>
+                  <CloseRoundedIcon sx={{ fontSize: 14 }} />
+                </IconButton>
+              </Box>
+            ))}
+
+            {/* Empty state */}
+            {!tagSearch && taggedUsers.length === 0 && (
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", py: 3, gap: 1 }}>
+                <Box sx={{
+                  width: 44, height: 44, borderRadius: "14px",
+                  bgcolor: `${tokens.accent}12`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <TagPeopleIcon sx={{ fontSize: 20, color: tokens.accent }} />
+                </Box>
+                <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.8rem", color: (t) => t.palette.text.disabled }}>
+                  No one tagged yet
+                </Typography>
+              </Box>
+            )}
+          </Box>
+
+          {/* Footer */}
+          <Box sx={{
+            px: 2.5, py: 1.75,
+            borderTop: "1px solid", borderColor: (t) => t.palette.divider,
+            display: "flex", justifyContent: "flex-end", gap: 1,
+          }}>
+            <Button variant="text" onClick={() => setTagDialogOpen(false)}
+              sx={{ textTransform: "none", fontFamily: "'DM Sans', sans-serif", fontSize: "0.84rem", borderRadius: "10px", color: (t) => t.palette.text.secondary, px: 2 }}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              disabled={savingTags}
+              onClick={async () => {
+                setSavingTags(true);
+                try {
+                  const res = await updatePostTags(post.id, taggedUsers.map((u) => u.id));
+                  if (res?.success) setTaggedUsers(res.data);
+                } catch { /* noop */ }
+                finally { setSavingTags(false); setTagDialogOpen(false); }
+              }}
+              sx={{
+                textTransform: "none", fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                fontSize: "0.84rem", borderRadius: "10px", px: 2.5,
+                bgcolor: tokens.accent, color: "#fff", boxShadow: "none",
+                "&:hover": { bgcolor: "#6b4de0", boxShadow: "none" },
+                "&.Mui-disabled": { bgcolor: `${tokens.accent}35`, color: "rgba(255,255,255,0.5)" },
+              }}
+            >
+              {savingTags ? <CircularProgress size={14} sx={{ color: "#fff" }} /> : "Save tags"}
+            </Button>
           </Box>
         </Dialog>
       </Box>

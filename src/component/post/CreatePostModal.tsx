@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Box, Button, Modal, TextField, Typography, Backdrop, Fade,
   IconButton, CircularProgress, useTheme, useMediaQuery,
-  InputAdornment,
+  InputAdornment, Avatar, Chip,
 } from "@mui/material";
 import { useDropzone } from "react-dropzone";
-import { createPost } from "../../services/api";
+import { createPost, getSearchResults } from "../../services/api";
 import { useGlobalStore } from "../../store/store";
 import { useNavigate } from "react-router-dom";
 import EmojiPicker, { Theme } from "emoji-picker-react";
@@ -13,9 +13,12 @@ import {
   SentimentSatisfiedAlt as EmojiIcon, LocationOn, Close,
   AddPhotoAlternate, ArrowForward as ArrowIcon,
   EditOutlined as EditIcon, DeleteOutline as DeleteIcon,
+  PersonAdd as TagIcon,
 } from "@mui/icons-material";
 import Popover from "@mui/material/Popover";
 import { useAppNotifications } from "../../hooks/useNotification";
+
+interface TaggedUser { id: number; username: string; profile_picture?: string; }
 
 interface CreatePostModalProps {
   open: boolean;
@@ -38,6 +41,11 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
   const [isDragging, setIsDragging] = useState(false);
   const [isPreviewHovered, setIsPreviewHovered] = useState(false);
   const [posted, setPosted] = useState(false);
+  const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
+  const [tagSearch, setTagSearch] = useState("");
+  const [tagResults, setTagResults] = useState<TaggedUser[]>([]);
+  const [tagSearchLoading, setTagSearchLoading] = useState(false);
+  const tagSearchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const notifications = useAppNotifications();
   const { user, setPostUploading } = useGlobalStore();
@@ -54,9 +62,26 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
       setTimeout(() => {
         setImageFile(null); setPostContent(""); setLocation("");
         setIsDragging(false); setPosted(false);
+        setTaggedUsers([]); setTagSearch(""); setTagResults([]);
       }, 300);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!tagSearch.trim()) { setTagResults([]); return; }
+    if (tagSearchRef.current) clearTimeout(tagSearchRef.current);
+    tagSearchRef.current = setTimeout(async () => {
+      setTagSearchLoading(true);
+      try {
+        const res = await getSearchResults(tagSearch);
+        const users = (res?.data?.users || []).filter((u: TaggedUser) =>
+          u.id !== Number(currentUser?.id) && !taggedUsers.some((t) => t.id === u.id)
+        );
+        setTagResults(users);
+      } catch { setTagResults([]); }
+      finally { setTagSearchLoading(false); }
+    }, 300);
+  }, [tagSearch]);
 
   const onDrop = (acceptedFiles: File[]) => {
     setIsDragging(false);
@@ -87,7 +112,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
       setLoading(true); setPostUploading(true);
       navigate(`/profile/${currentUser?.id}`);
       if (postContent.trim() && user) {
-        const res = await createPost({ user_id: user.id, content: postContent, media: imageFile || undefined, location });
+        const res = await createPost({ user_id: user.id, content: postContent, media: imageFile || undefined, location, taggedUsers: taggedUsers.map((u) => u.id) });
         if (res?.success) {
           setPosted(true);
           setTimeout(() => {
@@ -403,6 +428,80 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                   }}
                   sx={{ "& textarea::placeholder, & input::placeholder": { color: (t: any) => t.palette.text.disabled, opacity: 1 } }}
                 />
+              </Box>
+
+              {/* Tag people */}
+              <Box sx={{ px: 2.25, pb: 1.75, borderTop: "1px solid", borderColor: bc, pt: 1.5 }}>
+                <TextField
+                  fullWidth variant="standard"
+                  placeholder="Tag people…"
+                  value={tagSearch}
+                  onChange={(e) => setTagSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <TagIcon sx={{ fontSize: 15, color: (t) => t.palette.text.disabled, mb: "2px" }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: tagSearchLoading ? (
+                      <InputAdornment position="end">
+                        <CircularProgress size={12} sx={{ color: ACCENT }} />
+                      </InputAdornment>
+                    ) : null,
+                    disableUnderline: true,
+                    sx: { fontSize: "0.855rem", fontFamily: "'Inter', sans-serif", color: (t: any) => t.palette.text.primary },
+                  }}
+                  sx={{ "& input::placeholder": { color: (t: any) => t.palette.text.disabled, opacity: 1 } }}
+                />
+
+                {/* Search results dropdown */}
+                {tagResults.length > 0 && (
+                  <Box sx={{
+                    mt: 0.75, border: "1px solid", borderColor: bc,
+                    borderRadius: "10px", overflow: "hidden",
+                    maxHeight: 160, overflowY: "auto",
+                  }}>
+                    {tagResults.map((u) => (
+                      <Box key={u.id}
+                        onClick={() => { setTaggedUsers((p) => [...p, u]); setTagSearch(""); setTagResults([]); }}
+                        sx={{
+                          display: "flex", alignItems: "center", gap: 1,
+                          px: 1.5, py: 0.875, cursor: "pointer",
+                          "&:hover": { backgroundColor: (t) => t.palette.action.hover },
+                          "&:not(:last-child)": { borderBottom: "1px solid", borderColor: bc },
+                        }}
+                      >
+                        <Avatar src={u.profile_picture} sx={{ width: 28, height: 28, fontSize: "0.7rem" }}>
+                          {u.username.slice(0, 2).toUpperCase()}
+                        </Avatar>
+                        <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.82rem", fontWeight: 500 }}>
+                          {u.username}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+
+                {/* Tagged chips */}
+                {taggedUsers.length > 0 && (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 1 }}>
+                    {taggedUsers.map((u) => (
+                      <Chip
+                        key={u.id}
+                        label={`@${u.username}`}
+                        size="small"
+                        onDelete={() => setTaggedUsers((p) => p.filter((t) => t.id !== u.id))}
+                        avatar={<Avatar src={u.profile_picture} sx={{ width: 20, height: 20 }}>{u.username.slice(0, 1).toUpperCase()}</Avatar>}
+                        sx={{
+                          fontFamily: "'Inter', sans-serif", fontSize: "0.73rem",
+                          backgroundColor: `${ACCENT}12`, color: ACCENT,
+                          border: `1px solid ${ACCENT}28`,
+                          "& .MuiChip-deleteIcon": { color: `${ACCENT}80`, "&:hover": { color: ACCENT } },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
               </Box>
             </Box>
           </Box>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme } from "@mui/material";
+import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme, Popover } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
 import VideoPlayer from "../../component/VideoPlayer";
 import {
@@ -12,6 +12,7 @@ import {
     Close,
     ChatBubbleOutline,
     SendOutlined,
+    PersonRounded as TaggedIcon,
 } from "@mui/icons-material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
@@ -45,6 +46,7 @@ interface Post {
     comment_count: number;
     saved_by_current_user: boolean;
     location: string;
+    tagged_users?: Array<{ id: number; username: string; profile_picture?: string }>;
     comments: Array<{
         id: number;
         post_id: string;
@@ -171,6 +173,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null);
     const [isSaved, setIsSaved] = useState(post.saved_by_current_user);
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [tagAnchorEl, setTagAnchorEl] = useState<HTMLElement | null>(null);
     const [usersModalOpen, setUsersModalOpen] = useState(false);
     const [usersList, setUsersList] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -466,6 +469,29 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                         />
                                     </>
                                 )}
+                                {/* Tagged people icon overlay */}
+                                {post.tagged_users && post.tagged_users.length > 0 && (
+                                    <Box
+                                        onClick={(e) => { e.stopPropagation(); setTagAnchorEl(e.currentTarget); }}
+                                        sx={{
+                                            position: "absolute", bottom: 10, right: 10,
+                                            bgcolor: "rgba(0,0,0,0.45)",
+                                            backdropFilter: "blur(6px)",
+                                            borderRadius: "20px",
+                                            display: "flex", alignItems: "center", gap: 0.5,
+                                            px: 0.9, py: 0.7,
+                                            cursor: "pointer",
+                                            zIndex: 3,
+                                            transition: "background 0.15s",
+                                            "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
+                                        }}
+                                    >
+                                        <TaggedIcon sx={{ fontSize: 13, color: "#fff" }} />
+                                        <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: "#fff", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
+                                            {post.tagged_users.length}
+                                        </Typography>
+                                    </Box>
+                                )}
                             </Box>
                         );
                     })()}
@@ -597,6 +623,44 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                     </Typography>
                 </Box>
             </Box>
+
+            {/* ── Tagged people popover ── */}
+            <Popover
+                open={Boolean(tagAnchorEl)}
+                anchorEl={tagAnchorEl}
+                onClose={() => setTagAnchorEl(null)}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "14px",
+                        border: "1px solid",
+                        borderColor: (t) => t.palette.divider,
+                        boxShadow: "0 8px 32px rgba(0,0,0,0.14)",
+                        overflow: "hidden",
+                        minWidth: 180,
+                    }
+                }}
+            >
+                {(post.tagged_users || []).map((u) => (
+                    <Box
+                        key={u.id}
+                        onClick={() => { setTagAnchorEl(null); navigate(`/profile/${u.id}`); }}
+                        sx={{
+                            display: "flex", alignItems: "center", gap: 1,
+                            px: 1.5, py: 0.875, cursor: "pointer",
+                            "&:hover": { bgcolor: (t) => t.palette.action.hover },
+                        }}
+                    >
+                        <Avatar src={u.profile_picture} sx={{ width: 28, height: 28, fontSize: "0.7rem" }}>
+                            {u.username.slice(0, 2).toUpperCase()}
+                        </Avatar>
+                        <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.83rem", fontWeight: 500, color: (t) => t.palette.text.primary }}>
+                            {u.username}
+                        </Typography>
+                    </Box>
+                ))}
+            </Popover>
 
             {/* ── Edit dialog ── */}
             <Dialog

@@ -36,6 +36,8 @@ export const COMMENT_ENDPOINT: string = "/api/posts/submit-post-comment";
 export const DELETE_COMMENT_ENDPOINT: string = "/api/posts/delete-comment";
 
 export const GET_SAVED_POSTS_ENDPOINT: string = "/api/posts/fetch-saved-posts";
+export const GET_TAGGED_POSTS_ENDPOINT: string = "/api/posts/fetch-tagged-posts";
+export const UPDATE_POST_TAGS_ENDPOINT: string = "/api/posts/update-tags";
 export const SAVE_POST_ENDPOINT: string = "/api/posts/save-post";
 
 // Notifications Endpoints

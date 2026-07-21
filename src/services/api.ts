@@ -51,6 +51,8 @@ import {
     MUTED_USERS_ENDPOINT,
     REGISTER_DEVICE_KEY_ENDPOINT,
     GET_DEVICE_KEYS_ENDPOINT,
+    GET_TAGGED_POSTS_ENDPOINT,
+    UPDATE_POST_TAGS_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -69,6 +71,7 @@ interface PostData {
     content: string;
     media?: File;
     location: string;
+    taggedUsers?: number[];
 }
 
 interface ProfileData {
@@ -523,6 +526,28 @@ export const getSavedPosts = async () => {
     }
 };
 
+export const updatePostTags = async (postId: number, taggedUsers: number[]) => {
+    try {
+        const response = await api.put(`${UPDATE_POST_TAGS_ENDPOINT}/${postId}`, { taggedUsers });
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        else console.error("Unknown Error");
+        throw error;
+    }
+};
+
+export const getTaggedPosts = async (userId: string, offset = 0, limit = 12) => {
+    try {
+        const response = await api.get(`${GET_TAGGED_POSTS_ENDPOINT}/${userId}`, { params: { offset, limit } });
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        else console.error("Unknown Error");
+        throw error;
+    }
+};
+
 export const savePost = async (postId: string) => {
     try {
         const response = await api.post(SAVE_POST_ENDPOINT, { postId });
@@ -574,6 +599,9 @@ export const createPost = async (postData: PostData) => {
         formData.append("location", postData.location);
         if (postData.media) {
             formData.append("image", postData.media); // keep "image" as the field name multer expects
+        }
+        if (postData.taggedUsers && postData.taggedUsers.length > 0) {
+            formData.append("taggedUsers", JSON.stringify(postData.taggedUsers));
         }
 
         const response = await api.post(CREATE_POST_ENDPOINT, formData, {
