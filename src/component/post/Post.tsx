@@ -24,7 +24,6 @@ import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, 
 import ScrollableCommentsDrawer from "./ScrollableCommentsDrawer";
 import { useNavigate } from "react-router-dom";
 import { useAppNotifications } from "../../hooks/useNotification";
-import ImageDialog from "../ImageDialog";
 import socket from "../../services/socket";
 import { ACCENT_COLOR } from "../../theme";
 
@@ -165,7 +164,6 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const [likeCount, setLikeCount] = useState(post.like_count);
     const [postComments, setPostComments] = useState(post.comments);
     const [optionsDialogOpen, setOptionsDialogOpen] = useState(false);
-    const [openImageDialog, setOpenImageDialog] = useState(false);
     const [isLiked, setIsLiked] = useState(post.liked_by_current_user);
     const [isEditing, setIsEditing] = useState(false);
     const [editedContent, setEditedContent] = useState(post.content);
@@ -441,9 +439,8 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                             component="img"
                                             src={currentSrc}
                                             alt="Post"
-                                            onClick={() => setOpenImageDialog(true)}
                                             onDoubleClick={async () => { if (!isLiked) await handleLike(); }}
-                                            sx={{ width: "100%", height: "100%", objectFit: "contain", opacity: isImageLoading ? 0 : 1, transition: "opacity 0.3s ease", display: "block", cursor: "pointer" }}
+                                            sx={{ width: "100%", height: "100%", objectFit: "contain", opacity: isImageLoading ? 0 : 1, transition: "opacity 0.3s ease", display: "block", cursor: "default" }}
                                             onLoad={() => setIsImageLoading(false)}
                                         />
                                     </>
@@ -937,7 +934,6 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                 avatarUrl={post.profile_picture}
                 handleDeleteComment={handleDeleteComment}
             />
-            <ImageDialog openDialog={openImageDialog} handleCloseDialog={() => setOpenImageDialog(false)} selectedImage={post.file_url || ""} />
         </>
     );
 };
