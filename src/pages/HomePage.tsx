@@ -97,25 +97,45 @@ function StoryCard({
     onClick,
     delay = 0,
     hasRing = true,
+    showAddButton = false,
+    onAddClick,
 }: {
     src?: string;
     username?: string;
     onClick?: () => void;
     delay?: number;
     hasRing?: boolean;
+    showAddButton?: boolean;
+    onAddClick?: () => void;
 }) {
     return (
-        <div
-            className={`story-card${hasRing ? " story-card-ring" : ""}`}
-            style={{ width: 90, height: 130, animation: `popIn .3s ease ${delay}ms both`, flexShrink: 0 }}
-            onClick={onClick}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); }}
-        >
-            <img src={src || BlankProfileImage} alt={username} onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }} />
-            <div className="story-card-gradient" />
-            {username && <span className="story-card-username">{username}</span>}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, animation: `popIn .3s ease ${delay}ms both` }}>
+            <div
+                className={`story-card${hasRing ? " story-card-ring" : ""}`}
+                style={{ width: 90, height: 130, position: "relative" }}
+                onClick={onClick}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); }}
+            >
+                <img src={src || BlankProfileImage} alt={username} onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }} />
+                <div className="story-card-gradient" />
+                {showAddButton && (
+                    <div className="add-story-btn" onClick={(e) => { e.stopPropagation(); onAddClick?.(); }}>
+                        <Add sx={{ fontSize: 12, color: "#fff" }} />
+                    </div>
+                )}
+            </div>
+            {username && (
+                <span style={{
+                    fontSize: "0.7rem", fontWeight: 600, marginTop: 5,
+                    textAlign: "center", maxWidth: 90,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    color: "var(--hp-text)",
+                }}>
+                    {username}
+                </span>
+            )}
         </div>
     );
 }
@@ -272,18 +292,15 @@ const HomePage = () => {
                         }}
                     >
                         {/* Self card */}
-                        <Box sx={{ position: "relative", flexShrink: 0 }}>
-                            <StoryCard
-                                src={currentUser?.profile_picture_url}
-                                hasRing={selfStories.length > 0}
-                                onClick={() =>
-                                    selfStories.length > 0 ? (setSelectedStoryIndex(0), setOpenStoryDialog(true)) : setOpenUploadDialog(true)
-                                }
-                            />
-                            <div className="add-story-btn" onClick={() => setOpenUploadDialog(true)}>
-                                <Add sx={{ fontSize: 12, color: "#fff" }} />
-                            </div>
-                        </Box>
+                        <StoryCard
+                            src={currentUser?.profile_picture_url}
+                            hasRing={selfStories.length > 0}
+                            showAddButton
+                            onAddClick={() => setOpenUploadDialog(true)}
+                            onClick={() =>
+                                selfStories.length > 0 ? (setSelectedStoryIndex(0), setOpenStoryDialog(true)) : setOpenUploadDialog(true)
+                            }
+                        />
 
                         {/* Following stories */}
                         {fetchingStories

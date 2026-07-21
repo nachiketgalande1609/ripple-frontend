@@ -55,9 +55,7 @@ const staticStyles = `
   .nav-label {
     font-family: 'Inter', -apple-system, sans-serif;
     font-size: 0.875rem; font-weight: 400; color: var(--nav-text); white-space: nowrap;
-    display: block; opacity: 0;
-    transform: translateX(-10px);
-    transition: opacity 0.2s ease 0.04s, transform 0.22s ease;
+    display: block; margin-left: 14px;
   }
   .nav-item.active .nav-label { font-weight: 600; background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .nav-item:hover:not(.active) .nav-label { color: var(--nav-text-active); }
@@ -81,9 +79,12 @@ const staticStyles = `
 
   .brand-text {
     font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.25rem;
+    letter-spacing: -0.5px; white-space: nowrap;
+  }
+  .brand-char {
     background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    letter-spacing: -0.5px; white-space: nowrap;
+    display: inline-block;
   }
 
   /* ── desktop toast ── */
@@ -799,8 +800,8 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
 
     const labelStyle: React.CSSProperties = {
         opacity: hovered ? 1 : 0,
-        transform: hovered ? "translateX(0)" : "translateX(-12px)",
-        transition: "opacity 0.25s ease, transform 0.25s ease",
+        transform: hovered ? "translateX(0)" : "translateX(-16px)",
+        transition: "opacity 0.22s ease, transform 0.22s ease",
         whiteSpace: "nowrap",
     };
 
@@ -850,7 +851,8 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         }}
                     >
                         <span className="brand-text">
-                            R<span style={{ ...labelStyle, display: "inline-block" }}>ipple</span>
+                            <span className="brand-char">R</span>
+                            <span className="brand-char" style={labelStyle}>ipple</span>
                         </span>
                     </Box>
 

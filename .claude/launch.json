@@ -2,9 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "ripple-frontend",
+      "name": "Ripple Frontend",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
+      "cwd": "ripple-frontend",
       "port": 5173
     }
   ]
