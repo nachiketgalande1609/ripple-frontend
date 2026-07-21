@@ -672,7 +672,7 @@ const AppContent = () => {
         }
       />
 
-      {!location.pathname.startsWith("/messages") && (
+      {location.pathname === "/" && (
         <MessagesPip unreadMessagesCount={unreadMessagesCount} />
       )}
 

@@ -592,7 +592,7 @@ const PostDetailPage = () => {
     <Box
       sx={{
         flex: 1,
-        bgcolor: (t) => t.palette.background.default,
+        bgcolor: (t) => t.palette.mode === "dark" ? "#000" : t.palette.background.default,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
