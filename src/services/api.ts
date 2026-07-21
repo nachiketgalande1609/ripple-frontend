@@ -903,6 +903,21 @@ export const getDeviceKeys = async (userId: number | string): Promise<{ device_i
     }
 };
 
+export const backupDeviceKey = async (payload: {
+    deviceId: string;
+    encryptedPrivateKey: string;
+    salt: string;
+    iv: string;
+}) => {
+    const response = await api.post('/api/keys/backup', payload);
+    return response.data;
+};
+
+export const fetchKeyBackup = async () => {
+    const response = await api.get('/api/keys/backup');
+    return response.data;
+};
+
 ////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// STORIES APIS //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////

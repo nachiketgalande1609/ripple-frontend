@@ -47,7 +47,7 @@ export async function generateKeyPair(): Promise<CryptoKeyPair> {
       publicExponent: new Uint8Array([1, 0, 1]),
       hash: "SHA-256",
     },
-    false, // private key is non-extractable — stays inside browser's crypto subsystem
+    true, // extractable so it can be exported for cross-device backup/restore
     ["encrypt", "decrypt"]
   );
 }
@@ -108,6 +108,73 @@ export async function encryptMessage(
     iv: btoa(String.fromCharCode(...new Uint8Array(iv))),
     keys,
   };
+}
+
+/** Export private key as PKCS8 base64 */
+export async function exportPrivateKey(privateKey: CryptoKey): Promise<string> {
+  const buf = await crypto.subtle.exportKey('pkcs8', privateKey);
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+
+/** Import a PKCS8 base64 private key */
+export async function importPrivateKey(pkcs8Base64: string): Promise<CryptoKey> {
+  const binary = atob(pkcs8Base64);
+  const buf = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) buf[i] = binary.charCodeAt(i);
+  return crypto.subtle.importKey(
+    'pkcs8',
+    buf.buffer,
+    { name: 'RSA-OAEP', hash: 'SHA-256' },
+    true,
+    ['decrypt']
+  );
+}
+
+/** Derive an AES-GCM key from a password using PBKDF2 */
+async function deriveKeyFromPassword(password: string, salt: Uint8Array): Promise<CryptoKey> {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+/** Encrypt a private key (PKCS8 base64) with a password. Returns { encryptedPrivateKey, salt, iv } all as hex strings */
+export async function encryptPrivateKeyWithPassword(
+  pkcs8Base64: string,
+  password: string
+): Promise<{ encryptedPrivateKey: string; salt: string; iv: string }> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const aesKey = await deriveKeyFromPassword(password, salt);
+  const enc = new TextEncoder();
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, enc.encode(pkcs8Base64));
+  const toHex = (buf: Uint8Array) => Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join('');
+  return {
+    encryptedPrivateKey: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+    salt: toHex(salt),
+    iv: toHex(iv),
+  };
+}
+
+/** Decrypt a backed-up private key with a password. Returns PKCS8 base64 or throws on wrong password */
+export async function decryptPrivateKeyWithPassword(
+  encryptedPrivateKey: string,
+  saltHex: string,
+  ivHex: string,
+  password: string
+): Promise<string> {
+  const fromHex = (hex: string) => new Uint8Array(hex.match(/.{2}/g)!.map(b => parseInt(b, 16)));
+  const salt = fromHex(saltHex);
+  const iv = fromHex(ivHex);
+  const aesKey = await deriveKeyFromPassword(password, salt);
+  const encBuf = Uint8Array.from(atob(encryptedPrivateKey), c => c.charCodeAt(0));
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, aesKey, encBuf);
+  return new TextDecoder().decode(decrypted);
 }
 
 export async function decryptMessage(

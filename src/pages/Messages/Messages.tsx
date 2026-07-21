@@ -11,16 +11,22 @@ import {
   shareChatMedia,
   registerDeviceKey,
   getDeviceKeys,
+  backupDeviceKey,
+  fetchKeyBackup,
 } from "../../services/api";
 import {
   generateKeyPair,
   exportPublicKey,
+  exportPrivateKey,
   importPublicKey,
+  importPrivateKey,
   storePrivateKey,
   loadPrivateKey,
   getOrCreateDeviceId,
   encryptMessage,
   decryptMessage,
+  encryptPrivateKeyWithPassword,
+  decryptPrivateKeyWithPassword,
   EncryptedPayload,
 } from "../../utils/crypto";
 import ImageDialog from "../../component/ImageDialog";
@@ -125,11 +131,13 @@ const Messages: React.FC<MessageProps> = ({
   const [initialMessageLoading, setInitialMessageLoading] = useState(false);
 
   // E2E encryption state
-  const myDeviceId = getOrCreateDeviceId();
+  const [myDeviceId, setMyDeviceId] = useState(() => getOrCreateDeviceId());
+  const myDeviceIdRef = useRef(myDeviceId);
   const myPrivateKeyRef = useRef<CryptoKey | null>(null);
   const myPublicKeyRef = useRef<CryptoKey | null>(null);
   const receiverKeysRef = useRef<{ deviceId: string; publicKey: CryptoKey }[]>([]);
   const [cryptoReady, setCryptoReady] = useState(false);
+
 
   const handleReply = (msg: Message) => {
     setSelectedMessageForReply(msg);
@@ -163,7 +171,7 @@ const Messages: React.FC<MessageProps> = ({
         rawUsers.map(async (user) => {
           if (!user.latest_message_encrypted_keys || !user.latest_message) return user;
           const myEntry = user.latest_message_encrypted_keys.keys?.find(
-            (k: { deviceId: string }) => k.deviceId === myDeviceId,
+            (k: { deviceId: string }) => k.deviceId === myDeviceIdRef.current,
           );
           if (!myEntry) return { ...user, latest_message: "Encrypted message", latest_message_encrypted_keys: null };
           try {
@@ -205,35 +213,91 @@ const Messages: React.FC<MessageProps> = ({
   useEffect(() => {
     const initCrypto = async () => {
       try {
-        let privateKey = await loadPrivateKey(myDeviceId);
+        const deviceId = getOrCreateDeviceId();
+        setMyDeviceId(deviceId);
+        myDeviceIdRef.current = deviceId;
+
+        // Password stored in sessionStorage at login time; clear it after use
+        const password = sessionStorage.getItem('_kp');
+        sessionStorage.removeItem('_kp');
+
+        let privateKey = await loadPrivateKey(deviceId);
+
         if (!privateKey) {
-          // First time on this device — generate a new RSA key pair
-          const keyPair = await generateKeyPair();
-          await storePrivateKey(myDeviceId, keyPair.privateKey);
-          const pubKeyB64 = await exportPublicKey(keyPair.publicKey);
-          await registerDeviceKey(myDeviceId, pubKeyB64);
-          myPrivateKeyRef.current = keyPair.privateKey;
-          myPublicKeyRef.current = keyPair.publicKey;
+          const backupRes = await fetchKeyBackup();
+
+          if (backupRes.data && password) {
+            // Restore silently using the login password
+            try {
+              const pkcs8 = await decryptPrivateKeyWithPassword(
+                backupRes.data.encrypted_private_key,
+                backupRes.data.salt,
+                backupRes.data.iv,
+                password,
+              );
+              const restoredKey = await importPrivateKey(pkcs8);
+              const restoredDeviceId = backupRes.data.device_id;
+              localStorage.setItem('ripple_device_id', restoredDeviceId);
+              setMyDeviceId(restoredDeviceId);
+              myDeviceIdRef.current = restoredDeviceId;
+              await storePrivateKey(restoredDeviceId, restoredKey);
+              myPrivateKeyRef.current = restoredKey;
+              const existingKeys = await getDeviceKeys(currentUser.id);
+              const myKeyEntry = existingKeys.find((k: any) => k.device_id === restoredDeviceId);
+              if (myKeyEntry) {
+                myPublicKeyRef.current = await importPublicKey(myKeyEntry.public_key);
+              }
+            } catch {
+              // Wrong password or corrupt backup — fall through to fresh keypair
+              console.warn('Key restore failed, generating fresh keypair');
+              const keyPair = await generateKeyPair();
+              await storePrivateKey(deviceId, keyPair.privateKey);
+              const pubKeyB64 = await exportPublicKey(keyPair.publicKey);
+              await registerDeviceKey(deviceId, pubKeyB64);
+              myPrivateKeyRef.current = keyPair.privateKey;
+              myPublicKeyRef.current = keyPair.publicKey;
+            }
+          } else {
+            // No backup or no password available — generate fresh keypair
+            const keyPair = await generateKeyPair();
+            await storePrivateKey(deviceId, keyPair.privateKey);
+            const pubKeyB64 = await exportPublicKey(keyPair.publicKey);
+            await registerDeviceKey(deviceId, pubKeyB64);
+            myPrivateKeyRef.current = keyPair.privateKey;
+            myPublicKeyRef.current = keyPair.publicKey;
+
+            // Silently back up if password is available
+            if (password) {
+              try {
+                const pkcs8 = await exportPrivateKey(keyPair.privateKey);
+                const { encryptedPrivateKey, salt, iv } = await encryptPrivateKeyWithPassword(pkcs8, password);
+                await backupDeviceKey({ deviceId, encryptedPrivateKey, salt, iv });
+              } catch {
+                console.warn('Key backup failed silently');
+              }
+            }
+          }
         } else {
-          // Key already exists in IndexedDB for this device — fetch public key from server
+          // Key already in IndexedDB — load it and re-register if needed
           myPrivateKeyRef.current = privateKey;
           const keys = await getDeviceKeys(currentUser.id);
-          const myKeyData = keys.find((k) => k.device_id === myDeviceId);
+          const myKeyData = keys.find((k: any) => k.device_id === deviceId);
           if (myKeyData) {
             myPublicKeyRef.current = await importPublicKey(myKeyData.public_key);
           } else {
-            // Key not on server (e.g. server DB was wiped) — re-register
             const keyPair = await generateKeyPair();
-            await storePrivateKey(myDeviceId, keyPair.privateKey);
+            await storePrivateKey(deviceId, keyPair.privateKey);
             const pubKeyB64 = await exportPublicKey(keyPair.publicKey);
-            await registerDeviceKey(myDeviceId, pubKeyB64);
+            await registerDeviceKey(deviceId, pubKeyB64);
             myPrivateKeyRef.current = keyPair.privateKey;
             myPublicKeyRef.current = keyPair.publicKey;
           }
         }
+
         setCryptoReady(true);
       } catch (err) {
-        console.error("E2E crypto init failed:", err);
+        console.error('E2E crypto init failed:', err);
+        setCryptoReady(true);
       }
     };
     initCrypto();
@@ -255,7 +319,7 @@ const Messages: React.FC<MessageProps> = ({
         rawMessages.map(async (msg) => {
           if (!msg.encrypted_keys || !myPrivateKeyRef.current) return msg;
           const myEntry = msg.encrypted_keys.keys.find(
-            (k) => k.deviceId === myDeviceId,
+            (k) => k.deviceId === myDeviceIdRef.current,
           );
           if (!myEntry) return { ...msg, message_text: "[Encrypted on another device]" };
           try {
@@ -350,23 +414,11 @@ const Messages: React.FC<MessageProps> = ({
     socket.on("receiveMessage", async (data) => {
       if (data.senderId === currentUser.id) return;
 
-      // Only add to visible messages if it's from the active conversation
-      if (data.senderId !== selectedUser?.id) {
-        setUsers((prevUsers) =>
-          prevUsers.map((user) =>
-            user.id === data.senderId
-              ? { ...user, unread_count: (user.unread_count || 0) + 1 }
-              : user,
-          ),
-        );
-        return;
-      }
-
       // Decrypt if the message is encrypted
       let messageText = data.message_text;
       if (data.encrypted_keys && myPrivateKeyRef.current) {
         const myEntry = data.encrypted_keys.keys.find(
-          (k: { deviceId: string }) => k.deviceId === myDeviceId,
+          (k: { deviceId: string }) => k.deviceId === myDeviceIdRef.current,
         );
         if (myEntry) {
           try {
@@ -383,6 +435,24 @@ const Messages: React.FC<MessageProps> = ({
           messageText = "[Encrypted on another device]";
         }
       }
+
+      // Update user list preview and unread count
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === data.senderId
+            ? {
+                ...user,
+                latest_message: messageText,
+                latest_message_timestamp: new Date().toISOString(),
+                unread_count: data.senderId !== selectedUser?.id
+                  ? (user.unread_count || 0) + 1
+                  : user.unread_count,
+              }
+            : user,
+        ),
+      );
+
+      if (data.senderId !== selectedUser?.id) return;
 
       setMessages((prevMessages: Message[]) => {
         const messageExists = prevMessages.some(
@@ -525,7 +595,7 @@ const Messages: React.FC<MessageProps> = ({
       try {
         const allRecipients = [
           ...receiverKeysRef.current,
-          { deviceId: myDeviceId, publicKey: myPublicKeyRef.current },
+          { deviceId: myDeviceIdRef.current, publicKey: myPublicKeyRef.current },
         ];
         encryptedPayload = await encryptMessage(plaintext, allRecipients);
         textToSend = encryptedPayload.ciphertext;
@@ -584,6 +654,15 @@ const Messages: React.FC<MessageProps> = ({
 
     setInputMessage("");
     setIsSendingMessage(false);
+
+    // Update the user list preview immediately without a refetch
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === selectedUser.id
+          ? { ...u, latest_message: plaintext || "", latest_message_timestamp: new Date().toISOString() }
+          : u,
+      ),
+    );
   };
 
   const handleDeleteMessage = async (message: Message | null) => {

@@ -1,7 +1,6 @@
 import React from "react";
 import { Box, Typography, keyframes } from "@mui/material";
 
-// Keyframes for the typing dots animation
 const blink = keyframes`
   0% { opacity: 0.2; }
   50% { opacity: 1; }
@@ -15,56 +14,32 @@ const TypingIndicator: React.FC = () => {
                 display: "flex",
                 justifyContent: "flex-start",
                 alignItems: "center",
-                mb: "6px", // Reduced margin bottom
+                mb: "6px",
             }}
         >
             <Box
                 sx={{
-                    backgroundColor: "#202327",
-                    padding: "4px 8px", // Reduced padding
-                    borderRadius: "8px", // Smaller border radius
-                    maxWidth: "50%", // Adjust width if needed
+                    backgroundColor: (t) => t.palette.background.paper,
+                    padding: "4px 8px",
+                    borderRadius: "8px",
+                    maxWidth: "50%",
                     display: "flex",
                     alignItems: "center",
                 }}
             >
                 <Typography
                     sx={{
-                        fontSize: "2rem", // Reduced font size
-                        color: "#fff",
+                        fontSize: "2rem",
+                        color: (t) => t.palette.text.primary,
                         display: "flex",
                         alignItems: "center",
                         lineHeight: "20px",
                         marginBottom: 1.5,
                     }}
                 >
-                    <Box
-                        component="span"
-                        sx={{
-                            animation: `${blink} 1.4s infinite`,
-                            animationDelay: "0s",
-                        }}
-                    >
-                        .
-                    </Box>
-                    <Box
-                        component="span"
-                        sx={{
-                            animation: `${blink} 1.4s infinite`,
-                            animationDelay: "0.2s",
-                        }}
-                    >
-                        .
-                    </Box>
-                    <Box
-                        component="span"
-                        sx={{
-                            animation: `${blink} 1.4s infinite`,
-                            animationDelay: "0.4s",
-                        }}
-                    >
-                        .
-                    </Box>
+                    <Box component="span" sx={{ animation: `${blink} 1.4s infinite`, animationDelay: "0s" }}>.</Box>
+                    <Box component="span" sx={{ animation: `${blink} 1.4s infinite`, animationDelay: "0.2s" }}>.</Box>
+                    <Box component="span" sx={{ animation: `${blink} 1.4s infinite`, animationDelay: "0.4s" }}>.</Box>
                 </Typography>
             </Box>
         </Box>
