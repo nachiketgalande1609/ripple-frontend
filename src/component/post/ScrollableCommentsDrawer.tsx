@@ -161,9 +161,9 @@ export default function ScrollableCommentsDrawer({
       <Box
         key={comment.id}
         sx={{
-          animation: isNew ? "commentEnter 0.32s cubic-bezier(0.34,1.56,0.64,1) both" : isDeleting ? "commentExit 0.24s ease forwards" : undefined,
-          "@keyframes commentEnter": { from: { opacity: 0, transform: "translateY(12px) scale(0.97)" }, to: { opacity: 1, transform: "translateY(0) scale(1)" } },
-          "@keyframes commentExit": { from: { opacity: 1, transform: "translateY(0) scale(1)", maxHeight: "200px" }, to: { opacity: 0, transform: "translateY(-6px) scale(0.96)", maxHeight: "0px" } },
+          animation: isNew ? "commentEnter 0.35s cubic-bezier(0.22,1,0.36,1) both" : isDeleting ? "commentExit 0.24s ease forwards" : undefined,
+          "@keyframes commentEnter": { from: { opacity: 0, transform: "translateY(16px)" }, to: { opacity: 1, transform: "translateY(0)" } },
+          "@keyframes commentExit": { "0%": { opacity: 1, transform: "scale(1)", maxHeight: "200px", marginBottom: "12px" }, "40%": { opacity: 0, transform: "scale(0.7)" }, "100%": { opacity: 0, transform: "scale(0.7)", maxHeight: "0px", marginBottom: "0px" } },
           overflow: "hidden",
         }}
       >
