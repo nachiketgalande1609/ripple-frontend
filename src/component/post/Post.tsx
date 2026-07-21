@@ -278,22 +278,21 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
         setCommentCount(comment_count + 1);
         try {
             const res = await addComment(post.id, commentText, parentCommentId);
-            if (res?.success) fetchPosts();
-            else throw new Error();
+            if (!res?.success) throw new Error();
+            // Replace temp id with real DB id so delete works immediately
+            setPostComments((p) => p.map((c) => c.id === newComment.id ? { ...c, id: res.commentId } : c));
         } catch {
             setPostComments((p) => p.filter((c) => c.id !== newComment.id));
             setCommentCount(comment_count - 1);
         }
     };
 
-    const handleDeleteComment = async () => {
-        if (!selectedCommentId) return;
-        const toDelete = postComments.find((c) => c.id === selectedCommentId);
-        setPostComments(postComments.filter((c) => c.id !== selectedCommentId));
+    const handleDeleteComment = async (commentId: number) => {
+        const toDelete = postComments.find((c) => c.id === commentId);
+        setPostComments((prev) => prev.filter((c) => c.id !== commentId));
         try {
-            const res = await deleteComment(selectedCommentId);
-            if (res?.success) fetchPosts();
-            else throw new Error();
+            const res = await deleteComment(commentId);
+            if (!res?.success) throw new Error();
         } catch {
             setPostComments((p) => [toDelete!, ...p]);
         }
@@ -872,7 +871,6 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                 content={post.content}
                 username={post.username}
                 avatarUrl={post.profile_picture}
-                setSelectedCommentId={setSelectedCommentId}
                 handleDeleteComment={handleDeleteComment}
             />
             <ImageDialog openDialog={openImageDialog} handleCloseDialog={() => setOpenImageDialog(false)} selectedImage={post.file_url || ""} />

@@ -44,8 +44,7 @@ interface ScrollableCommentsDrawerProps {
   content: string;
   username: string;
   avatarUrl: string | undefined;
-  setSelectedCommentId: (id: number | null) => void;
-  handleDeleteComment: () => void;
+  handleDeleteComment: (commentId: number) => void;
 }
 
 
@@ -53,7 +52,7 @@ export default function ScrollableCommentsDrawer({
   drawerOpen, setDrawerOpen, postComments, handleComment,
   commentText, setCommentText, commentInputRef,
   content, username, avatarUrl,
-  setSelectedCommentId, handleDeleteComment,
+  handleDeleteComment,
 }: ScrollableCommentsDrawerProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -66,6 +65,9 @@ export default function ScrollableCommentsDrawer({
   const [likeAnimating, setLikeAnimating] = useState<number | null>(null);
   const [replyingTo, setReplyingTo] = useState<{ id: number; username: string } | null>(null);
   const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
+  const [newIds, setNewIds] = useState<Set<number>>(new Set());
+  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
+  const prevCountRef = React.useRef(postComments.length);
 
 
   useEffect(() => {
@@ -84,6 +86,15 @@ export default function ScrollableCommentsDrawer({
     setLikesState(initial);
   }, [postComments]);
 
+  useEffect(() => {
+    if (postComments.length > prevCountRef.current) {
+      const latest = postComments[postComments.length - 1];
+      setNewIds((p) => new Set(p).add(latest.id));
+      setTimeout(() => setNewIds((p) => { const s = new Set(p); s.delete(latest.id); return s; }), 500);
+    }
+    prevCountRef.current = postComments.length;
+  }, [postComments]);
+
   const handleEmojiClick = (emojiData: any) => setCommentText(commentText + emojiData.emoji);
 
   const handleToggleLike = async (commentId: number) => {
@@ -97,6 +108,14 @@ export default function ScrollableCommentsDrawer({
     } catch {
       setLikesState((s) => ({ ...s, [commentId]: { liked: isLiked, count: prev?.count } }));
     }
+  };
+
+  const handleDeleteAnimated = (commentId: number) => {
+    setDeletingIds((p) => new Set(p).add(commentId));
+    setTimeout(() => {
+      handleDeleteComment(commentId);
+      setDeletingIds((p) => { const s = new Set(p); s.delete(commentId); return s; });
+    }, 260);
   };
 
   const handleReply = (comment: Comment) => {
@@ -135,8 +154,19 @@ export default function ScrollableCommentsDrawer({
     const replies = repliesFor(comment.id);
     const repliesExpanded = expandedReplies.has(comment.id);
 
+    const isNew = newIds.has(comment.id);
+    const isDeleting = deletingIds.has(comment.id);
+
     return (
-      <Box key={comment.id}>
+      <Box
+        key={comment.id}
+        sx={{
+          animation: isNew ? "commentEnter 0.32s cubic-bezier(0.34,1.56,0.64,1) both" : isDeleting ? "commentExit 0.24s ease forwards" : undefined,
+          "@keyframes commentEnter": { from: { opacity: 0, transform: "translateY(12px) scale(0.97)" }, to: { opacity: 1, transform: "translateY(0) scale(1)" } },
+          "@keyframes commentExit": { from: { opacity: 1, transform: "translateY(0) scale(1)", maxHeight: "200px" }, to: { opacity: 0, transform: "translateY(-6px) scale(0.96)", maxHeight: "0px" } },
+          overflow: "hidden",
+        }}
+      >
         <Box
           sx={{ display: "flex", gap: isReply ? 1 : 1.25, mb: 1.5, alignItems: "flex-start", pl: isReply ? 4.5 : 0 }}
           onMouseEnter={() => setActiveCommentMenu(comment.id)}
@@ -186,7 +216,7 @@ export default function ScrollableCommentsDrawer({
             {isOwn && (
               <IconButton
                 size="small"
-                onClick={() => { setSelectedCommentId(comment.id); handleDeleteComment(); }}
+                onClick={() => handleDeleteAnimated(comment.id)}
                 sx={{
                   p: 0.5,
                   color: (t) => t.palette.text.disabled,

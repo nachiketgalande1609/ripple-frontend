@@ -156,6 +156,8 @@ function CommentItem({
   onReply,
   isReply = false,
   replies = [],
+  isNew = false,
+  isDeleting = false,
 }: {
   comment: any;
   isOwner: boolean;
@@ -163,6 +165,8 @@ function CommentItem({
   onReply: (id: number, username: string) => void;
   isReply?: boolean;
   replies?: any[];
+  isNew?: boolean;
+  isDeleting?: boolean;
 }) {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -187,7 +191,14 @@ function CommentItem({
   };
 
   return (
-    <Fade in timeout={280}>
+    <Box
+      sx={{
+        animation: isNew ? "commentEnter 0.32s cubic-bezier(0.34,1.56,0.64,1) both" : isDeleting ? "commentExit 0.24s ease forwards" : undefined,
+        "@keyframes commentEnter": { from: { opacity: 0, transform: "translateY(12px) scale(0.97)" }, to: { opacity: 1, transform: "translateY(0) scale(1)" } },
+        "@keyframes commentExit": { from: { opacity: 1, transform: "translateY(0) scale(1)", maxHeight: "200px" }, to: { opacity: 0, transform: "translateY(-6px) scale(0.96)", maxHeight: "0px" } },
+        overflow: "hidden",
+      }}
+    >
       <Box>
         <Box
           onMouseEnter={() => setHovered(true)}
@@ -289,7 +300,7 @@ function CommentItem({
           <CommentItem key={r.id} comment={r} isOwner={isOwner} onDelete={onDelete} onReply={onReply} isReply replies={[]} />
         ))}
       </Box>
-    </Fade>
+    </Box>
   );
 }
 
@@ -341,6 +352,8 @@ const PostDetailPage = () => {
   const [editedContent, setEditedContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{ id: number; username: string } | null>(null);
+  const [newCommentIds, setNewCommentIds] = useState<Set<number>>(new Set());
+  const [deletingCommentIds, setDeletingCommentIds] = useState<Set<number>>(new Set());
 
   const isOwner = currentUser?.id === post?.user_id;
 
@@ -446,13 +459,17 @@ const PostDetailPage = () => {
     };
     setComments((p) => [...p, newComment]);
     setCommentCount((c) => c + 1);
+    setNewCommentIds((p) => new Set(p).add(newComment.id));
+    setTimeout(() => setNewCommentIds((p) => { const s = new Set(p); s.delete(newComment.id); return s; }), 500);
     setCommentText("");
     setReplyingTo(null);
     setSubmitting(true);
     try {
       const res = await addComment(post.id, commentText, parentId);
-      if (res?.success) fetchPost();
-      else throw new Error();
+      if (!res?.success) throw new Error();
+      setNewCommentIds((p) => { const s = new Set(p); s.delete(newComment.id); s.add(res.commentId); return s; });
+      setTimeout(() => setNewCommentIds((p) => { const s = new Set(p); s.delete(res.commentId); return s; }), 500);
+      setComments((p) => p.map((c) => c.id === newComment.id ? { ...c, id: res.commentId } : c));
     } catch {
       setComments((p) => p.filter((c) => c.id !== newComment.id));
       setCommentCount((c) => c - 1);
@@ -463,6 +480,9 @@ const PostDetailPage = () => {
   };
 
   const handleDeleteComment = async (commentId: number) => {
+    setDeletingCommentIds((p) => new Set(p).add(commentId));
+    await new Promise((r) => setTimeout(r, 260));
+    setDeletingCommentIds((p) => { const s = new Set(p); s.delete(commentId); return s; });
     const toDelete = comments.find((c) => c.id === commentId);
     setComments((p) => p.filter((c) => c.id !== commentId));
     setCommentCount((c) => c - 1);
@@ -949,6 +969,8 @@ const PostDetailPage = () => {
                 onDelete={handleDeleteComment}
                 onReply={handleReplyTo}
                 replies={comments.filter((c) => c.parent_comment_id === comment.id)}
+                isNew={newCommentIds.has(comment.id)}
+                isDeleting={deletingCommentIds.has(comment.id)}
               />
             ))
         )}
