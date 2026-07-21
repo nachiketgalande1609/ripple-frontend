@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
     Box, Button, Modal, TextField, Typography, Backdrop, Fade,
-    IconButton, CircularProgress, useTheme, useMediaQuery, LinearProgress,
+    IconButton, CircularProgress, useTheme, useMediaQuery,
 } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { uploadStory } from "../../services/api";
@@ -10,7 +10,7 @@ import {
     SentimentSatisfiedAlt as EmojiIcon, Close,
     PlayCircleOutline as VideoIcon, ImageOutlined as ImageIcon,
     FileUploadOutlined as UploadIcon, EditOutlined as EditIcon,
-    DeleteOutline as DeleteIcon, Send as SendIcon,
+    DeleteOutline as DeleteIcon, ArrowForward as ArrowIcon,
 } from "@mui/icons-material";
 import Popover from "@mui/material/Popover";
 
@@ -42,12 +42,6 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
     const isVideo = media ? media.type.startsWith("video") : false;
     const isImage = media ? media.type.startsWith("image") : false;
     const isReady = !!media;
-    const progress = media ? (caption.trim() ? 100 : 60) : 0;
-    const successGreen = "#16a34a";
-
-    const metaText = !media ? "Add a photo or video to share"
-        : !caption.trim() ? "Optionally add a caption"
-        : "Ready to share!";
 
     useEffect(() => {
         if (!open) {
@@ -76,7 +70,6 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
     });
 
     const handleEmojiClick = (emojiData: any) => setCaption((p) => p + emojiData.emoji);
-
     const handleClose = () => { setMedia(null); setCaption(""); onClose(); };
 
     const handleUpload = async () => {
@@ -96,112 +89,77 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
         }
     };
 
-    const borderColor = (t: any) => t.palette.divider;
-
-    const inputSx = {
-        "& .MuiOutlinedInput-root": {
-            borderRadius: "10px",
-            fontSize: "0.875rem",
-            backgroundColor: (t: any) => t.palette.action.hover,
-            transition: "border-color 0.15s",
-            "& fieldset": { borderColor: (t: any) => t.palette.divider },
-            "&:hover fieldset": { borderColor: (t: any) => t.palette.text.disabled },
-            "&.Mui-focused fieldset": { borderColor: `${ACCENT}80`, borderWidth: "1px" },
-        },
-    };
-
-    const labelSx = {
-        fontSize: "0.7rem", fontWeight: 500, letterSpacing: "0.06em",
-        textTransform: "uppercase" as const,
-        color: (t: any) => t.palette.text.disabled, mb: 0.875, display: "block",
-    };
+    const bc = (t: any) => t.palette.divider;
 
     return (
         <Modal
             open={open} onClose={handleClose} closeAfterTransition
             BackdropComponent={Backdrop}
-            BackdropProps={{ timeout: 300, sx: { backgroundColor: "rgba(0,0,0,0.4)" } }}
+            BackdropProps={{ timeout: 300, sx: { backgroundColor: "rgba(0,0,0,0.4)", backdropFilter: "blur(6px)" } }}
             sx={{ display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", p: isMobile ? 0 : 2 }}
         >
-            <Fade in={open} timeout={250}>
+            <Fade in={open} timeout={220}>
                 <Box sx={{
                     bgcolor: "background.paper",
-                    width: "100%", maxWidth: "440px",
-                    maxHeight: isMobile ? "96vh" : "88vh",
+                    width: "100%", maxWidth: 440,
+                    maxHeight: isMobile ? "96vh" : "86vh",
                     display: "flex", flexDirection: "column", overflow: "hidden",
-                    borderRadius: isMobile ? "16px 16px 0 0" : "16px",
-                    border: "1px solid", borderColor,
-                    boxShadow: isDark ? "0 24px 60px rgba(0,0,0,0.5)" : "0 16px 40px rgba(0,0,0,0.12)",
-                    transform: "translateZ(0)",
+                    borderRadius: isMobile ? "20px 20px 0 0" : "20px",
+                    border: "1px solid", borderColor: bc,
+                    boxShadow: isDark ? "0 32px 80px rgba(0,0,0,0.6)" : "0 20px 60px rgba(0,0,0,0.14)",
+                    isolation: "isolate",
                     willChange: "transform",
                 }}>
 
                     {/* ── Header ── */}
                     <Box sx={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
-                        px: 2, py: 1.375,
-                        borderBottom: "1px solid", borderColor,
-                        flexShrink: 0,
+                        px: 2.5, py: 1.5,
+                        borderBottom: "1px solid", borderColor: bc, flexShrink: 0,
                     }}>
                         <Typography sx={{
-                            fontFamily: "'Inter', -apple-system, sans-serif",
-                            fontSize: "0.95rem", fontWeight: 500,
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: "1rem", fontWeight: 600,
                             color: (t) => t.palette.text.primary,
+                            letterSpacing: "-0.2px",
                         }}>
-                            New story
+                            Create story
                         </Typography>
-
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            {/* User chip */}
-                            <Box sx={{
-                                display: "flex", alignItems: "center", gap: 0.875,
-                                backgroundColor: (t) => t.palette.action.hover,
-                                border: "1px solid", borderColor,
-                                borderRadius: "20px", py: "4px", pr: 1.25, pl: "4px",
-                            }}>
-                                <Box sx={{
-                                    width: 22, height: 22, borderRadius: "50%",
-                                    backgroundColor: ACCENT,
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: "9px", fontWeight: 600, color: "#fff", flexShrink: 0,
-                                }}>
-                                    {(currentUser?.username || "U").slice(0, 2).toUpperCase()}
-                                </Box>
-                                <Typography sx={{
-                                    fontSize: "0.8rem", color: (t) => t.palette.text.secondary,
-                                    fontFamily: "'Inter', sans-serif",
-                                }}>
-                                    {currentUser?.username || "You"}
-                                </Typography>
-                            </Box>
-
-                            <IconButton onClick={handleClose} size="small" sx={{
-                                width: 30, height: 30, borderRadius: "9px",
-                                border: "1px solid", borderColor,
-                                color: (t) => t.palette.text.disabled,
-                                "&:hover": { color: (t) => t.palette.text.primary, backgroundColor: (t) => t.palette.action.hover },
-                            }}>
-                                <Close sx={{ fontSize: 14 }} />
-                            </IconButton>
-                        </Box>
+                        <IconButton onClick={handleClose} size="small" sx={{
+                            width: 32, height: 32, borderRadius: "10px",
+                            color: (t) => t.palette.text.secondary,
+                            "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
+                        }}>
+                            <Close sx={{ fontSize: 16 }} />
+                        </IconButton>
                     </Box>
 
-                    {/* ── Progress bar ── */}
-                    <LinearProgress
-                        variant="determinate"
-                        value={posted ? 100 : progress}
-                        sx={{
-                            height: 2, flexShrink: 0,
-                            backgroundColor: (t) => t.palette.divider,
-                            "& .MuiLinearProgress-bar": {
-                                backgroundColor: posted ? successGreen : ACCENT,
-                                transition: "width 0.3s ease, background-color 0.25s ease",
-                            },
-                        }}
-                    />
-
-                    {/* ── Scrollable body ── */}
+                    {/* ── Body ── */}
                     <Box sx={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+
+                        {/* User row */}
+                        <Box sx={{
+                            display: "flex", alignItems: "center", gap: 1.25,
+                            px: 2.25, pt: 2, pb: 1.5,
+                            borderBottom: "1px solid", borderColor: bc,
+                        }}>
+                            <Box sx={{
+                                width: 34, height: 34, borderRadius: "50%",
+                                backgroundColor: ACCENT, flexShrink: 0,
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: "11px", fontWeight: 700, color: "#fff",
+                            }}>
+                                {(currentUser?.username || "U").slice(0, 2).toUpperCase()}
+                            </Box>
+                            <Box>
+                                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.85rem", fontWeight: 600, color: (t) => t.palette.text.primary, lineHeight: 1.2 }}>
+                                    {currentUser?.username || "You"}
+                                </Typography>
+                                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.72rem", color: (t) => t.palette.text.disabled }}>
+                                    Posting now
+                                </Typography>
+                            </Box>
+                        </Box>
 
                         {/* Drop zone / Preview */}
                         <Box
@@ -212,16 +170,14 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                 overflow: "hidden",
                                 cursor: media ? "default" : "pointer",
                                 position: "relative",
-                                backgroundColor: isDragging
-                                    ? `${ACCENT}0e`
-                                    : (t) => t.palette.action.hover,
-                                border: "1px solid",
-                                borderColor: isDragging ? ACCENT : borderColor,
+                                backgroundColor: isDragging ? `${ACCENT}0d` : (t) => t.palette.action.hover,
+                                outline: isDragging ? `2px dashed ${ACCENT}60` : "none",
+                                outlineOffset: "-8px",
                                 minHeight: media ? (isMobile ? 200 : 240) : 160,
                                 display: "flex", alignItems: "center", justifyContent: "center",
-                                transition: "background-color 0.15s, border-color 0.15s",
+                                transition: "background-color 0.15s",
                                 flexShrink: 0,
-                                ...(!media && { "&:hover": { backgroundColor: `${ACCENT}08` } }),
+                                ...(!media && { "&:hover": { backgroundColor: `${ACCENT}07` } }),
                             }}
                             onMouseEnter={() => setIsPreviewHovered(true)}
                             onMouseLeave={() => setIsPreviewHovered(false)}
@@ -231,28 +187,15 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                             {media ? (
                                 <>
                                     {isVideo ? (
-                                        <Box
-                                            component="video"
-                                            src={URL.createObjectURL(media)}
-                                            controls
-                                            sx={{
-                                                width: "100%",
-                                                maxHeight: isMobile ? 200 : 240,
-                                                objectFit: "cover",
-                                                display: "block",
-                                            }}
+                                        <Box component="video" src={URL.createObjectURL(media)} controls
+                                            sx={{ width: "100%", maxHeight: isMobile ? 200 : 240, objectFit: "cover", display: "block" }}
                                         />
                                     ) : isImage ? (
-                                        <Box
-                                            component="img"
-                                            src={URL.createObjectURL(media)}
-                                            alt="Story preview"
+                                        <Box component="img" src={URL.createObjectURL(media)} alt="Story preview"
                                             sx={{
-                                                width: "100%",
-                                                height: isMobile ? 200 : 240,
-                                                objectFit: "cover",
-                                                display: "block",
-                                                filter: isPreviewHovered ? "brightness(0.6)" : "brightness(1)",
+                                                width: "100%", height: isMobile ? 200 : 240,
+                                                objectFit: "cover", display: "block",
+                                                filter: isPreviewHovered ? "brightness(0.55)" : "brightness(1)",
                                                 transition: "filter 0.2s",
                                             }}
                                         />
@@ -262,84 +205,66 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                         </Typography>
                                     )}
 
-                                    {/* Hover actions — images only */}
                                     {isImage && (
                                         <Box sx={{
                                             position: "absolute", inset: 0,
                                             display: "flex", alignItems: "center", justifyContent: "center", gap: 1,
                                             opacity: isPreviewHovered ? 1 : 0, transition: "opacity 0.2s",
                                         }}>
-                                            <Button size="small"
+                                            <IconButton
                                                 onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
-                                                startIcon={<EditIcon sx={{ fontSize: "12px !important" }} />}
-                                                sx={{
-                                                    background: "rgba(255,255,255,0.9)", color: "#111",
-                                                    borderRadius: "9px", px: 1.75, py: 0.625,
-                                                    fontSize: "0.8rem", fontWeight: 500, textTransform: "none",
-                                                    boxShadow: "none", fontFamily: "'Inter', sans-serif",
-                                                    "&:hover": { background: "#fff" },
-                                                }}
+                                                sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#111", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}
                                             >
-                                                Change
-                                            </Button>
-                                            <Button size="small"
+                                                <EditIcon sx={{ fontSize: 16 }} />
+                                            </IconButton>
+                                            <IconButton
                                                 onClick={(e) => { e.stopPropagation(); setMedia(null); }}
-                                                startIcon={<DeleteIcon sx={{ fontSize: "12px !important" }} />}
-                                                sx={{
-                                                    background: "rgba(255,255,255,0.9)", color: "#dc2626",
-                                                    borderRadius: "9px", px: 1.75, py: 0.625,
-                                                    fontSize: "0.8rem", fontWeight: 500, textTransform: "none",
-                                                    boxShadow: "none", fontFamily: "'Inter', sans-serif",
-                                                    "&:hover": { background: "#fff" },
-                                                }}
+                                                sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#dc2626", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}
                                             >
-                                                Remove
-                                            </Button>
+                                                <DeleteIcon sx={{ fontSize: 16 }} />
+                                            </IconButton>
                                         </Box>
                                     )}
                                 </>
                             ) : (
                                 <Box sx={{ textAlign: "center", p: 3, userSelect: "none" }}>
                                     <Box sx={{
-                                        width: 48, height: 48,
-                                        border: "1px solid", borderColor,
-                                        borderRadius: "12px",
+                                        width: 52, height: 52, borderRadius: "14px",
+                                        backgroundColor: `${ACCENT}12`,
                                         display: "flex", alignItems: "center", justifyContent: "center",
-                                        mx: "auto", mb: 1.25,
-                                        backgroundColor: (t) => t.palette.background.paper,
+                                        mx: "auto", mb: 1.5,
                                     }}>
-                                        <UploadIcon sx={{ fontSize: 20, color: isDragging ? ACCENT : (t) => t.palette.text.disabled }} />
+                                        <UploadIcon sx={{ fontSize: 22, color: isDragging ? ACCENT : `${ACCENT}99` }} />
                                     </Box>
                                     <Typography sx={{
-                                        fontFamily: "'Inter', sans-serif", fontSize: "0.875rem",
-                                        fontWeight: 500, color: (t) => t.palette.text.primary, mb: 0.375,
+                                        fontFamily: "'Inter', sans-serif", fontSize: "0.9rem",
+                                        fontWeight: 600, color: (t) => t.palette.text.primary, mb: 0.4,
+                                        letterSpacing: "-0.1px",
                                     }}>
-                                        Drop your media here
+                                        {isDragging ? "Drop to upload" : "Drop photo or video"}
                                     </Typography>
-                                    <Typography sx={{
-                                        fontFamily: "'Inter', sans-serif", fontSize: "0.8rem",
-                                        color: (t) => t.palette.text.disabled, mb: 1.25,
-                                    }}>
+                                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.disabled, mb: 1.5 }}>
                                         or click to browse
                                     </Typography>
-                                    <Box sx={{ display: "flex", gap: 0.625, justifyContent: "center", flexWrap: "wrap" }}>
+                                    <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center", flexWrap: "wrap" }}>
                                         {["JPG", "PNG", "GIF", "MP4", "MOV"].map((ext) => (
-                                            <Box key={ext} sx={{
-                                                fontSize: "0.68rem", fontWeight: 500,
-                                                backgroundColor: (t) => t.palette.background.paper,
-                                                border: "1px solid", borderColor,
-                                                borderRadius: "20px", px: 1, py: "2px",
+                                            <Typography key={ext} sx={{
+                                                fontFamily: "'Inter', sans-serif", fontSize: "0.65rem", fontWeight: 600,
                                                 color: (t) => t.palette.text.disabled,
+                                                backgroundColor: (t) => t.palette.background.paper,
+                                                border: "1px solid", borderColor: bc,
+                                                borderRadius: "6px", px: 0.875, py: "2px",
+                                                letterSpacing: "0.04em",
                                             }}>
                                                 {ext}
-                                            </Box>
+                                            </Typography>
                                         ))}
                                     </Box>
                                 </Box>
                             )}
                         </Box>
 
-                        {/* File name strip */}
+                        {/* File strip */}
                         {media && (
                             <Box sx={{
                                 display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -350,50 +275,49 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                         ? <VideoIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />
                                         : <ImageIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />}
                                     <Typography sx={{
-                                        fontFamily: "'Inter', sans-serif", fontSize: "0.75rem",
+                                        fontFamily: "'Inter', sans-serif", fontSize: "0.73rem",
                                         color: (t) => t.palette.text.disabled, fontStyle: "italic",
                                         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200,
                                     }}>
                                         {media.name}
                                     </Typography>
                                 </Box>
-                                <Typography
-                                    component="button" onClick={() => setMedia(null)}
-                                    sx={{
-                                        fontFamily: "'Inter', sans-serif", fontSize: "0.75rem",
-                                        color: (t) => t.palette.error.main,
-                                        background: "none", border: "none", cursor: "pointer", p: 0,
-                                        "&:hover": { textDecoration: "underline" },
-                                    }}
-                                >
+                                <Typography component="button" onClick={() => setMedia(null)} sx={{
+                                    fontFamily: "'Inter', sans-serif", fontSize: "0.73rem",
+                                    color: (t) => t.palette.error.main,
+                                    background: "none", border: "none", cursor: "pointer", p: 0,
+                                    "&:hover": { textDecoration: "underline" },
+                                }}>
                                     Remove
                                 </Typography>
                             </Box>
                         )}
 
                         {/* Caption */}
-                        <Box sx={{ px: 2, pt: 1.75, pb: 2 }}>
-                            <Typography component="label" sx={labelSx}>Caption</Typography>
+                        <Box sx={{ px: 2.25, pt: 1.75, pb: 2 }}>
                             <Box sx={{ position: "relative" }}>
                                 <TextField
-                                    fullWidth multiline rows={3} variant="outlined"
+                                    fullWidth multiline rows={3} variant="standard"
                                     placeholder="Write a caption…"
                                     value={caption}
                                     onChange={(e) => setCaption(e.target.value)}
                                     inputProps={{ maxLength: CAPTION_LIMIT }}
                                     sx={{
-                                        ...inputSx,
-                                        "& .MuiOutlinedInput-root": {
-                                            ...inputSx["& .MuiOutlinedInput-root"],
-                                            pr: "38px",
+                                        "& .MuiInput-root": {
+                                            fontSize: "0.875rem",
+                                            fontFamily: "'Inter', sans-serif",
+                                            color: (t) => t.palette.text.primary,
+                                            "&:before, &:after": { display: "none" },
+                                            pr: "32px",
                                         },
+                                        "& textarea::placeholder": { color: (t: any) => t.palette.text.disabled, opacity: 1 },
                                     }}
                                 />
                                 <IconButton
                                     onClick={(e) => setEmojiAnchorEl(e.currentTarget)}
                                     size="small"
                                     sx={{
-                                        position: "absolute", bottom: 8, right: 8,
+                                        position: "absolute", top: 0, right: 0,
                                         width: 26, height: 26, borderRadius: "7px",
                                         color: (t) => t.palette.text.disabled,
                                         "&:hover": { color: ACCENT, backgroundColor: (t) => t.palette.action.hover },
@@ -403,8 +327,8 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                 </IconButton>
                             </Box>
                             <Typography sx={{
-                                fontFamily: "'Inter', sans-serif", fontSize: "0.68rem",
-                                color: (t) => t.palette.text.disabled, textAlign: "right", mt: 0.625,
+                                fontFamily: "'Inter', sans-serif", fontSize: "0.67rem",
+                                color: (t) => t.palette.text.disabled, textAlign: "right", mt: 0.75,
                             }}>
                                 {caption.length} / {CAPTION_LIMIT}
                             </Typography>
@@ -413,68 +337,55 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
 
                     {/* ── Footer ── */}
                     <Box sx={{
-                        display: "flex", alignItems: "center", justifyContent: "space-between",
-                        gap: 1.5, px: 2, py: 1.25,
-                        borderTop: "1px solid", borderColor,
-                        flexShrink: 0,
+                        display: "flex", alignItems: "center", justifyContent: "flex-end",
+                        gap: 1.5, px: 2.5, py: 1.375,
+                        borderTop: "1px solid", borderColor: bc, flexShrink: 0,
                     }}>
-                        <Typography sx={{
-                            fontFamily: "'Inter', sans-serif", fontSize: "0.78rem",
-                            color: isReady
-                                ? (caption.trim() ? successGreen : (t: any) => t.palette.text.secondary)
-                                : (t: any) => t.palette.text.disabled,
-                            transition: "color 0.25s",
+                        {!isReady && (
+                            <Typography sx={{
+                                fontFamily: "'Inter', sans-serif", fontSize: "0.78rem",
+                                color: (t) => t.palette.text.disabled, mr: "auto",
+                            }}>
+                                Add a photo or video to share
+                            </Typography>
+                        )}
+
+                        <Button variant="text" onClick={handleClose} sx={{
+                            borderRadius: "10px",
+                            color: (t) => t.palette.text.secondary,
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: "0.84rem", fontWeight: 500,
+                            textTransform: "none", px: 2, py: 0.75,
+                            "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
                         }}>
-                            {posted ? "Story shared!" : metaText}
-                        </Typography>
+                            Cancel
+                        </Button>
 
-                        <Box sx={{ display: "flex", gap: 0.75 }}>
-                            <Button
-                                variant="outlined" onClick={handleClose}
-                                sx={{
-                                    borderRadius: "10px",
-                                    border: "1px solid", borderColor: (t) => t.palette.divider,
-                                    color: (t) => t.palette.text.secondary,
-                                    fontFamily: "'Inter', sans-serif",
-                                    fontSize: "0.84rem", fontWeight: 500,
-                                    textTransform: "none", px: 2, py: 0.875,
-                                    boxShadow: "none",
-                                    "&:hover": {
-                                        borderColor: (t) => t.palette.text.disabled,
-                                        backgroundColor: (t) => t.palette.action.hover,
-                                        color: (t) => t.palette.text.primary,
-                                    },
-                                }}
-                            >
-                                Cancel
-                            </Button>
-
-                            <Button
-                                variant="contained" onClick={handleUpload}
-                                disabled={!isReady || loading || posted}
-                                endIcon={
-                                    loading
-                                        ? <CircularProgress size={13} thickness={4} sx={{ color: "#fff" }} />
-                                        : posted ? null
-                                        : <SendIcon sx={{ fontSize: "13px !important" }} />
-                                }
-                                sx={{
-                                    borderRadius: "10px",
-                                    backgroundColor: posted ? successGreen : ACCENT,
-                                    color: "#fff",
-                                    fontFamily: "'Inter', sans-serif",
-                                    fontSize: "0.84rem", fontWeight: 500,
-                                    textTransform: "none", px: 2.25, py: 0.875,
-                                    boxShadow: "none",
-                                    transition: "background-color 0.15s, transform 0.1s",
-                                    "&:hover": { backgroundColor: posted ? successGreen : "#6b4de0", boxShadow: "none" },
-                                    "&:active": { transform: "scale(0.97)" },
-                                    "&.Mui-disabled": { backgroundColor: `${ACCENT}40`, color: "rgba(255,255,255,0.6)" },
-                                }}
-                            >
-                                {posted ? "Shared!" : loading ? "Sharing…" : "Share story"}
-                            </Button>
-                        </Box>
+                        <Button
+                            variant="contained" onClick={handleUpload}
+                            disabled={!isReady || loading || posted}
+                            endIcon={
+                                loading
+                                    ? <CircularProgress size={13} thickness={4} sx={{ color: "#fff" }} />
+                                    : posted ? null
+                                    : <ArrowIcon sx={{ fontSize: "14px !important" }} />
+                            }
+                            sx={{
+                                borderRadius: "10px",
+                                backgroundColor: posted ? "#16a34a" : ACCENT,
+                                color: "#fff",
+                                fontFamily: "'Inter', sans-serif",
+                                fontSize: "0.84rem", fontWeight: 600,
+                                textTransform: "none", px: 2.25, py: 0.75,
+                                boxShadow: "none", letterSpacing: "-0.1px",
+                                transition: "background-color 0.15s, transform 0.1s",
+                                "&:hover": { backgroundColor: posted ? "#16a34a" : "#6b4de0", boxShadow: "none" },
+                                "&:active": { transform: "scale(0.97)" },
+                                "&.Mui-disabled": { backgroundColor: `${ACCENT}35`, color: "rgba(255,255,255,0.5)" },
+                            }}
+                        >
+                            {posted ? "Shared!" : loading ? "Sharing…" : "Share story"}
+                        </Button>
                     </Box>
 
                     {/* ── Emoji picker ── */}
@@ -483,7 +394,7 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                         onClose={() => setEmojiAnchorEl(null)}
                         anchorOrigin={{ vertical: "top", horizontal: "left" }}
                         transformOrigin={{ vertical: "bottom", horizontal: "left" }}
-                        PaperProps={{ sx: { borderRadius: "16px", overflow: "hidden", border: "1px solid", borderColor } }}
+                        PaperProps={{ sx: { borderRadius: "16px", overflow: "hidden", border: "1px solid", borderColor: bc } }}
                     >
                         <EmojiPicker
                             theme={isDark ? Theme.DARK : Theme.LIGHT}

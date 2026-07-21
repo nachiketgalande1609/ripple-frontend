@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Box, Button, Modal, TextField, Typography, Backdrop, Fade,
   IconButton, CircularProgress, useTheme, useMediaQuery,
-  InputAdornment, LinearProgress,
+  InputAdornment,
 } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { createPost } from "../../services/api";
@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import {
   SentimentSatisfiedAlt as EmojiIcon, LocationOn, Close,
-  AddPhotoAlternate, Send as SendIcon,
+  AddPhotoAlternate, ArrowForward as ArrowIcon,
   EditOutlined as EditIcon, DeleteOutline as DeleteIcon,
 } from "@mui/icons-material";
 import Popover from "@mui/material/Popover";
@@ -48,12 +48,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
   const hasCaption = postContent.trim().length > 0;
   const hasFile = imageFile !== null;
   const isReady = hasCaption && hasFile;
-  const progress = (hasFile ? 50 : 0) + (hasCaption ? 50 : 0);
-
-  const metaText = !hasFile && !hasCaption ? "Add a photo and caption to share"
-    : !hasFile ? "Add a photo to continue"
-    : !hasCaption ? "Write a caption to continue"
-    : "Ready to share!";
 
   useEffect(() => {
     if (!open) {
@@ -109,118 +103,59 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
     }
   };
 
-  const borderColor = (t: any) => t.palette.divider;
-  const successGreen = "#16a34a";
-
-  const inputSx = {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "10px",
-      fontSize: "0.875rem",
-      backgroundColor: (t: any) => t.palette.action.hover,
-      transition: "border-color 0.15s",
-      "& fieldset": { borderColor: (t: any) => t.palette.divider },
-      "&:hover fieldset": { borderColor: (t: any) => t.palette.text.disabled },
-      "&.Mui-focused fieldset": { borderColor: `${ACCENT}80`, borderWidth: "1px" },
-    },
-  };
-
-  const labelSx = {
-    fontSize: "0.7rem", fontWeight: 500, letterSpacing: "0.06em",
-    textTransform: "uppercase" as const,
-    color: (t: any) => t.palette.text.disabled, mb: 0.875, display: "block",
-  };
+  const bc = (t: any) => t.palette.divider;
 
   return (
     <Modal
       open={open} onClose={handleModalClose} closeAfterTransition
       BackdropComponent={Backdrop}
-      BackdropProps={{ timeout: 300, sx: { backgroundColor: "rgba(0,0,0,0.4)" } }}
+      BackdropProps={{ timeout: 300, sx: { backgroundColor: "rgba(0,0,0,0.4)", backdropFilter: "blur(6px)" } }}
       sx={{ display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", p: isMobile ? 0 : 2 }}
     >
-      <Fade in={open} timeout={250}>
+      <Fade in={open} timeout={220}>
         <Box sx={{
           bgcolor: "background.paper",
-          width: "100%", maxWidth: "760px",
-          maxHeight: isMobile ? "96vh" : "88vh",
+          width: "100%", maxWidth: 780,
+          maxHeight: isMobile ? "96vh" : "86vh",
           display: "flex", flexDirection: "column", overflow: "hidden",
-          borderRadius: isMobile ? "16px 16px 0 0" : "16px",
-          border: "1px solid", borderColor,
-          boxShadow: isDark ? "0 24px 60px rgba(0,0,0,0.5)" : "0 16px 40px rgba(0,0,0,0.12)",
-          transform: "translateZ(0)",
+          borderRadius: isMobile ? "20px 20px 0 0" : "20px",
+          border: "1px solid", borderColor: bc,
+          boxShadow: isDark ? "0 32px 80px rgba(0,0,0,0.6)" : "0 20px 60px rgba(0,0,0,0.14)",
+          isolation: "isolate",
           willChange: "transform",
         }}>
 
           {/* ── Header ── */}
           <Box sx={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            px: 2, py: 1.375,
-            borderBottom: "1px solid", borderColor,
-            flexShrink: 0,
+            px: 2.5, py: 1.5,
+            borderBottom: "1px solid", borderColor: bc, flexShrink: 0,
           }}>
             <Typography sx={{
-              fontFamily: "'Inter', -apple-system, sans-serif",
-              fontSize: "0.95rem", fontWeight: 500,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "1rem", fontWeight: 600,
               color: (t) => t.palette.text.primary,
+              letterSpacing: "-0.2px",
             }}>
-              New post
+              Create post
             </Typography>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              {/* User chip */}
-              <Box sx={{
-                display: "flex", alignItems: "center", gap: 0.875,
-                backgroundColor: (t) => t.palette.action.hover,
-                border: "1px solid", borderColor,
-                borderRadius: "20px", py: "4px", pr: 1.25, pl: "4px",
-              }}>
-                <Box sx={{
-                  width: 22, height: 22, borderRadius: "50%",
-                  backgroundColor: ACCENT,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "9px", fontWeight: 600, color: "#fff",
-                  flexShrink: 0,
-                }}>
-                  {(currentUser?.username || "U").slice(0, 2).toUpperCase()}
-                </Box>
-                <Typography sx={{ fontSize: "0.8rem", color: (t) => t.palette.text.secondary, fontFamily: "'Inter', sans-serif" }}>
-                  {currentUser?.username || "You"}
-                </Typography>
-              </Box>
-
-              {/* Close */}
-              <IconButton onClick={handleModalClose} size="small" sx={{
-                width: 30, height: 30, borderRadius: "9px",
-                border: "1px solid", borderColor,
-                color: (t) => t.palette.text.disabled,
-                "&:hover": { color: (t) => t.palette.text.primary, backgroundColor: (t) => t.palette.action.hover },
-              }}>
-                <Close sx={{ fontSize: 14 }} />
-              </IconButton>
-            </Box>
+            <IconButton onClick={handleModalClose} size="small" sx={{
+              width: 32, height: 32, borderRadius: "10px",
+              color: (t) => t.palette.text.secondary,
+              "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
+            }}>
+              <Close sx={{ fontSize: 16 }} />
+            </IconButton>
           </Box>
-
-          {/* ── Progress bar ── */}
-          <LinearProgress
-            variant="determinate"
-            value={posted ? 100 : progress}
-            sx={{
-              height: 2, flexShrink: 0,
-              backgroundColor: (t) => t.palette.divider,
-              "& .MuiLinearProgress-bar": {
-                backgroundColor: posted ? successGreen : ACCENT,
-                transition: "width 0.3s ease, background-color 0.25s ease",
-              },
-            }}
-          />
 
           {/* ── Body ── */}
           <Box sx={{ display: "flex", flex: 1, overflow: "hidden", flexDirection: { xs: "column", md: "row" } }}>
 
-            {/* Left — media upload */}
+            {/* Left — media */}
             <Box sx={{
-              flex: "1.1 1 0",
-              display: "flex", flexDirection: "column",
-              borderBottom: { xs: "1px solid", md: "none" }, borderBottomColor: { xs: borderColor },
+              flex: "1.1 1 0", display: "flex", flexDirection: "column",
+              borderBottom: { xs: "1px solid", md: "none" }, borderBottomColor: { xs: bc },
+              backgroundColor: (t) => t.palette.action.hover,
               minWidth: 0,
             }}>
               <Box
@@ -229,12 +164,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                   flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
                   cursor: imageFile ? "default" : "pointer",
                   position: "relative", overflow: "hidden",
-                  backgroundColor: isDragging
-                    ? `${ACCENT}0e`
-                    : (t) => t.palette.action.hover,
-                  minHeight: { xs: 200, md: 300 },
+                  minHeight: { xs: 200, md: 320 },
+                  backgroundColor: isDragging ? `${ACCENT}0d` : (t) => t.palette.action.hover,
                   transition: "background-color 0.15s",
-                  ...(!imageFile && { "&:hover": { backgroundColor: `${ACCENT}08` } }),
+                  outline: isDragging ? `2px dashed ${ACCENT}60` : "none",
+                  outlineOffset: "-8px",
+                  ...(!imageFile && { "&:hover": { backgroundColor: `${ACCENT}07` } }),
                 }}
                 onMouseEnter={() => setIsPreviewHovered(true)}
                 onMouseLeave={() => setIsPreviewHovered(false)}
@@ -251,7 +186,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                           width: "100%", height: "100%", objectFit: "cover",
                           position: "absolute", inset: 0,
                           transition: "filter 0.2s",
-                          filter: isPreviewHovered ? "brightness(0.6)" : "brightness(1)",
+                          filter: isPreviewHovered ? "brightness(0.55)" : "brightness(1)",
                         }}
                       />
                     ) : (
@@ -261,143 +196,162 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                           width: "100%", height: "100%", objectFit: "cover",
                           position: "absolute", inset: 0,
                           transition: "filter 0.2s",
-                          filter: isPreviewHovered ? "brightness(0.6)" : "brightness(1)",
+                          filter: isPreviewHovered ? "brightness(0.55)" : "brightness(1)",
                         }}
                       />
                     )}
-                    {/* Hover actions */}
                     <Box sx={{
                       position: "absolute", inset: 0,
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 1,
                       opacity: isPreviewHovered ? 1 : 0, transition: "opacity 0.2s",
                     }}>
-                      <Button size="small"
+                      <IconButton
                         onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
-                        startIcon={<EditIcon sx={{ fontSize: "12px !important" }} />}
                         sx={{
-                          background: "rgba(255,255,255,0.9)", color: "#111",
-                          borderRadius: "9px", px: 1.75, py: 0.625,
-                          fontSize: "0.8rem", fontWeight: 500, textTransform: "none",
-                          boxShadow: "none", fontFamily: "'Inter', sans-serif",
-                          "&:hover": { background: "#fff" },
+                          backgroundColor: "rgba(255,255,255,0.92)",
+                          color: "#111", width: 38, height: 38,
+                          "&:hover": { backgroundColor: "#fff" },
                         }}
                       >
-                        Change
-                      </Button>
-                      <Button size="small"
+                        <EditIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                      <IconButton
                         onClick={(e) => { e.stopPropagation(); setImageFile(null); }}
-                        startIcon={<DeleteIcon sx={{ fontSize: "12px !important" }} />}
                         sx={{
-                          background: "rgba(255,255,255,0.9)", color: "#dc2626",
-                          borderRadius: "9px", px: 1.75, py: 0.625,
-                          fontSize: "0.8rem", fontWeight: 500, textTransform: "none",
-                          boxShadow: "none", fontFamily: "'Inter', sans-serif",
-                          "&:hover": { background: "#fff" },
+                          backgroundColor: "rgba(255,255,255,0.92)",
+                          color: "#dc2626", width: 38, height: 38,
+                          "&:hover": { backgroundColor: "#fff" },
                         }}
                       >
-                        Remove
-                      </Button>
+                        <DeleteIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
                     </Box>
                   </>
                 ) : (
                   <Box sx={{ textAlign: "center", p: 3, userSelect: "none" }}>
                     <Box sx={{
-                      width: 48, height: 48,
-                      border: "1px solid", borderColor,
-                      borderRadius: "12px",
+                      width: 52, height: 52,
+                      borderRadius: "14px",
+                      backgroundColor: `${ACCENT}12`,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      mx: "auto", mb: 1.25,
-                      backgroundColor: (t) => t.palette.background.paper,
+                      mx: "auto", mb: 1.5,
                     }}>
-                      <AddPhotoAlternate sx={{
-                        fontSize: 20,
-                        color: isDragging ? ACCENT : (t) => t.palette.text.disabled,
-                      }} />
+                      <AddPhotoAlternate sx={{ fontSize: 22, color: isDragging ? ACCENT : `${ACCENT}99` }} />
                     </Box>
                     <Typography sx={{
-                      fontFamily: "'Inter', sans-serif", fontSize: "0.875rem",
-                      fontWeight: 500, color: (t) => t.palette.text.primary, mb: 0.375,
+                      fontFamily: "'Inter', sans-serif", fontSize: "0.9rem",
+                      fontWeight: 600, color: (t) => t.palette.text.primary, mb: 0.4,
+                      letterSpacing: "-0.1px",
                     }}>
-                      Drop your photo or video here
+                      {isDragging ? "Drop to upload" : "Drop photo or video"}
                     </Typography>
-                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.8rem", color: (t) => t.palette.text.disabled, mb: 1.25 }}>
+                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.disabled, mb: 1.5 }}>
                       or click to browse
                     </Typography>
-                    <Box sx={{ display: "flex", gap: 0.625, justifyContent: "center", flexWrap: "wrap" }}>
-                      {["JPG", "PNG", "GIF", "WEBP", "MP4", "MOV"].map((ext) => (
-                        <Box key={ext} sx={{
-                          fontSize: "0.68rem", fontWeight: 500,
-                          backgroundColor: (t) => t.palette.background.paper,
-                          border: "1px solid", borderColor,
-                          borderRadius: "20px", px: 1, py: "2px",
+                    <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center", flexWrap: "wrap" }}>
+                      {["JPG", "PNG", "GIF", "MP4", "MOV"].map((ext) => (
+                        <Typography key={ext} sx={{
+                          fontFamily: "'Inter', sans-serif", fontSize: "0.65rem", fontWeight: 600,
                           color: (t) => t.palette.text.disabled,
+                          backgroundColor: (t) => t.palette.background.paper,
+                          border: "1px solid", borderColor: bc,
+                          borderRadius: "6px", px: 0.875, py: "2px",
+                          letterSpacing: "0.04em",
                         }}>
                           {ext}
-                        </Box>
+                        </Typography>
                       ))}
                     </Box>
                   </Box>
                 )}
               </Box>
 
-              {/* File name footer */}
-              <Box sx={{
-                px: 1.75, py: 1,
-                borderTop: "1px solid", borderColor,
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                flexShrink: 0, minHeight: 40,
-              }}>
-                <Typography sx={{
-                  fontFamily: "'Inter', sans-serif", fontSize: "0.75rem",
-                  color: (t) => t.palette.text.disabled, fontStyle: "italic",
-                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180,
+              {/* File strip */}
+              {imageFile && (
+                <Box sx={{
+                  px: 2, py: 0.875,
+                  borderTop: "1px solid", borderColor: bc,
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  flexShrink: 0,
                 }}>
-                  {imageFile ? imageFile.name : "No file selected"}
-                </Typography>
-                {imageFile && (
+                  <Typography sx={{
+                    fontFamily: "'Inter', sans-serif", fontSize: "0.73rem",
+                    color: (t) => t.palette.text.disabled,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180,
+                  }}>
+                    {imageFile.name}
+                  </Typography>
                   <Typography
                     component="button"
                     onClick={() => setImageFile(null)}
                     sx={{
-                      fontFamily: "'Inter', sans-serif", fontSize: "0.75rem",
+                      fontFamily: "'Inter', sans-serif", fontSize: "0.73rem",
                       color: (t) => t.palette.error.main,
-                      background: "none", border: "none", cursor: "pointer", p: 0,
+                      background: "none", border: "none", cursor: "pointer", p: 0, ml: 1, flexShrink: 0,
                       "&:hover": { textDecoration: "underline" },
                     }}
                   >
                     Remove
                   </Typography>
-                )}
-              </Box>
+                </Box>
+              )}
             </Box>
 
-            {/* Right — fields */}
+            {/* Right — caption + location */}
             <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", minWidth: 0 }}>
 
+              {/* User row */}
+              <Box sx={{
+                display: "flex", alignItems: "center", gap: 1.25,
+                px: 2.25, pt: 2, pb: 1.5,
+                borderBottom: "1px solid", borderColor: bc,
+              }}>
+                <Box sx={{
+                  width: 34, height: 34, borderRadius: "50%",
+                  backgroundColor: ACCENT, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "11px", fontWeight: 700, color: "#fff",
+                }}>
+                  {(currentUser?.username || "U").slice(0, 2).toUpperCase()}
+                </Box>
+                <Box>
+                  <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.85rem", fontWeight: 600, color: (t) => t.palette.text.primary, lineHeight: 1.2 }}>
+                    {currentUser?.username || "You"}
+                  </Typography>
+                  <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.72rem", color: (t) => t.palette.text.disabled }}>
+                    Posting now
+                  </Typography>
+                </Box>
+              </Box>
+
               {/* Caption */}
-              <Box sx={{ px: 2, pt: 1.75, pb: 1.75, borderBottom: "1px solid", borderColor }}>
-                <Typography component="label" sx={labelSx}>Caption</Typography>
-                <Box sx={{ position: "relative" }}>
+              <Box sx={{ px: 2.25, pt: 1.75, pb: 1.5, flex: 1, display: "flex", flexDirection: "column" }}>
+                <Box sx={{ position: "relative", flex: 1, display: "flex", flexDirection: "column" }}>
                   <TextField
-                    fullWidth multiline rows={isMobile ? 3 : 5}
-                    variant="outlined"
+                    fullWidth multiline rows={isMobile ? 3 : 6}
+                    variant="standard"
                     placeholder="Write a caption… use #hashtags"
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
                     inputProps={{ maxLength: CAPTION_LIMIT, spellCheck: false }}
                     sx={{
-                      ...inputSx,
-                      "& .MuiOutlinedInput-root": {
-                        ...inputSx["& .MuiOutlinedInput-root"],
-                        pr: "38px",
+                      flex: 1,
+                      "& .MuiInput-root": {
+                        fontSize: "0.875rem",
+                        fontFamily: "'Inter', sans-serif",
+                        color: (t) => t.palette.text.primary,
+                        "&:before, &:after": { display: "none" },
+                        alignItems: "flex-start",
+                        pr: "32px",
                       },
+                      "& textarea::placeholder": { color: (t: any) => t.palette.text.disabled, opacity: 1 },
                     }}
                   />
                   <IconButton
                     onClick={(e) => setEmojiAnchorEl(e.currentTarget)}
                     size="small"
                     sx={{
-                      position: "absolute", bottom: 8, right: 8,
+                      position: "absolute", top: 0, right: 0,
                       width: 26, height: 26, borderRadius: "7px",
                       color: (t) => t.palette.text.disabled,
                       "&:hover": { color: ACCENT, backgroundColor: (t) => t.palette.action.hover },
@@ -409,12 +363,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
 
                 {/* Hashtag chips */}
                 {postContent.match(/#([a-zA-Z0-9_]+)/g) && (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.625, mt: 0.875 }}>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 1 }}>
                     {[...new Set(postContent.match(/#([a-zA-Z0-9_]+)/g))].map((tag) => (
                       <Box key={tag} sx={{
                         fontFamily: "'Inter', sans-serif", fontSize: "0.72rem", fontWeight: 500,
                         color: ACCENT, backgroundColor: `${ACCENT}12`,
-                        border: `1px solid ${ACCENT}30`,
+                        border: `1px solid ${ACCENT}28`,
                         borderRadius: "20px", px: 1, py: "2px",
                       }}>
                         {tag}
@@ -424,29 +378,30 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                 )}
 
                 <Typography sx={{
-                  fontFamily: "'Inter', sans-serif", fontSize: "0.68rem",
-                  color: (t) => t.palette.text.disabled, textAlign: "right", mt: 0.625,
+                  fontFamily: "'Inter', sans-serif", fontSize: "0.67rem",
+                  color: (t) => t.palette.text.disabled, textAlign: "right", mt: 0.75,
                 }}>
                   {postContent.length} / {CAPTION_LIMIT}
                 </Typography>
               </Box>
 
               {/* Location */}
-              <Box sx={{ px: 2, py: 1.75 }}>
-                <Typography component="label" sx={labelSx}>Location</Typography>
+              <Box sx={{ px: 2.25, pb: 1.75, borderTop: "1px solid", borderColor: bc, pt: 1.5 }}>
                 <TextField
-                  fullWidth variant="outlined"
+                  fullWidth variant="standard"
                   placeholder="Add a location…"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  sx={inputSx}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <LocationOn sx={{ fontSize: 15, color: (t) => t.palette.text.disabled }} />
+                        <LocationOn sx={{ fontSize: 15, color: (t) => t.palette.text.disabled, mb: "2px" }} />
                       </InputAdornment>
                     ),
+                    disableUnderline: true,
+                    sx: { fontSize: "0.855rem", fontFamily: "'Inter', sans-serif", color: (t: any) => t.palette.text.primary },
                   }}
+                  sx={{ "& textarea::placeholder, & input::placeholder": { color: (t: any) => t.palette.text.disabled, opacity: 1 } }}
                 />
               </Box>
             </Box>
@@ -454,18 +409,33 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
 
           {/* ── Footer ── */}
           <Box sx={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            gap: 1.5, px: 2, py: 1.25,
-            borderTop: "1px solid", borderColor,
-            flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "flex-end",
+            gap: 1.5, px: 2.5, py: 1.375,
+            borderTop: "1px solid", borderColor: bc, flexShrink: 0,
           }}>
-            <Typography sx={{
-              fontFamily: "'Inter', sans-serif", fontSize: "0.78rem",
-              color: isReady ? successGreen : (t) => t.palette.text.disabled,
-              transition: "color 0.25s",
-            }}>
-              {posted ? "Post shared!" : metaText}
-            </Typography>
+            {!isReady && (
+              <Typography sx={{
+                fontFamily: "'Inter', sans-serif", fontSize: "0.78rem",
+                color: (t) => t.palette.text.disabled, mr: "auto",
+              }}>
+                {!hasFile && !hasCaption ? "Add a photo and caption" : !hasFile ? "Add a photo to continue" : "Write a caption to continue"}
+              </Typography>
+            )}
+
+            <Button
+              variant="text"
+              onClick={handleModalClose}
+              sx={{
+                borderRadius: "10px",
+                color: (t) => t.palette.text.secondary,
+                fontFamily: "'Inter', sans-serif",
+                fontSize: "0.84rem", fontWeight: 500,
+                textTransform: "none", px: 2, py: 0.75,
+                "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
+              }}
+            >
+              Cancel
+            </Button>
 
             <Button
               variant="contained"
@@ -475,21 +445,22 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                 loading
                   ? <CircularProgress size={13} thickness={4} sx={{ color: "#fff" }} />
                   : posted ? null
-                  : <SendIcon sx={{ fontSize: "13px !important" }} />
+                  : <ArrowIcon sx={{ fontSize: "14px !important" }} />
               }
               sx={{
                 borderRadius: "10px",
-                backgroundColor: posted ? successGreen : ACCENT,
+                backgroundColor: posted ? "#16a34a" : ACCENT,
                 color: "#fff",
                 fontFamily: "'Inter', sans-serif",
-                fontSize: "0.84rem", fontWeight: 500,
+                fontSize: "0.84rem", fontWeight: 600,
                 textTransform: "none",
-                px: 2.25, py: 0.875,
+                px: 2.25, py: 0.75,
                 boxShadow: "none",
+                letterSpacing: "-0.1px",
                 transition: "background-color 0.15s, transform 0.1s",
-                "&:hover": { backgroundColor: posted ? successGreen : "#6b4de0", boxShadow: "none" },
+                "&:hover": { backgroundColor: posted ? "#16a34a" : "#6b4de0", boxShadow: "none" },
                 "&:active": { transform: "scale(0.97)" },
-                "&.Mui-disabled": { backgroundColor: `${ACCENT}40`, color: "rgba(255,255,255,0.6)" },
+                "&.Mui-disabled": { backgroundColor: `${ACCENT}35`, color: "rgba(255,255,255,0.5)" },
               }}
             >
               {posted ? "Shared!" : loading ? "Sharing…" : "Share"}
@@ -502,7 +473,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
             onClose={() => setEmojiAnchorEl(null)}
             anchorOrigin={{ vertical: "top", horizontal: "left" }}
             transformOrigin={{ vertical: "bottom", horizontal: "left" }}
-            PaperProps={{ sx: { borderRadius: "16px", overflow: "hidden", border: "1px solid", borderColor } }}
+            PaperProps={{ sx: { borderRadius: "16px", overflow: "hidden", border: "1px solid", borderColor: bc } }}
           >
             <EmojiPicker
               theme={isDark ? Theme.DARK : Theme.LIGHT}
