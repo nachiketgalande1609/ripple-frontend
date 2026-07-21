@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import socket from "../../services/socket";
 import {
@@ -141,7 +142,7 @@ const Messages: React.FC<MessageProps> = ({
   const navigatedUser = location.state || {};
 
   const currentUser = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "")
+    ? JSON.parse(localStorage.getItem("user") || "null")
     : {};
 
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -881,50 +882,55 @@ const Messages: React.FC<MessageProps> = ({
               backgroundPosition: "center",
             }}
           >
-            {/* Top bar */}
-            {selectedUser && (
-              <MessagesTopBar
-                selectedUser={selectedUser}
-                chatTheme={chatTheme}
-                setChatTheme={setChatTheme}
-                openVideoCall={handleVideoCall}
-                setMessages={setMessages}
-                onMuteToggle={fetchMutedUsers}
-              />
-            )}
+            {!selectedUser ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 2, color: 'text.secondary' }}>
+                <ChatBubbleOutlineIcon sx={{ fontSize: 48, opacity: 0.5 }} />
+                <Typography variant="body2" sx={{ opacity: 0.6 }}>Select a conversation to start chatting</Typography>
+              </Box>
+            ) : (
+              <>
+                {/* Top bar */}
+                <MessagesTopBar
+                  selectedUser={selectedUser}
+                  chatTheme={chatTheme}
+                  setChatTheme={setChatTheme}
+                  openVideoCall={handleVideoCall}
+                  setMessages={setMessages}
+                  onMuteToggle={fetchMutedUsers}
+                />
 
-            {/* Messages Container */}
-            <MessagesContainer
-              selectedUser={selectedUser}
-              messages={messages}
-              currentUser={currentUser}
-              handleImageClick={handleImageClick}
-              messagesEndRef={messagesEndRef}
-              handleReply={handleReply}
-              setAnchorEl={setAnchorEl}
-              handleDeleteMessage={handleDeleteMessage}
-              handleReaction={handleReaction}
-              typingUser={typingUser}
-              initialMessageLoading={initialMessageLoading}
-            />
+                {/* Messages Container */}
+                <MessagesContainer
+                  selectedUser={selectedUser}
+                  messages={messages}
+                  currentUser={currentUser}
+                  handleImageClick={handleImageClick}
+                  messagesEndRef={messagesEndRef}
+                  handleReply={handleReply}
+                  setAnchorEl={setAnchorEl}
+                  handleDeleteMessage={handleDeleteMessage}
+                  handleReaction={handleReaction}
+                  typingUser={typingUser}
+                  initialMessageLoading={initialMessageLoading}
+                />
 
-            {/* Message Input Box*/}
-            {selectedUser && (
-              <MessageInput
-                selectedFile={selectedFile}
-                setSelectedFile={setSelectedFile}
-                selectedFileURL={selectedFileURL}
-                setSelectedFileURL={setSelectedFileURL}
-                inputMessage={inputMessage}
-                handleTyping={handleTyping}
-                setInputMessage={setInputMessage}
-                handleSendMessage={handleSendMessage}
-                handleFileChange={handleFileChange}
-                isSendingMessage={isSendingMessage}
-                selectedMessageForReply={selectedMessageForReply}
-                selectedUser={selectedUser}
-                cancelReply={cancelReply}
-              />
+                {/* Message Input Box*/}
+                <MessageInput
+                  selectedFile={selectedFile}
+                  setSelectedFile={setSelectedFile}
+                  selectedFileURL={selectedFileURL}
+                  setSelectedFileURL={setSelectedFileURL}
+                  inputMessage={inputMessage}
+                  handleTyping={handleTyping}
+                  setInputMessage={setInputMessage}
+                  handleSendMessage={handleSendMessage}
+                  handleFileChange={handleFileChange}
+                  isSendingMessage={isSendingMessage}
+                  selectedMessageForReply={selectedMessageForReply}
+                  selectedUser={selectedUser}
+                  cancelReply={cancelReply}
+                />
+              </>
             )}
           </Box>
           <ImageDialog

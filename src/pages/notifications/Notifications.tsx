@@ -81,7 +81,7 @@ const NotificationsPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<0 | 1>(0);
   const currentUser = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "")
+    ? JSON.parse(localStorage.getItem("user") || "null")
     : {};
   const isLarge = useMediaQuery("(min-width:1281px)");
   const [followRequestAcceptLoading, setFollowRequestAcceptLoading] =

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress } from "@mui/material";
+import React, { useState, useRef, useEffect } from "react";
+import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
 import VideoPlayer from "../../component/VideoPlayer";
 import {
@@ -23,8 +23,9 @@ import { useNavigate } from "react-router-dom";
 import { useAppNotifications } from "../../hooks/useNotification";
 import ImageDialog from "../ImageDialog";
 import socket from "../../services/socket";
+import { ACCENT_COLOR } from "../../theme";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = ACCENT_COLOR;
 
 interface Post {
     username: string;
@@ -149,6 +150,8 @@ function DialogDivider() {
 const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const navigate = useNavigate();
     const notifications = useAppNotifications();
+    const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
 
     const [commentText, setCommentText] = useState("");
     const [comment_count, setCommentCount] = useState(post.comment_count);
@@ -173,16 +176,37 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
 
     const filteredUsers = usersList.filter((u: User) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
+    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
     const commentInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const id = 'post-like-animation-styles';
+        if (document.getElementById(id)) return;
+        const el = document.createElement('style');
+        el.id = id;
+        el.textContent = `
+        @keyframes likePopIn {
+          0%   { transform: scale(1); }
+          40%  { transform: scale(1.45); }
+          70%  { transform: scale(0.9); }
+          100% { transform: scale(1); }
+        }
+        .like-pop { animation: likePopIn 0.35s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+      `;
+        document.head.appendChild(el);
+    }, []);
     const isOwner = currentUser?.id === post.user_id;
 
     const dialogPaperSx = {
         borderRadius: "20px",
-        background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
-        border: "1px solid rgba(255,255,255,0.07)",
-        boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
-        color: "white",
+        background: isDark
+            ? "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)"
+            : theme.palette.background.paper,
+        border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : theme.palette.divider}`,
+        boxShadow: isDark
+            ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)"
+            : "0 8px 32px rgba(0,0,0,0.12)",
+        color: theme.palette.text.primary,
         overflow: "hidden",
         padding: "6px",
     };
@@ -310,16 +334,6 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
 
     return (
         <>
-            <style>{`
-        @keyframes likePopIn {
-          0%   { transform: scale(1); }
-          40%  { transform: scale(1.45); }
-          70%  { transform: scale(0.9); }
-          100% { transform: scale(1); }
-        }
-        .like-pop { animation: likePopIn 0.35s cubic-bezier(0.36,0.07,0.19,0.97) both; }
-      `}</style>
-
             <Box
                 sx={{
                     width: "100%",
@@ -354,7 +368,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                             </Typography>
                             {post.location && (
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, mt: "1px" }}>
-                                    <LocationOn sx={{ fontSize: "0.6rem", color: (t) => t.palette.text.disabled }} />
+                                    <LocationOn sx={{ fontSize: "0.75rem", color: (t) => t.palette.text.disabled }} />
                                     <Typography
                                         sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.68rem", color: (t) => t.palette.text.disabled }}
                                     >
@@ -573,7 +587,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                     <Typography
                         sx={{
                             fontFamily: "'Inter', sans-serif",
-                            fontSize: "0.67rem",
+                            fontSize: "0.75rem",
                             color: (t) => t.palette.text.disabled,
                             mt: 0.625,
                         }}
@@ -725,66 +739,120 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                 sx={{ "& .MuiDialog-paper": dialogPaperSx }}
             >
                 <DialogContent sx={{ p: 0 }}>
-                    <Box sx={{ px: 1.5, pt: 1.25, pb: 1, borderBottom: "1px solid", borderColor: (t) => t.palette.divider }}>
-                        <TextField
-                            variant="standard"
+                    {/* Header */}
+                    <Box sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        px: 2,
+                        pt: 1.75,
+                        pb: 1.5,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                    }}>
+                        <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "0.95rem", color: theme.palette.text.primary }}>
+                            Send to
+                        </Typography>
+                        <IconButton
                             size="small"
-                            placeholder="Search…"
-                            fullWidth
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            InputProps={{
-                                disableUnderline: true,
-                                sx: {
-                                    fontFamily: "'Inter', sans-serif",
-                                    fontSize: "0.875rem",
-                                    color: (t) => t.palette.text.primary,
-                                    "& input::placeholder": { color: (t) => t.palette.text.disabled },
-                                },
-                            }}
-                        />
+                            onClick={() => { setUsersModalOpen(false); setSearchTerm(""); }}
+                            sx={{ color: theme.palette.text.disabled, "&:hover": { color: theme.palette.text.primary, backgroundColor: theme.palette.action.hover } }}
+                        >
+                            <Close sx={{ fontSize: 18 }} />
+                        </IconButton>
                     </Box>
 
+                    {/* Search */}
+                    <Box sx={{ px: 2, py: 1.25, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                        <Box sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            backgroundColor: theme.palette.action.hover,
+                            borderRadius: "10px",
+                            px: 1.25,
+                            py: 0.75,
+                        }}>
+                            <Box component="span" sx={{ color: theme.palette.text.disabled, fontSize: 16, lineHeight: 1, mt: "1px" }}>⌕</Box>
+                            <TextField
+                                variant="standard"
+                                size="small"
+                                placeholder="Search people…"
+                                fullWidth
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                InputProps={{
+                                    disableUnderline: true,
+                                    sx: {
+                                        fontFamily: "'Inter', sans-serif",
+                                        fontSize: "0.875rem",
+                                        color: theme.palette.text.primary,
+                                        "& input::placeholder": { color: theme.palette.text.disabled },
+                                    },
+                                }}
+                            />
+                        </Box>
+                    </Box>
+
+                    {/* User list */}
                     {filteredUsers.length > 0 ? (
-                        <Box sx={{ py: "4px" }}>
+                        <Box sx={{ py: 0.75, maxHeight: 280, overflowY: "auto" }}>
                             {filteredUsers.map((user: User) => (
                                 <Box
                                     key={user.id}
-                                    onClick={() => handleUserClick(user)}
                                     sx={{
                                         display: "flex",
                                         alignItems: "center",
-                                        gap: 1.25,
-                                        px: 1.5,
+                                        gap: 1.5,
+                                        px: 2,
                                         py: 1,
-                                        cursor: "pointer",
-                                        borderRadius: "10px",
-                                        mx: 0.5,
                                         transition: "background 0.15s",
-                                        "&:hover": { backgroundColor: `${ACCENT}12` },
+                                        "&:hover": { backgroundColor: theme.palette.action.hover },
                                     }}
                                 >
                                     <Avatar
                                         src={user.profile_picture || BlankProfileImage}
-                                        sx={{ width: 32, height: 32, border: "1px solid", borderColor: (t) => t.palette.divider }}
+                                        sx={{ width: 40, height: 40, border: `1.5px solid ${theme.palette.divider}` }}
                                     />
-                                    <Typography
-                                        sx={{
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        <Typography sx={{
                                             fontFamily: "'Inter', sans-serif",
-                                            fontSize: "0.85rem",
+                                            fontSize: "0.875rem",
                                             fontWeight: 500,
-                                            color: (t) => t.palette.text.primary,
+                                            color: theme.palette.text.primary,
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                        }}>
+                                            {user.username}
+                                        </Typography>
+                                    </Box>
+                                    <Button
+                                        size="small"
+                                        onClick={() => handleUserClick(user)}
+                                        sx={{
+                                            minWidth: 0,
+                                            px: 1.75,
+                                            py: 0.5,
+                                            borderRadius: "20px",
+                                            backgroundColor: ACCENT_COLOR,
+                                            color: "#fff",
+                                            fontSize: "0.78rem",
+                                            fontWeight: 600,
+                                            fontFamily: "'Inter', sans-serif",
+                                            textTransform: "none",
+                                            "&:hover": { backgroundColor: `${ACCENT_COLOR}cc` },
+                                            flexShrink: 0,
                                         }}
                                     >
-                                        {user.username}
-                                    </Typography>
+                                        Send
+                                    </Button>
                                 </Box>
                             ))}
                         </Box>
                     ) : (
-                        <Box sx={{ py: 4, textAlign: "center" }}>
-                            <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.82rem", color: (t) => t.palette.text.disabled }}>
-                                No users found
+                        <Box sx={{ py: 5, textAlign: "center" }}>
+                            <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.82rem", color: theme.palette.text.disabled }}>
+                                No people found
                             </Typography>
                         </Box>
                     )}

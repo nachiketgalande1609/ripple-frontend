@@ -199,7 +199,7 @@ const ModalPost: React.FC<PostProps> = ({ postId, fetchPosts, isMobile, handleCl
     const [postingCommentLoading, setPostingCommentLoading] = useState(false);
     const [editingPostLoading, setEditingPostLoading] = useState(false);
 
-    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
+    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
     const commentInputRef = useRef<HTMLInputElement>(null);
     const isOwner = currentUser?.id === post?.user_id;
 

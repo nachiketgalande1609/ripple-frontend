@@ -67,7 +67,7 @@ export default function MobileTopBar({
           color="error"
           sx={{
             "& .MuiBadge-badge": {
-              fontSize: "0.6rem",
+              fontSize: "0.75rem",
               minWidth: 15,
               height: 15,
             },

@@ -9,7 +9,7 @@ const AccountPrivacy = () => {
   const notifications = useAppNotifications();
   const [loading, setLoading] = useState(false);
   const currentUser = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "")
+    ? JSON.parse(localStorage.getItem("user") || "null")
     : {};
   const [isPrivate, setIsPrivate] = useState(currentUser.is_private);
 

@@ -25,7 +25,7 @@ const CAPTION_LIMIT = 500;
 
 const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fetchStories }) => {
     const currentUser = localStorage.getItem("user")
-        ? JSON.parse(localStorage.getItem("user") || "") : {};
+        ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
     const [media, setMedia] = useState<File | null>(null);
     const [caption, setCaption] = useState("");

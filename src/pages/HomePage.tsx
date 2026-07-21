@@ -6,10 +6,11 @@ import UploadStoryDialog from "../component/stories/UploadStoryDialog";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getPosts, getStories } from "../services/api";
 import BlankProfileImage from "../static/profile_blank.png";
+import { ACCENT_COLOR } from "../theme";
 
 const POSTS_PER_PAGE = 3;
 
-const ACCENT = "#7c5cfc";
+const ACCENT = ACCENT_COLOR;
 
 /* ── Style injection ────────────────────────────────────────────── */
 const injectStyles = () => {
@@ -17,8 +18,6 @@ const injectStyles = () => {
     const s = document.createElement("style");
     s.id = "hp-styles-v2";
     s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
     @keyframes fadeUp   { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     @keyframes popIn    { 0% { opacity:0; transform:scale(.9); } 70% { transform:scale(1.03); } 100% { opacity:1; transform:scale(1); } }
     @keyframes shimmer  { 0% { background-position:-400px 0; } 100% { background-position:400px 0; } }
@@ -94,6 +93,9 @@ function StoryBubble({
     return (
         <Box
             onClick={onClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); }}
             sx={{
                 display: "flex",
                 flexDirection: "column",
@@ -141,7 +143,7 @@ function StoryBubble({
             {username && (
                 <Typography
                     sx={{
-                        fontSize: "0.66rem",
+                        fontSize: "0.75rem",
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 400,
                         color: (t) => t.palette.text.secondary,
@@ -170,10 +172,11 @@ function StorySkeleton({ size = 58 }: { size?: number }) {
 
 /* ── HomePage ───────────────────────────────────────────────────── */
 const HomePage = () => {
-    injectStyles();
+    useEffect(() => { injectStyles(); }, []);
     useHomeCssVars();
 
     const [posts, setPosts] = useState<any[]>([]);
+    const [fetchError, setFetchError] = useState<string | null>(null);
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -181,7 +184,7 @@ const HomePage = () => {
     const sentinelRef = useRef<HTMLDivElement | null>(null);
     const fetchingRef = useRef(false);
 
-    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
+    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -218,6 +221,7 @@ const HomePage = () => {
                 }
             } catch (e) {
                 console.error(e);
+                setFetchError('Failed to load posts. Please try again.');
             } finally {
                 setLoadingPosts(false);
                 setLoadingMore(false);
@@ -381,6 +385,10 @@ const HomePage = () => {
                                 </Box>
                             ))}
                         </>
+                    ) : fetchError && posts.length === 0 ? (
+                        <Box sx={{ textAlign: 'center', py: 4 }}>
+                            <Typography color="error" variant="body2">{fetchError}</Typography>
+                        </Box>
                     ) : posts.length > 0 ? (
                         <Box>
                             {posts.map((post, index) => (
@@ -447,6 +455,9 @@ const HomePage = () => {
                             </Typography>
                             <Box
                                 onClick={() => setOpenUploadDialog(true)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setOpenUploadDialog(true); }}
                                 sx={{
                                     mt: 2.5,
                                     px: 3,

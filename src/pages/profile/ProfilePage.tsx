@@ -12,8 +12,9 @@ import {
     Tabs,
     Tab,
 } from "@mui/material";
+import { ACCENT_COLOR } from "../../theme";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
 import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser } from "../../services/api";
@@ -77,7 +78,7 @@ const StatCol = ({ value, label, onClick }: { value: number; label: string; onCl
             <Typography sx={{ fontWeight: 700, fontSize: "1.15rem", lineHeight: 1, color: "#fff" }}>{fmt}</Typography>
             <Typography
                 sx={{
-                    fontSize: "0.6rem",
+                    fontSize: "0.75rem",
                     fontWeight: 500,
                     textTransform: "uppercase",
                     letterSpacing: "0.09em",
@@ -206,7 +207,7 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     const { postUploading } = useGlobalStore();
 
-    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
+    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
     const [profileData, setProfileData] = useState<Profile | null>(null);
     const [posts, setPosts] = useState<any[]>([]);
@@ -228,6 +229,15 @@ const ProfilePage = () => {
     const [modalOpen, setModalOpen] = useState(false);
 
     const isOwnProfile = currentUser?.id == userId;
+
+    useEffect(() => {
+        const id = 'profile-post-card-styles';
+        if (document.getElementById(id)) return;
+        const el = document.createElement('style');
+        el.id = id;
+        el.textContent = postCardCss;
+        document.head.appendChild(el);
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 80);
@@ -410,9 +420,6 @@ const ProfilePage = () => {
 
     return (
         <Box sx={{ bgcolor: "background.default", minHeight: "100vh", pb: 8 }}>
-            {/* inject post-card CSS once */}
-            <style>{postCardCss}</style>
-
             {/* ── Sticky Top Bar ── */}
             <Box
                 sx={{

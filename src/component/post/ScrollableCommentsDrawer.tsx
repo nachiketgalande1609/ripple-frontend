@@ -170,7 +170,7 @@ export default function ScrollableCommentsDrawer({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isDark = theme.palette.mode === "dark";
   const currentUser = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "")
+    ? JSON.parse(localStorage.getItem("user") || "null")
     : {};
 
   const [dialogOpen, setDialogOpen] = useState(false);

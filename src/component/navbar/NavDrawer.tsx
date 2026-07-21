@@ -23,8 +23,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /* ─── Static CSS ────────────────────────────────────────────────── */
 const staticStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
   .nav-item {
     display: flex; align-items: center; gap: 12px;
     padding: 10px 12px; border-radius: 16px; cursor: pointer;
@@ -168,7 +166,7 @@ type NavItem =
           extraClass?: string;
       };
 
-const TOAST_DURATION = 64000;
+const TOAST_DURATION = 4000;
 
 /* ─── useToastStack ──────────────────────────────────────────────── */
 function useToastStack() {
@@ -599,7 +597,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const badgeProps = {
         color: "error" as const,
         sx: {
-            "& .MuiBadge-badge": { fontSize: "0.6rem", minWidth: 15, height: 15 },
+            "& .MuiBadge-badge": { fontSize: "0.75rem", minWidth: 15, height: 15 },
         },
     };
 

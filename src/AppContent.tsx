@@ -53,7 +53,7 @@ const AppContent = () => {
   const location = useLocation();
   const currentUser = useRef(
     localStorage.getItem("user")
-      ? JSON.parse(localStorage.getItem("user") || "")
+      ? JSON.parse(localStorage.getItem("user") || "null")
       : {},
   ).current;
 
@@ -65,11 +65,6 @@ const AppContent = () => {
     setUnreadMessagesCount,
     postUploading,
   } = useGlobalStore();
-
-  const [notificationAlert, setNotificationAlert] = useState<string | null>(
-    null,
-  );
-  console.log(notificationAlert);
 
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const notifications = useAppNotifications();
@@ -107,7 +102,7 @@ const AppContent = () => {
 
   useEffect(() => {
     const currentUser = localStorage.getItem("user")
-      ? JSON.parse(localStorage.getItem("user") || "")
+      ? JSON.parse(localStorage.getItem("user") || "null")
       : null;
     if (!currentUser?.id) return;
     const register = () => socket.emit("registerUser", currentUser.id);
@@ -189,7 +184,7 @@ const AppContent = () => {
       }
     };
     fetchNotificationCount();
-  }, [user]);
+  }, [user, setUnreadNotificationsCount, setUnreadMessagesCount]);
 
   useEffect(() => {
     if (!user) return;
@@ -226,7 +221,7 @@ const AppContent = () => {
     return () => {
       socket.off("notificationAlert", handleNotificationAlertResponse);
     };
-  }, [user, setNotificationAlert]);
+  }, [user]);
 
   useEffect(() => {
     const handleCallReceived = (data: {

@@ -332,7 +332,7 @@ const FollowersPage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
 
-    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "") : {};
+    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
     const isOwnFollowersList = currentUser?.id?.toString() === userId;
 
     const [followers, setFollowers] = useState<FollowerUser[]>([]);

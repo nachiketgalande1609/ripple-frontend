@@ -28,7 +28,7 @@ const CAPTION_LIMIT = 2200;
 const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) => {
   const navigate = useNavigate();
   const currentUser = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "") : {};
+    ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
   const [postContent, setPostContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);

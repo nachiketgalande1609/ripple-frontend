@@ -174,7 +174,7 @@ const FollowingPage = () => {
   const navigate = useNavigate();
 
   const currentUser = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "")
+    ? JSON.parse(localStorage.getItem("user") || "null")
     : {};
 
   const [following, setFollowing] = useState<FollowingUser[]>([]);

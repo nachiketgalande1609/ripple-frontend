@@ -285,7 +285,7 @@ const PostDetailPage = () => {
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   const currentUser = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "")
+    ? JSON.parse(localStorage.getItem("user") || "null")
     : {};
 
   const [post, setPost] = useState<any>(null);
@@ -743,7 +743,7 @@ const PostDetailPage = () => {
                   mt: 0.15,
                 }}
               >
-                <LocationOn sx={{ fontSize: "0.6rem", color: tokens.accent }} />
+                <LocationOn sx={{ fontSize: "0.75rem", color: tokens.accent }} />
                 <Typography
                   sx={{
                     fontFamily: "'DM Sans', sans-serif",

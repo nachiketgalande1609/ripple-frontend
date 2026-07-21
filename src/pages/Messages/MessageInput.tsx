@@ -60,7 +60,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [emojiAnchorEl, setEmojiAnchorEl] = useState<null | HTMLElement>(null);
 
   const currentUser = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "") : {};
+    ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
   useEffect(() => {
     if (selectedUser && inputRef.current && !isMobile) inputRef.current.focus();

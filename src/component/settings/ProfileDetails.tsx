@@ -60,7 +60,7 @@ const ProfileDetails = () => {
   const isDark = theme.palette.mode === "dark";
 
   const user = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "")
+    ? JSON.parse(localStorage.getItem("user") || "null")
     : {};
 
   const [profileData, setProfileData] = useState<Profile | null>(null);

@@ -7,7 +7,7 @@ import { getSavedPosts } from "../services/api";
 const SavedPage = () => {
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const user = JSON.parse(localStorage.getItem("user") || "");
+    const user = JSON.parse(localStorage.getItem("user") || "null");
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const isLarge = useMediaQuery("(min-width:1281px)");
