@@ -70,7 +70,7 @@ const staticStyles = `
     color: #7c5cfc !important;
     background: rgba(124,92,252,0.1);
     border-radius: 10px;
-    width: 34px; height: 34px;
+    width: 26px; height: 26px;
     transition: background 0.15s ease;
   }
   .nav-item.create-btn:hover .nav-icon { background: rgba(124,92,252,0.18) !important; }
