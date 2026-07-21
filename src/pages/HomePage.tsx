@@ -26,16 +26,30 @@ const injectStyles = () => {
     .hp-root { font-family: 'Inter', -apple-system, sans-serif; }
     .post-card { animation: fadeUp .3s ease both; }
 
-    .story-ring {
-      position: relative; border-radius: 50%; padding: 2px;
-      background: conic-gradient(from 0deg, ${ACCENT}, #ff6b35, ${ACCENT});
+    .story-card {
+      position: relative; border-radius: 14px; overflow: hidden;
       flex-shrink: 0; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: flex-end;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
-    .story-ring-inner {
-      border-radius: 50%;
-      background: var(--hp-surface);
-      width: 100%; height: 100%; overflow: hidden;
+    .story-card img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    }
+    .story-card-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%);
+    }
+    .story-card-ring {
+      outline: 2.5px solid ${ACCENT}; outline-offset: 4px;
+      margin: 5px;
+    }
+    .story-card-username {
+      position: relative; z-index: 1;
+      padding: 0 7px 7px;
+      font-size: 0.7rem; font-weight: 600;
+      color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      width: 100%;
     }
 
     .sk-shimmer {
@@ -45,12 +59,13 @@ const injectStyles = () => {
     }
 
     .add-story-btn {
-      position: absolute; bottom: 2px; right: -2px;
+      position: absolute; bottom: 8px; right: 8px;
       background: ${ACCENT};
-      border-radius: 50%; width: 20px; height: 20px;
+      border-radius: 50%; width: 22px; height: 22px;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; border: 2px solid var(--hp-surface);
       transition: transform .15s ease;
+      z-index: 2;
     }
     .add-story-btn:hover { transform: scale(1.1) rotate(90deg); }
   `;
@@ -75,99 +90,39 @@ function useHomeCssVars() {
     }, [theme]);
 }
 
-/* ── StoryBubble ────────────────────────────────────────────────── */
-function StoryBubble({
+/* ── StoryCard ──────────────────────────────────────────────────── */
+function StoryCard({
     src,
     username,
-    size = 58,
     onClick,
     delay = 0,
     hasRing = true,
 }: {
     src?: string;
     username?: string;
-    size?: number;
     onClick?: () => void;
     delay?: number;
     hasRing?: boolean;
 }) {
     return (
-        <Box
+        <div
+            className={`story-card${hasRing ? " story-card-ring" : ""}`}
+            style={{ width: 90, height: 130, animation: `popIn .3s ease ${delay}ms both`, flexShrink: 0 }}
             onClick={onClick}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); }}
-            sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "5px",
-                flexShrink: 0,
-                cursor: "pointer",
-                animation: `popIn .3s ease ${delay}ms both`,
-            }}
         >
-            {hasRing ? (
-                <div className="story-ring" style={{ width: size + 4, height: size + 4 }}>
-                    <div className="story-ring-inner" style={{ width: size, height: size }}>
-                        <img
-                            src={src || BlankProfileImage}
-                            alt={username}
-                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).src = BlankProfileImage;
-                            }}
-                        />
-                    </div>
-                </div>
-            ) : (
-                <Box
-                    sx={{
-                        width: size,
-                        height: size,
-                        borderRadius: "50%",
-                        overflow: "hidden",
-                        border: "1px solid",
-                        borderColor: (t) => t.palette.divider,
-                    }}
-                >
-                    <img
-                        src={src || BlankProfileImage}
-                        alt={username}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = BlankProfileImage;
-                        }}
-                    />
-                </Box>
-            )}
-            {username && (
-                <Typography
-                    sx={{
-                        fontSize: "0.75rem",
-                        fontFamily: "'Inter', sans-serif",
-                        fontWeight: 400,
-                        color: (t) => t.palette.text.secondary,
-                        maxWidth: size + 8,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        textAlign: "center",
-                    }}
-                >
-                    {username}
-                </Typography>
-            )}
-        </Box>
+            <img src={src || BlankProfileImage} alt={username} onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }} />
+            <div className="story-card-gradient" />
+            {username && <span className="story-card-username">{username}</span>}
+        </div>
     );
 }
 
-function StorySkeleton({ size = 58 }: { size?: number }) {
+function StorySkeleton() {
     return (
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "5px", flexShrink: 0 }}>
-            <Box className="sk-shimmer" sx={{ width: size + 4, height: size + 4, borderRadius: "50%" }} />
-            <Box className="sk-shimmer" sx={{ width: 40, height: 8, borderRadius: "4px" }} />
-        </Box>
+        <Box className="sk-shimmer" sx={{ width: 90, height: 130, borderRadius: "14px", flexShrink: 0 }} />
     );
 }
 
@@ -298,7 +253,7 @@ const HomePage = () => {
                 {/* ── Stories ── */}
                 <Box
                     sx={{
-                        px: isMobile ? "12px" : "16px",
+                        // px: isMobile ? "12px" : "16px",
                         pt: isMobile ? "12px" : "16px",
                         pb: "12px",
                         borderColor: (t) => t.palette.divider,
@@ -309,16 +264,17 @@ const HomePage = () => {
                             display: "flex",
                             gap: "16px",
                             overflowX: "auto",
-                            pb: "2px",
+                            pb: "6px",
+                            pt: "4px",
+                            px: "4px",
                             "&::-webkit-scrollbar": { display: "none" },
                             scrollbarWidth: "none",
                         }}
                     >
-                        {/* Self bubble */}
+                        {/* Self card */}
                         <Box sx={{ position: "relative", flexShrink: 0 }}>
-                            <StoryBubble
+                            <StoryCard
                                 src={currentUser?.profile_picture_url}
-                                size={avatarSize}
                                 hasRing={selfStories.length > 0}
                                 onClick={() =>
                                     selfStories.length > 0 ? (setSelectedStoryIndex(0), setOpenStoryDialog(true)) : setOpenUploadDialog(true)
@@ -331,12 +287,11 @@ const HomePage = () => {
 
                         {/* Following stories */}
                         {fetchingStories
-                            ? Array.from({ length: 5 }).map((_, i) => <StorySkeleton key={i} size={avatarSize} />)
+                            ? Array.from({ length: 5 }).map((_, i) => <StorySkeleton key={i} />)
                             : followingStories.map((us, idx) => (
-                                  <StoryBubble
+                                  <StoryCard
                                       key={us.user_id}
                                       src={us.profile_picture}
-                                      size={avatarSize}
                                       username={us.username}
                                       delay={idx * 40}
                                       onClick={() => {
