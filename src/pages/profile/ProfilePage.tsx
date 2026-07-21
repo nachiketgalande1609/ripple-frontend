@@ -17,6 +17,7 @@ const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
 import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser } from "../../services/api";
+import EndOfFeed from "../../component/EndOfFeed";
 import {
     Lock,
     Message,
@@ -797,11 +798,7 @@ const ProfilePage = () => {
                                 </Box>
                             )}
 
-                            {!hasMore && posts.length > 0 && (
-                                <Typography sx={{ textAlign: "center", py: 3, fontSize: "0.72rem", color: (t) => t.palette.text.disabled }}>
-                                    You've seen all posts
-                                </Typography>
-                            )}
+                            {!hasMore && posts.length > 0 && <EndOfFeed message="You've seen all posts" />}
                         </div>
                     </Fade>
                 )}

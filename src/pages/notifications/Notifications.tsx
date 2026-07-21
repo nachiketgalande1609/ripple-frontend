@@ -171,12 +171,7 @@ const NotificationsPage = () => {
         width: isLarge ? "600px" : "525px",
         mt: 4,
         px: { xs: 1.5, sm: 2 },
-        height: {
-          xs: "calc(100dvh - 157px - env(safe-area-inset-bottom))",
-          sm: "100dvh",
-        },
-        display: "flex",
-        flexDirection: "column",
+        pb: 6,
       }}
     >
       {/* Header */}
@@ -251,7 +246,7 @@ const NotificationsPage = () => {
         />
       </Tabs>
 
-      <Box sx={{ flex: 1, overflowY: "auto", pr: 0.5 }}>
+      <Box>
         {loading ? (
           [...Array(5)].map((_, i) => <NotificationSkeleton key={i} />)
         ) : visibleNotifications.length === 0 ? (

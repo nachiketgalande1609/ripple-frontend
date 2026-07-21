@@ -1,6 +1,7 @@
 import { Container, Box, Typography, useMediaQuery, useTheme, Skeleton, CircularProgress } from "@mui/material";
 import { SentimentDissatisfied, Add } from "@mui/icons-material";
 import Post from "../component/post/Post";
+import EndOfFeed from "../component/EndOfFeed";
 import StoryDialog from "../component/stories/StoryDialog";
 import UploadStoryDialog from "../component/stories/UploadStoryDialog";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -488,19 +489,7 @@ const HomePage = () => {
                         </Box>
                     )}
 
-                    {!hasMore && posts.length > 0 && (
-                        <Typography
-                            sx={{
-                                textAlign: "center",
-                                py: 3,
-                                fontSize: "0.78rem",
-                                color: (t) => t.palette.text.disabled,
-                                fontFamily: "'Inter', sans-serif",
-                            }}
-                        >
-                            You're all caught up
-                        </Typography>
-                    )}
+                    {!hasMore && posts.length > 0 && <EndOfFeed />}
                 </Box>
             </Container>
 
