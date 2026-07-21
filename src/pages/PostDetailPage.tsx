@@ -686,7 +686,7 @@ const PostDetailPage = () => {
     <Box
       sx={{
         flex: 1,
-        bgcolor: (t) => t.palette.mode === "dark" ? "#000" : t.palette.background.default,
+        bgcolor: (t) => t.palette.background.paper,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -694,26 +694,11 @@ const PostDetailPage = () => {
         minHeight: { xs: 300, md: "auto" },
         overflow: "hidden",
         cursor: "default",
+        py: 3,
+        px: 3,
       }}
       onDoubleClick={!isVideo ? handleDoubleClickLike : undefined}
     >
-      {post.file_url && !isVideo && (
-        <Box
-          component="img"
-          src={post.file_url}
-          sx={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            filter: "blur(60px) saturate(0.4)",
-            transform: "scale(1.2)",
-            opacity: 0.18,
-            pointerEvents: "none",
-          }}
-        />
-      )}
       {!isVideo && !isImageLoaded && (
         <CircularProgress
           size={22}
@@ -730,12 +715,13 @@ const PostDetailPage = () => {
           src={post.file_url}
           alt="Post"
           sx={{
-            position: "absolute",
-            inset: 0,
+            position: "relative",
             zIndex: 1,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
+            maxWidth: "100%",
+            maxWidth: "100%",
+            maxHeight: "100%",
+            objectFit: "contain",
+            borderRadius: "12px",
             opacity: isImageLoaded ? 1 : 0,
             transition: "opacity 0.45s ease",
             display: "block",
@@ -769,13 +755,13 @@ const PostDetailPage = () => {
   const SidePanel = (
     <Box
       sx={{
-        width: { xs: "100%", md: 400 },
+        width: { xs: "100%", md: 380 },
         flexShrink: 0,
         display: "flex",
         flexDirection: "column",
         bgcolor: (t) => t.palette.background.paper,
         borderTop: { xs: "1px solid", md: "none" },
-        height: { xs: "auto", md: "calc(100vh - 56px)" },
+        height: { xs: "auto", md: "100%" },
         overflow: "hidden",
       }}
     >
@@ -787,8 +773,6 @@ const PostDetailPage = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid",
-          borderColor: (t) => t.palette.divider,
           flexShrink: 0,
         }}
       >
@@ -879,8 +863,6 @@ const PostDetailPage = () => {
           sx={{
             px: 2.5,
             py: 1.75,
-            borderBottom: "1px solid",
-            borderColor: (t) => t.palette.divider,
             flexShrink: 0,
           }}
         >
@@ -925,7 +907,7 @@ const PostDetailPage = () => {
 
       {/* ── Tagged users ── */}
       {taggedUsers.length > 0 && (
-        <Box sx={{ px: 2.5, py: 1.25, borderBottom: "1px solid", borderColor: (t) => t.palette.divider, flexShrink: 0, display: "flex", flexWrap: "wrap", gap: 0.75, alignItems: "center" }}>
+        <Box sx={{ px: 2.5, py: 1.25, flexShrink: 0, display: "flex", flexWrap: "wrap", gap: 0.75, alignItems: "center" }}>
           <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.disabled, mr: 0.25 }}>
             with
           </Typography>
@@ -1040,10 +1022,8 @@ const PostDetailPage = () => {
       {/* ── Action bar + comment input ── */}
       <Box
         sx={{
-          borderTop: "1px solid",
-          borderColor: (t) => t.palette.divider,
           flexShrink: 0,
-          bgcolor: (t) => t.palette.background.default,
+          bgcolor: (t) => t.palette.background.paper,
         }}
       >
         {/* Actions row */}
@@ -1271,7 +1251,8 @@ const PostDetailPage = () => {
     <Fade in timeout={280}>
       <Box
         sx={{
-          minHeight: "100vh",
+          height: "100vh",
+          overflow: "hidden",
           bgcolor: (t) => t.palette.background.default,
           display: "flex",
           flexDirection: "column",
@@ -1280,64 +1261,63 @@ const PostDetailPage = () => {
       >
         <style>{heartAnimStyle}</style>
 
-        {/* ── Top nav ── */}
-        <Box
-          sx={{
-            height: 56,
-            display: "flex",
-            alignItems: "center",
-            px: 2,
-            gap: 1.5,
-            borderBottom: "1px solid",
-            borderColor: (t) => t.palette.divider,
-            bgcolor: (t) => `${t.palette.background.paper}eb`,
-            backdropFilter: "blur(16px)",
-            position: "sticky",
-            top: 0,
-            zIndex: 100,
-            flexShrink: 0,
-          }}
-        >
-          <IconButton
-            onClick={() => navigate(-1)}
-            size="small"
-            sx={{
-              color: (t) => t.palette.text.secondary,
-              "&:hover": {
-                bgcolor: (t) => t.palette.action.hover,
-                color: (t) => t.palette.text.primary,
-              },
-              borderRadius: "10px",
-              p: 0.75,
-            }}
-          >
-            <ArrowBack sx={{ fontSize: 19 }} />
-          </IconButton>
-          <Typography
-            sx={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontStyle: "italic",
-              fontSize: "1.15rem",
-              color: (t) => t.palette.text.primary,
-              letterSpacing: "-0.02em",
-              lineHeight: 1,
-            }}
-          >
-            Post
-          </Typography>
-        </Box>
-
         {/* ── Main layout ── */}
         <Box
           sx={{
             flex: 1,
             display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            overflow: { xs: "visible", md: "hidden" },
+            flexDirection: "column",
+            py: { xs: 2, md: 3 },
+            px: { xs: 1, md: 3 },
+            overflow: "hidden",
           }}
         >
-          {ImageSection}
-          {SidePanel}
+          {/* Centered content wrapper */}
+          <Box sx={{ maxWidth: 1100, width: "100%", mx: "auto", position: "relative", display: "flex", flexDirection: "column", height: "100%" }}>
+            {/* Floating back button */}
+            <IconButton
+              onClick={() => navigate(-1)}
+              size="small"
+              sx={{
+                mb: 1.5,
+                alignSelf: "flex-start",
+                color: (t) => t.palette.text.secondary,
+                bgcolor: (t) => t.palette.background.paper,
+                border: "1px solid",
+                borderColor: (t) => t.palette.divider,
+                boxShadow: 1,
+                "&:hover": {
+                  bgcolor: (t) => t.palette.action.hover,
+                  color: (t) => t.palette.text.primary,
+                },
+                borderRadius: "10px",
+                p: 0.75,
+              }}
+            >
+              <ArrowBack sx={{ fontSize: 19 }} />
+            </IconButton>
+
+            {/* Main card */}
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                borderRadius: "20px",
+                overflow: "hidden",
+                border: "1px solid",
+                borderColor: (t) => t.palette.divider,
+                boxShadow: (t) =>
+                  t.palette.mode === "dark"
+                    ? "0 4px 32px rgba(0,0,0,0.45)"
+                    : "0 4px 32px rgba(0,0,0,0.10)",
+              }}
+            >
+              {ImageSection}
+              {SidePanel}
+            </Box>
+          </Box>
         </Box>
 
         {/* ── Options sheet ── */}
