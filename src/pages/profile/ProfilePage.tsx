@@ -145,7 +145,19 @@ const PostCard = ({
     );
 };
 
-/* ─── Post Grid ──────────────────────────────────────────────── */
+/* ─── Post Grid (masonry) ────────────────────────────────────── */
+const masonryCss = `
+.masonry { columns: 2; column-gap: 8px; padding: 8px; padding-top: 0; }
+.masonry-item { break-inside: avoid; margin-bottom: 8px; border-radius: 14px; overflow: hidden; cursor: pointer; position: relative; }
+.masonry-item img, .masonry-item video { width: 100%; display: block; }
+.masonry-item .ovl { position:absolute; inset:0; opacity:0; transition:opacity 0.22s ease;
+  background:linear-gradient(135deg,rgba(124,92,252,0.45) 0%,rgba(0,0,0,0.55) 100%);
+  display:flex; align-items:center; justify-content:center; gap:16px; border-radius:14px; }
+.masonry-item:hover .ovl { opacity:1; }
+.masonry-item img { transition: transform 0.35s ease; }
+.masonry-item:hover img { transform: scale(1.04); }
+`;
+
 const PostGrid = ({ posts, username, imageErrors, onImageError, onPostClick }: {
     posts: any[];
     username?: string;
@@ -153,27 +165,54 @@ const PostGrid = ({ posts, username, imageErrors, onImageError, onPostClick }: {
     onImageError: (id: string) => void;
     onPostClick: (id: number) => void;
 }) => (
-    <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5px", p: "1.5px" }}>
-        {posts.map((post) => (
-            <PostCard
-                key={post.id}
-                post={post}
-                username={username}
-                onClick={() => onPostClick(post.id)}
-                imageError={!!imageErrors[post.id]}
-                onImageError={() => onImageError(post.id)}
-            />
-        ))}
-    </Box>
+    <>
+        <style>{masonryCss}</style>
+        <div className="masonry">
+            {posts.map((post) => {
+                const isVideo = post.file_url && /\.(mp4|mov|webm)$/i.test(post.file_url);
+                return (
+                    <div key={post.id} className="masonry-item" onClick={() => onPostClick(post.id)}>
+                        {isVideo ? (
+                            <video src={post.file_url} muted playsInline style={{ borderRadius: 14 }} />
+                        ) : !imageErrors[post.id] ? (
+                            <img src={post.file_url} alt={username} onError={() => onImageError(post.id)} />
+                        ) : (
+                            <Box sx={{ aspectRatio: "1", bgcolor: "action.hover", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <PhotoCamera sx={{ fontSize: 20, color: "rgba(255,255,255,0.2)" }} />
+                            </Box>
+                        )}
+                        <div className="ovl">
+                            <div className="med">
+                                <Favorite sx={{ color: "#fff", fontSize: 14 }} />
+                                <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.likes_count || 0}</Typography>
+                            </div>
+                            <div className="med">
+                                <Comment sx={{ color: "#fff", fontSize: 14 }} />
+                                <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.comments_count || 0}</Typography>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    </>
 );
 
 /* ─── Grid Skeleton ──────────────────────────────────────────── */
-const GridSkeleton = ({ count = 9 }: { count?: number }) => (
-    <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5px", p: "1.5px" }}>
-        {[...Array(count)].map((_, i) => (
-            <MuiSkeleton key={i} variant="rectangular" sx={{ paddingBottom: "100%", bgcolor: (t: any) => t.palette.action.selected }} />
-        ))}
-    </Box>
+const GridSkeleton = ({ count = 6 }: { count?: number }) => (
+    <>
+        <style>{masonryCss}</style>
+        <div className="masonry">
+            {[...Array(count)].map((_, i) => (
+                <div key={i} className="masonry-item">
+                    <MuiSkeleton
+                        variant="rectangular"
+                        sx={{ width: "100%", height: i % 3 === 0 ? 220 : i % 3 === 1 ? 160 : 280, bgcolor: (t: any) => t.palette.action.selected }}
+                    />
+                </div>
+            ))}
+        </div>
+    </>
 );
 
 /* ─── Empty / Private State ──────────────────────────────────── */
