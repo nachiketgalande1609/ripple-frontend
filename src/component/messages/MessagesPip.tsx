@@ -276,7 +276,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                 sx={{
                     position: "fixed",
                     bottom: -2,
-                    right: 32,
+                    right: 56,
                     zIndex: 1301,
                     display: "flex",
                     alignItems: "center",
