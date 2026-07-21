@@ -438,10 +438,8 @@ const ProfilePage = () => {
             <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
                 {/* skeleton top bar */}
                 <Box sx={{ height: 50, borderBottom: "1px solid", borderColor: (t) => t.palette.divider }} />
-                {/* skeleton banner */}
-                <MuiSkeleton variant="rectangular" height={130} sx={{ bgcolor: (t) => t.palette.action.selected }} />
-                <Box sx={{ maxWidth: 600, mx: "auto", px: { xs: 2, sm: 3 } }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mt: -4.5 }}>
+                <Box sx={{ maxWidth: 600, mx: "auto", px: "8px" }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mt: 2 }}>
                         <MuiSkeleton variant="circular" width={88} height={88} sx={{ bgcolor: (t) => t.palette.action.selected, border: "3px solid", borderColor: "background.default" }} />
                         <MuiSkeleton variant="rounded" width={96} height={32} sx={{ bgcolor: (t) => t.palette.action.selected, borderRadius: "8px" }} />
                     </Stack>
@@ -512,46 +510,19 @@ const ProfilePage = () => {
                 </IconButton>
             </Box>
 
-            {/* ── Banner ── */}
-            <Box
-                sx={{
-                    height: 130,
-                    position: "relative",
-                    background: `linear-gradient(160deg, ${ACCENT}28 0%, rgba(40,15,90,0.22) 55%, transparent 100%)`,
-                    "&::after": {
-                        content: '""',
-                        position: "absolute",
-                        inset: 0,
-                        background: `radial-gradient(ellipse 60% 120% at 20% 50%, ${ACCENT}14 0%, transparent 70%)`,
-                    },
-                    overflow: "hidden",
-                }}
-            />
-
             {/* ── Profile content ── */}
             <Box sx={{ maxWidth: 600, mx: "auto", px: "8px" }}>
-                {/* Avatar + action buttons row (avatar overlaps banner) */}
-                <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mt: -5.5 }}>
-                    {/* Gradient ring around avatar */}
-                    <Box
+                {/* Avatar + action buttons row */}
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mt: 2 }}>
+                    <Avatar
+                        src={profileData?.profile_picture || BlankProfileImage}
                         sx={{
-                            borderRadius: "50%",
-                            background: `linear-gradient(135deg, ${ACCENT} 0%, #b06aff 100%)`,
-                            padding: "2.5px",
+                            width: { xs: 82, sm: 92 },
+                            height: { xs: 82, sm: 92 },
+                            fontSize: "1.8rem",
                             flexShrink: 0,
                         }}
-                    >
-                        <Avatar
-                            src={profileData?.profile_picture || BlankProfileImage}
-                            sx={{
-                                width: { xs: 82, sm: 92 },
-                                height: { xs: 82, sm: 92 },
-                                border: "3px solid",
-                                borderColor: "background.default",
-                                fontSize: "1.8rem",
-                            }}
-                        />
-                    </Box>
+                    />
 
                     {/* Action buttons */}
                     <Stack direction="row" spacing={1} alignItems="center" sx={{ pb: 0.5 }}>
