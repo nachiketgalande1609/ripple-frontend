@@ -632,11 +632,12 @@ export default function ScrollableCommentsDrawer({
         {/* ── Comment input ── */}
         <Box
           sx={{
-            px: isMobile ? 1.5 : 2,
-            py: 1.25,
+            px: isMobile ? 2 : 2.5,
+            pt: 1.5,
+            pb: `calc(${theme.spacing(1.5)} + env(safe-area-inset-bottom, 0px))`,
             borderTop: "1px solid",
             borderColor: (t) => t.palette.divider,
-            backgroundColor: (t) => t.palette.background.default,
+            backgroundColor: (t) => t.palette.background.paper,
             flexShrink: 0,
           }}
         >
@@ -644,25 +645,24 @@ export default function ScrollableCommentsDrawer({
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 1,
+              gap: 1.25,
               backgroundColor: (t) => t.palette.action.hover,
-              borderRadius: "16px",
+              borderRadius: "24px",
               border: "1px solid",
               borderColor: (t) => t.palette.divider,
-              px: 1.5,
-              py: 0.5,
-              transition: "border-color 0.2s ease",
+              px: 0.875,
+              py: 0.875,
+              transition: "border-color 0.2s ease, box-shadow 0.2s ease",
               "&:focus-within": {
-                borderColor: "rgba(124,92,252,0.4)",
-                backgroundColor: (t) => t.palette.action.selected,
+                boxShadow: "0 0 0 3px rgba(124,92,252,0.08)",
               },
             }}
           >
             <Avatar
               src={currentUser?.profile_picture_url || BlankProfileImage}
               sx={{
-                width: 28,
-                height: 28,
+                width: 32,
+                height: 32,
                 flexShrink: 0,
                 border: "1.5px solid",
                 borderColor: (t) => t.palette.divider,
@@ -717,7 +717,7 @@ export default function ScrollableCommentsDrawer({
               sx={{
                 width: 32,
                 height: 32,
-                borderRadius: "10px",
+                borderRadius: "50%",
                 flexShrink: 0,
                 display: "flex",
                 alignItems: "center",

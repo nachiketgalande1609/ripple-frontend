@@ -9,8 +9,7 @@ import {
     Fade,
     Skeleton as MuiSkeleton,
     CircularProgress,
-    Tabs,
-    Tab,
+    useTheme,
 } from "@mui/material";
 import { ACCENT_COLOR } from "../../theme";
 
@@ -72,17 +71,17 @@ const StatCol = ({ value, label, onClick }: { value: number; label: string; onCl
                 cursor: onClick ? "pointer" : "default",
                 borderRadius: "10px",
                 transition: "background 0.15s",
-                "&:hover": onClick ? { background: "rgba(255,255,255,0.04)" } : {},
+                "&:hover": onClick ? { background: (t: any) => t.palette.action.hover } : {},
             }}
         >
-            <Typography sx={{ fontWeight: 700, fontSize: "1.15rem", lineHeight: 1, color: "#fff" }}>{fmt}</Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: "1.15rem", lineHeight: 1, color: (t: any) => t.palette.text.primary }}>{fmt}</Typography>
             <Typography
                 sx={{
                     fontSize: "0.75rem",
                     fontWeight: 500,
                     textTransform: "uppercase",
                     letterSpacing: "0.09em",
-                    color: "rgba(255,255,255,0.38)",
+                    color: (t: any) => t.palette.text.disabled,
                     mt: 0.4,
                     display: "block",
                 }}
@@ -171,7 +170,7 @@ const PostGrid = ({ posts, username, imageErrors, onImageError, onPostClick }: {
 const GridSkeleton = ({ count = 9 }: { count?: number }) => (
     <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5px", p: "1.5px" }}>
         {[...Array(count)].map((_, i) => (
-            <MuiSkeleton key={i} variant="rectangular" sx={{ paddingBottom: "100%", bgcolor: "rgba(255,255,255,0.06)" }} />
+            <MuiSkeleton key={i} variant="rectangular" sx={{ paddingBottom: "100%", bgcolor: (t: any) => t.palette.action.selected }} />
         ))}
     </Box>
 );
@@ -195,8 +194,8 @@ const EmptyState = ({ icon, title, subtitle, action }: { icon: React.ReactNode; 
         >
             {icon}
         </Box>
-        <Typography sx={{ fontWeight: 600, fontSize: "0.95rem", mb: 0.5, color: "rgba(255,255,255,0.85)" }}>{title}</Typography>
-        <Typography sx={{ color: "rgba(255,255,255,0.35)", fontSize: "0.8rem" }}>{subtitle}</Typography>
+        <Typography sx={{ fontWeight: 600, fontSize: "0.95rem", mb: 0.5, color: (t: any) => t.palette.text.primary }}>{title}</Typography>
+        <Typography sx={{ color: (t: any) => t.palette.text.disabled, fontSize: "0.8rem" }}>{subtitle}</Typography>
         {action && <Box sx={{ mt: 2.5 }}>{action}</Box>}
     </Box>
 );
@@ -206,6 +205,7 @@ const ProfilePage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
     const { postUploading } = useGlobalStore();
+    const theme = useTheme();
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
@@ -397,17 +397,17 @@ const ProfilePage = () => {
         return (
             <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
                 {/* skeleton top bar */}
-                <Box sx={{ height: 50, borderBottom: "1px solid rgba(255,255,255,0.05)" }} />
+                <Box sx={{ height: 50, borderBottom: "1px solid", borderColor: (t) => t.palette.divider }} />
                 {/* skeleton banner */}
-                <MuiSkeleton variant="rectangular" height={130} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                <MuiSkeleton variant="rectangular" height={130} sx={{ bgcolor: (t) => t.palette.action.selected }} />
                 <Box sx={{ maxWidth: 600, mx: "auto", px: { xs: 2, sm: 3 } }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mt: -4.5 }}>
-                        <MuiSkeleton variant="circular" width={88} height={88} sx={{ bgcolor: "rgba(255,255,255,0.06)", border: "3px solid", borderColor: "background.default" }} />
-                        <MuiSkeleton variant="rounded" width={96} height={32} sx={{ bgcolor: "rgba(255,255,255,0.06)", borderRadius: "8px" }} />
+                        <MuiSkeleton variant="circular" width={88} height={88} sx={{ bgcolor: (t) => t.palette.action.selected, border: "3px solid", borderColor: "background.default" }} />
+                        <MuiSkeleton variant="rounded" width={96} height={32} sx={{ bgcolor: (t) => t.palette.action.selected, borderRadius: "8px" }} />
                     </Stack>
-                    <MuiSkeleton variant="text" width="45%" height={22} sx={{ mt: 1.5, bgcolor: "rgba(255,255,255,0.06)" }} />
-                    <MuiSkeleton variant="text" width="65%" height={14} sx={{ mt: 0.5, bgcolor: "rgba(255,255,255,0.04)" }} />
-                    <MuiSkeleton variant="rounded" height={58} sx={{ mt: 2, borderRadius: "14px", bgcolor: "rgba(255,255,255,0.04)" }} />
+                    <MuiSkeleton variant="text" width="45%" height={22} sx={{ mt: 1.5, bgcolor: (t) => t.palette.action.selected }} />
+                    <MuiSkeleton variant="text" width="65%" height={14} sx={{ mt: 0.5, bgcolor: (t) => t.palette.action.hover }} />
+                    <MuiSkeleton variant="rounded" height={58} sx={{ mt: 2, borderRadius: "14px", bgcolor: (t) => t.palette.action.hover }} />
                 </Box>
                 <Box sx={{ maxWidth: 600, mx: "auto", mt: 1.5 }}>
                     <GridSkeleton />
@@ -429,8 +429,8 @@ const ProfilePage = () => {
                     height: 50,
                     backdropFilter: "blur(20px)",
                     WebkitBackdropFilter: "blur(20px)",
-                    backgroundColor: "rgba(13,13,21,0.85)",
-                    borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
+                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(13,13,21,0.85)' : 'rgba(255,255,255,0.85)',
+                    borderBottom: scrolled ? `1px solid ${theme.palette.divider}` : "1px solid transparent",
                     transition: "border-color 0.25s",
                     px: { xs: 1.5, sm: 2 },
                     display: "flex",
@@ -438,7 +438,7 @@ const ProfilePage = () => {
                     gap: 1,
                 }}
             >
-                <IconButton size="small" onClick={() => navigate(-1)} sx={{ color: "rgba(255,255,255,0.75)", "&:hover": { color: "#fff" } }}>
+                <IconButton size="small" onClick={() => navigate(-1)} sx={{ color: (t) => t.palette.text.secondary, "&:hover": { color: (t) => t.palette.text.primary } }}>
                     <ArrowBack sx={{ fontSize: 20 }} />
                 </IconButton>
 
@@ -449,7 +449,7 @@ const ProfilePage = () => {
                             sx={{
                                 fontWeight: 600,
                                 fontSize: "0.9rem",
-                                color: "#fff",
+                                color: (t) => t.palette.text.primary,
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
@@ -466,7 +466,7 @@ const ProfilePage = () => {
                 <IconButton
                     size="small"
                     onClick={() => setOpenDialog(true)}
-                    sx={{ color: "rgba(255,255,255,0.45)", "&:hover": { color: "rgba(255,255,255,0.8)" } }}
+                    sx={{ color: (t) => t.palette.text.disabled, "&:hover": { color: (t) => t.palette.text.secondary } }}
                 >
                     <MoreHoriz sx={{ fontSize: 20 }} />
                 </IconButton>
@@ -521,12 +521,13 @@ const ProfilePage = () => {
                                     size="small"
                                     onClick={() => navigate(`/messages/${userId}`, { state: profileData })}
                                     sx={{
-                                        border: "1px solid rgba(255,255,255,0.12)",
+                                        border: "1px solid",
+                                        borderColor: (t) => t.palette.divider,
                                         borderRadius: "9px",
                                         width: 34,
                                         height: 34,
-                                        color: "rgba(255,255,255,0.6)",
-                                        "&:hover": { borderColor: "rgba(255,255,255,0.25)", color: "#fff", bgcolor: "rgba(255,255,255,0.04)" },
+                                        color: (t) => t.palette.text.secondary,
+                                        "&:hover": { borderColor: (t) => t.palette.text.secondary, color: (t) => t.palette.text.primary, bgcolor: (t) => t.palette.action.hover },
                                     }}
                                 >
                                     <Message sx={{ fontSize: 17 }} />
@@ -553,9 +554,9 @@ const ProfilePage = () => {
                                     fontSize: "0.8rem",
                                     px: 2.25,
                                     py: 0.75,
-                                    borderColor: "rgba(255,255,255,0.15)",
-                                    color: "rgba(255,255,255,0.75)",
-                                    "&:hover": { borderColor: "rgba(255,255,255,0.3)", bgcolor: "rgba(255,255,255,0.04)", color: "#fff" },
+                                    borderColor: (t) => t.palette.divider,
+                                    color: (t) => t.palette.text.secondary,
+                                    "&:hover": { borderColor: (t) => t.palette.text.primary, bgcolor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
                                 }}
                             >
                                 Edit profile
@@ -566,7 +567,7 @@ const ProfilePage = () => {
 
                 {/* Name + verified */}
                 <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mt: 1.75 }}>
-                    <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.05rem", sm: "1.15rem" }, color: "#fff" }}>
+                    <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.05rem", sm: "1.15rem" }, color: (t) => t.palette.text.primary }}>
                         {profileData?.username}
                     </Typography>
                     {profileData?.is_verified && <Verified sx={{ fontSize: 15, color: "#1d9bf0" }} />}
@@ -576,7 +577,7 @@ const ProfilePage = () => {
                 {profileData?.bio ? (
                     <Typography
                         sx={{
-                            color: "rgba(255,255,255,0.65)",
+                            color: (t) => t.palette.text.secondary,
                             whiteSpace: "pre-line",
                             lineHeight: 1.65,
                             fontSize: "0.855rem",
@@ -589,11 +590,11 @@ const ProfilePage = () => {
                     <Typography
                         onClick={() => navigate(`/settings?setting=profiledetails`)}
                         sx={{
-                            color: "rgba(255,255,255,0.22)",
+                            color: (t) => t.palette.text.disabled,
                             fontSize: "0.82rem",
                             mt: 0.6,
                             cursor: "pointer",
-                            "&:hover": { color: "rgba(255,255,255,0.5)" },
+                            "&:hover": { color: (t) => t.palette.text.secondary },
                         }}
                     >
                         + Add a bio
@@ -606,7 +607,7 @@ const ProfilePage = () => {
                         {profileData?.location && (
                             <Stack direction="row" alignItems="center" spacing={0.5}>
                                 <Typography sx={{ fontSize: "11px" }}>📍</Typography>
-                                <Typography sx={{ color: "rgba(255,255,255,0.4)", fontSize: "0.77rem" }}>{profileData.location}</Typography>
+                                <Typography sx={{ color: (t) => t.palette.text.disabled, fontSize: "0.77rem" }}>{profileData.location}</Typography>
                             </Stack>
                         )}
                         {profileData?.website && (
@@ -631,8 +632,8 @@ const ProfilePage = () => {
                         )}
                         {profileData?.created_at && (
                             <Stack direction="row" alignItems="center" spacing={0.5}>
-                                <CalendarToday sx={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }} />
-                                <Typography sx={{ color: "rgba(255,255,255,0.28)", fontSize: "0.77rem" }}>
+                                <CalendarToday sx={{ fontSize: 11, color: (t) => t.palette.text.disabled }} />
+                                <Typography sx={{ color: (t) => t.palette.text.disabled, fontSize: "0.77rem" }}>
                                     Joined {formatDate(profileData.created_at)}
                                 </Typography>
                             </Stack>
@@ -643,11 +644,12 @@ const ProfilePage = () => {
                 {/* Stats pill */}
                 <Stack
                     direction="row"
-                    divider={<Box sx={{ width: "1px", bgcolor: "rgba(255,255,255,0.06)", my: 1 }} />}
+                    divider={<Box sx={{ width: "1px", bgcolor: (t) => t.palette.divider, my: 1 }} />}
                     sx={{
                         mt: 2,
-                        background: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(255,255,255,0.06)",
+                        background: (t) => t.palette.action.hover,
+                        border: "1px solid",
+                        borderColor: (t) => t.palette.divider,
                         borderRadius: "14px",
                         overflow: "hidden",
                     }}
@@ -671,40 +673,72 @@ const ProfilePage = () => {
                 sx={{
                     maxWidth: 600,
                     mx: "auto",
-                    mt: 2,
+                    mt: 0.5,
+                    mb: 0.5,
+                    px: 2,
                     position: "sticky",
                     top: 50,
                     zIndex: 9,
                     backdropFilter: "blur(20px)",
                     WebkitBackdropFilter: "blur(20px)",
-                    backgroundColor: "rgba(13,13,21,0.9)",
-                    borderBottom: "1px solid rgba(255,255,255,0.06)",
+                    py: 1.25,
                 }}
             >
-                <Tabs
-                    value={tabValue}
-                    onChange={(_, v) => setTabValue(v)}
-                    variant="fullWidth"
+                <Box
                     sx={{
-                        minHeight: 44,
-                        "& .MuiTab-root": {
-                            textTransform: "none",
-                            fontWeight: 500,
-                            fontSize: "0.82rem",
-                            minHeight: 44,
-                            gap: 0.6,
-                            color: "rgba(255,255,255,0.3)",
-                            letterSpacing: "0.02em",
-                        },
-                        "& .Mui-selected": { color: "#fff !important", fontWeight: 600 },
-                        "& .MuiTabs-indicator": { height: 2, bgcolor: ACCENT, borderRadius: "2px 2px 0 0" },
+                        display: "flex",
+                        gap: 1,
+                        backgroundColor: (t) => t.palette.action.hover,
+                        borderRadius: "12px",
+                        p: 0.5,
                     }}
                 >
-                    <Tab icon={<GridOn sx={{ fontSize: 14 }} />} iconPosition="start" label="Posts" />
-                    {isOwnProfile && (
-                        <Tab icon={<BookmarkBorder sx={{ fontSize: 14 }} />} iconPosition="start" label="Saved" />
-                    )}
-                </Tabs>
+                    {[
+                        { label: "Posts", icon: <GridOn sx={{ fontSize: 15 }} /> },
+                        ...(isOwnProfile ? [{ label: "Saved", icon: <BookmarkBorder sx={{ fontSize: 15 }} /> }] : []),
+                    ].map((tab, i) => (
+                        <Box
+                            key={tab.label}
+                            onClick={() => setTabValue(i)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setTabValue(i); }}
+                            sx={{
+                                flex: 1,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 0.75,
+                                py: 0.875,
+                                borderRadius: "9px",
+                                cursor: "pointer",
+                                transition: "all 0.18s ease",
+                                backgroundColor: tabValue === i
+                                    ? (t) => t.palette.background.paper
+                                    : "transparent",
+                                boxShadow: tabValue === i
+                                    ? "0 1px 4px rgba(0,0,0,0.15)"
+                                    : "none",
+                                color: tabValue === i
+                                    ? ACCENT_COLOR
+                                    : (t) => t.palette.text.disabled,
+                                "&:hover": {
+                                    color: tabValue === i ? ACCENT_COLOR : (t) => t.palette.text.secondary,
+                                },
+                            }}
+                        >
+                            {tab.icon}
+                            <Typography sx={{
+                                fontSize: "0.82rem",
+                                fontWeight: tabValue === i ? 600 : 500,
+                                letterSpacing: "0.01em",
+                                color: "inherit",
+                            }}>
+                                {tab.label}
+                            </Typography>
+                        </Box>
+                    ))}
+                </Box>
             </Box>
 
             {/* ── Posts Tab ── */}
@@ -764,7 +798,7 @@ const ProfilePage = () => {
                             )}
 
                             {!hasMore && posts.length > 0 && (
-                                <Typography sx={{ textAlign: "center", py: 3, fontSize: "0.72rem", color: "rgba(255,255,255,0.18)" }}>
+                                <Typography sx={{ textAlign: "center", py: 3, fontSize: "0.72rem", color: (t) => t.palette.text.disabled }}>
                                     You've seen all posts
                                 </Typography>
                             )}
