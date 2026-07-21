@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Dialog, Box, Typography, Avatar, InputBase, IconButton } from "@mui/material";
+import { Dialog, Box, Typography, Avatar, InputBase, IconButton, useTheme } from "@mui/material";
 import { Close as CloseIcon, Search as SearchIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import BlankProfileImage from "../../static/profile_blank.png";
@@ -21,6 +21,8 @@ interface NewChatUsersListProps {
 
 const NewChatUsersList = ({ open, setAnchorEl, usersList }: NewChatUsersListProps) => {
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isDark = theme.palette.mode === "dark";
     const [searchTerm, setSearchTerm] = useState("");
     const searchInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -47,14 +49,14 @@ const NewChatUsersList = ({ open, setAnchorEl, usersList }: NewChatUsersListProp
             onClose={handleClose}
             PaperProps={{
                 sx: {
-                    background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
-                    border: "1px solid rgba(255,255,255,0.07)",
+                    background: isDark ? "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)" : theme.palette.background.paper,
+                    border: "1px solid",
+                    borderColor: theme.palette.divider,
                     borderRadius: "20px",
                     width: 380,
                     maxWidth: "95vw",
                     overflow: "hidden",
-                    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
-                    color: "white",
+                    boxShadow: isDark ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)" : "0 8px 32px rgba(0,0,0,0.12)",
                 },
             }}
             BackdropProps={{ sx: { backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.6)" } }}

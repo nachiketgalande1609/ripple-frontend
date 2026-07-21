@@ -94,8 +94,10 @@ function DialogBtn({
     muted?: boolean;
     disabled?: boolean;
 }) {
-    const iconBg = danger ? "rgba(255,59,48,0.08)" : warning ? "rgba(230,57,70,0.15)" : muted ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.06)";
-    const iconColor = danger || warning ? "rgba(255,100,100,0.6)" : muted ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.5)";
+    const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
+    const iconBg = danger ? "rgba(255,59,48,0.08)" : warning ? "rgba(230,57,70,0.15)" : isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
+    const iconColor = danger || warning ? "rgba(255,100,100,0.6)" : muted ? theme.palette.text.disabled : theme.palette.text.secondary;
     return (
         <Button
             fullWidth
@@ -113,14 +115,14 @@ function DialogBtn({
                 fontFamily: "'Inter', -apple-system, sans-serif",
                 fontWeight: warning ? 600 : 500,
                 fontSize: "0.875rem",
-                color: warning ? "#fff" : danger ? "rgba(255,100,100,0.85)" : muted ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.8)",
+                color: warning ? "#fff" : danger ? (isDark ? "rgba(255,100,100,0.85)" : "#d32f2f") : muted ? theme.palette.text.disabled : theme.palette.text.primary,
                 backgroundColor: warning ? "rgba(230,57,70,0.18)" : "transparent",
                 transition: "background 0.15s",
                 "&:hover": {
-                    background: warning ? "rgba(230,57,70,0.28)" : danger ? "rgba(255,59,48,0.1)" : muted ? "rgba(255,255,255,0.04)" : "rgba(124,92,252,0.12)",
-                    color: warning || danger ? "#ff6b6b" : muted ? "rgba(255,255,255,0.55)" : "#fff",
+                    background: warning ? "rgba(230,57,70,0.28)" : danger ? "rgba(255,59,48,0.1)" : theme.palette.action.hover,
+                    color: warning || danger ? "#ff4444" : theme.palette.text.primary,
                 },
-                "&:disabled": { color: "rgba(255,255,255,0.2)" },
+                "&:disabled": { color: theme.palette.text.disabled },
             }}
         >
             <Box
@@ -144,7 +146,7 @@ function DialogBtn({
 }
 
 function DialogDivider() {
-    return <Box sx={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)", mx: 0.5, my: 0.375 }} />;
+    return <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 0.5, my: 0.375 }} />;
 }
 
 const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {

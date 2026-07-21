@@ -58,8 +58,8 @@ function useTokens() {
     textSecondary: p.text.secondary,
     textMuted: p.text.disabled,
     // accent is a brand color — stays fixed
-    accent: "#D4A96A",
-    accentDim: "rgba(212,169,106,0.15)",
+    accent: "#7c5cfc",
+    accentDim: "rgba(124,92,252,0.15)",
     danger: p.error.main,
     dangerDim: `${p.error.main}1f`,
     fontDisplay: "'Playfair Display', Georgia, serif",
@@ -80,16 +80,7 @@ const backdropProps = {
 
 /* ─── Small reusable pieces ──────────────────────────────────── */
 function Divider() {
-  return (
-    <Box
-      sx={{
-        height: "1px",
-        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)",
-        mx: 1.5,
-        my: 0.5,
-      }}
-    />
-  );
+  return <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 1.5, my: 0.5 }} />;
 }
 
 function SheetButton({
@@ -103,11 +94,14 @@ function SheetButton({
   onClick: () => void;
   variant?: "default" | "danger" | "warning" | "muted";
 }) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   const colors = {
-    default: { color: "rgba(255,255,255,0.8)", hover: "rgba(124,92,252,0.12)", hoverColor: "#fff", iconBg: "rgba(255,255,255,0.06)", iconColor: "rgba(255,255,255,0.5)" },
-    danger: { color: "rgba(255,100,100,0.85)", hover: "rgba(255,59,48,0.1)", hoverColor: "#ff6b6b", iconBg: "rgba(255,59,48,0.08)", iconColor: "rgba(255,100,100,0.6)" },
+    default: { color: theme.palette.text.primary, hover: theme.palette.action.hover, hoverColor: theme.palette.text.primary, iconBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", iconColor: theme.palette.text.secondary },
+    danger: { color: isDark ? "rgba(255,100,100,0.85)" : "#d32f2f", hover: "rgba(255,59,48,0.1)", hoverColor: "#ff4444", iconBg: "rgba(255,59,48,0.08)", iconColor: "rgba(255,100,100,0.6)" },
     warning: { color: "#fff", hover: "rgba(230,57,70,0.28)", hoverColor: "#ff6b6b", iconBg: "rgba(230,57,70,0.15)", iconColor: "rgba(255,100,100,0.6)" },
-    muted: { color: "rgba(255,255,255,0.3)", hover: "rgba(255,255,255,0.04)", hoverColor: "rgba(255,255,255,0.55)", iconBg: "rgba(255,255,255,0.04)", iconColor: "rgba(255,255,255,0.25)" },
+    muted: { color: theme.palette.text.disabled, hover: theme.palette.action.hover, hoverColor: theme.palette.text.secondary, iconBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", iconColor: theme.palette.text.disabled },
   };
   const c = colors[variant];
 
@@ -307,12 +301,15 @@ const PostDetailPage = () => {
 
   const isOwner = currentUser?.id === post?.user_id;
 
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   const paperSx = {
     borderRadius: "20px",
-    background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
-    border: "1px solid rgba(255,255,255,0.07)",
-    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
-    color: "white",
+    background: isDark ? "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)" : theme.palette.background.paper,
+    border: "1px solid",
+    borderColor: theme.palette.divider,
+    boxShadow: isDark ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)" : "0 8px 32px rgba(0,0,0,0.12)",
     overflow: "hidden",
     p: "6px",
     width: "90%",

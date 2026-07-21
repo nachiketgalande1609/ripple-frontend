@@ -423,7 +423,12 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
 
       {selectedUser ? (
         <>
-          {typingUser === selectedUser.id && <TypingIndicator />}
+          {typingUser === selectedUser.id && (
+            <TypingIndicator
+              profilePicture={selectedUser.profile_picture || undefined}
+              isDark={isDark}
+            />
+          )}
 
           {/* Render in reverse because of flex-direction: column-reverse */}
           {[...allMessages].reverse().map((msg, index) => {
