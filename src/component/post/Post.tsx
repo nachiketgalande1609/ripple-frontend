@@ -549,9 +549,9 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         onClick={handleSavePost}
                         sx={{
                             p: 0.75,
-                            color: isSaved ? (t) => t.palette.text.primary : (t) => t.palette.text.disabled,
+                            color: isSaved ? ACCENT : (t) => t.palette.text.disabled,
                             transition: "color 0.15s",
-                            "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
+                            "&:hover": { backgroundColor: "transparent", color: isSaved ? ACCENT : (t) => t.palette.text.primary },
                         }}
                     >
                         {isSaved ? <Bookmark sx={{ fontSize: 21 }} /> : <BookmarkBorderOutlined sx={{ fontSize: 21 }} />}

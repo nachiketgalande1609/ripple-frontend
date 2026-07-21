@@ -814,10 +814,9 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
                 sx={{
-                    width: hovered ? DRAWER_OPEN : DRAWER_CLOSED,
+                    width: DRAWER_CLOSED,
                     minWidth: DRAWER_CLOSED,
                     flexShrink: 0,
-                    transition: "width 0.2s ease",
                     "& .MuiDrawer-paper": {
                         width: hovered ? DRAWER_OPEN : DRAWER_CLOSED,
                         minWidth: DRAWER_CLOSED,
@@ -827,7 +826,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         backgroundColor: (t) => t.palette.background.default,
                         borderRight: "1px solid",
                         borderColor: hovered ? theme.palette.divider : "transparent",
-                        boxShadow: "none",
+                        boxShadow: hovered ? "4px 0 24px rgba(0,0,0,0.08)" : "none",
                         zIndex: 1201,
                     },
                 }}
