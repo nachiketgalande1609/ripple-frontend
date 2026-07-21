@@ -24,59 +24,67 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 /* ─── Static CSS ────────────────────────────────────────────────── */
 const staticStyles = `
   .nav-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 12px; border-radius: 16px; cursor: pointer;
+    display: flex; align-items: center; gap: 14px;
+    padding: 9px 14px; border-radius: 12px; cursor: pointer;
     transition: background 0.15s ease; text-decoration: none !important;
     margin: 1px 0; user-select: none; -webkit-tap-highlight-color: transparent;
+    position: relative;
   }
   .nav-item:hover { background: var(--nav-hover); }
-  .nav-item.active { background: var(--nav-active-bg); }
-  .nav-item.active:hover { background: var(--nav-active-bg); }
+  .nav-item.active { background: transparent; }
+
+  /* Left accent bar for active item */
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%; transform: translateY(-50%);
+    width: 3px; height: 18px;
+    background: #7c5cfc;
+    border-radius: 0 3px 3px 0;
+  }
 
   .nav-icon {
-    width: 25px; height: 28px; display: flex; align-items: center;
-    justify-content: center; flex-shrink: 0; color: var(--nav-text); position: relative;
+    width: 26px; height: 26px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; color: var(--nav-text);
+    transition: color 0.15s ease;
   }
-  .nav-item.active .nav-icon { color: var(--nav-text-active); }
+  .nav-item.active .nav-icon { color: #7c5cfc; }
+  .nav-item:hover:not(.active) .nav-icon { color: var(--nav-text-active); }
 
-  /* Outer wrapper: clips and grows horizontally — reveals text left-to-right */
-  .nav-label-wrap {
-    display: inline-block; overflow: hidden; max-width: 0;
-    vertical-align: middle;
-    transition: max-width 0.25s ease;
-  }
-  /* Inner text: slides from behind the icon to its natural position */
   .nav-label {
     font-family: 'Inter', -apple-system, sans-serif;
     font-size: 0.875rem; font-weight: 400; color: var(--nav-text); white-space: nowrap;
     display: block; opacity: 0;
-    transform: translateX(-14px);
-    transition: opacity 0.2s ease 0.04s, transform 0.25s ease;
+    transform: translateX(-10px);
+    transition: opacity 0.2s ease 0.04s, transform 0.22s ease;
   }
-  .nav-item.active .nav-label { font-weight: 500; color: var(--nav-text-active); }
+  .nav-item.active .nav-label { font-weight: 600; color: var(--nav-text-active); }
+  .nav-item:hover:not(.active) .nav-label { color: var(--nav-text-active); }
 
-  .nav-item.create-btn { background: #7c5cfc; margin-top: 8px; }
-  .nav-item.create-btn:hover { background: #6b4de0; }
-  .nav-item.create-btn .nav-icon,
-  .nav-item.create-btn .nav-label { color: #fff !important; }
+  .nav-item.create-btn {
+    background: transparent; margin-top: 4px;
+  }
+  .nav-item.create-btn:hover { background: var(--nav-hover); }
+  .nav-item.create-btn .nav-icon {
+    color: #7c5cfc !important;
+    background: rgba(124,92,252,0.1);
+    border-radius: 10px;
+    width: 34px; height: 34px;
+    transition: background 0.15s ease;
+  }
+  .nav-item.create-btn:hover .nav-icon { background: rgba(124,92,252,0.18) !important; }
+  .nav-item.create-btn .nav-label { color: #7c5cfc !important; font-weight: 600; }
 
   .nav-item.danger .nav-icon,
   .nav-item.danger .nav-label { color: var(--nav-danger) !important; }
   .nav-item.danger:hover { background: var(--nav-danger-bg); }
 
-  .nav-toggle {
-    width: 28px !important; height: 28px !important;
-    border-radius: 8px !important; border: 1px solid var(--nav-border) !important;
-    background: var(--nav-surface) !important; color: var(--nav-text) !important;
-    transition: border-color 0.15s, background 0.15s !important;
-  }
-  .nav-toggle:hover { background: var(--nav-hover) !important; border-color: var(--nav-text) !important; }
-
   .profile-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 
   .brand-text {
-    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.2rem;
-    color: #7c5cfc; letter-spacing: -0.3px; white-space: nowrap;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.25rem;
+    color: #7c5cfc; letter-spacing: -0.5px; white-space: nowrap;
   }
 
   /* ── desktop toast ── */
@@ -915,77 +923,45 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 sx={{
                     "& .MuiDialog-paper": {
                         borderRadius: "20px",
-                        background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
-                        border: "1px solid rgba(255,255,255,0.07)",
-                        boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
-                        color: "white",
+                        background: theme.palette.mode === "dark"
+                            ? "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)"
+                            : theme.palette.background.paper,
+                        border: "1px solid",
+                        borderColor: theme.palette.divider,
+                        boxShadow: theme.palette.mode === "dark"
+                            ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)"
+                            : "0 8px 32px rgba(0,0,0,0.12)",
                         overflow: "hidden",
                         padding: "6px",
                     },
                 }}
-                BackdropProps={{
-                    sx: {
-                        backgroundColor: "rgba(0,0,0,0.6)",
-                        backdropFilter: "blur(8px)",
-                    },
-                }}
+                BackdropProps={{ sx: { backgroundColor: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)" } }}
             >
-                {/* User info header */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.75, mb: 0.5 }}>
                     <img
                         src={currentUser?.profile_picture_url || BlankProfileImage}
                         alt="Profile"
-                        style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(124,92,252,0.5)" }}
+                        style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(124,92,252,0.4)" }}
                     />
                     <Box>
-                        <Box sx={{ fontWeight: 600, fontSize: "0.9rem", color: "#fff", lineHeight: 1.3 }}>
+                        <Box sx={{ fontWeight: 600, fontSize: "0.9rem", color: (t: any) => t.palette.text.primary, lineHeight: 1.3 }}>
                             {currentUser?.username}
                         </Box>
-                        <Box sx={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)" }}>
+                        <Box sx={{ fontSize: "0.75rem", color: (t: any) => t.palette.text.disabled }}>
                             Log out of Ripple?
                         </Box>
                     </Box>
                 </Box>
-
-                {/* Divider */}
-                <Box sx={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)", mx: 1, my: 0.5 }} />
-
-                {/* Log out action */}
-                <Button
-                    fullWidth
-                    onClick={handleLogout}
-                    sx={{
-                        display: "flex", alignItems: "center", gap: 1.5,
-                        px: 2, py: 1.4, borderRadius: "12px",
-                        textTransform: "none", justifyContent: "flex-start",
-                        fontWeight: 500, fontSize: "0.875rem",
-                        color: "rgba(255,100,100,0.85)",
-                        "&:hover": { background: "rgba(255,59,48,0.1)", color: "#ff6b6b" },
-                    }}
-                >
+                <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 1, my: 0.5 }} />
+                <Button fullWidth onClick={handleLogout} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "12px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: theme.palette.mode === "dark" ? "rgba(255,100,100,0.85)" : "#d32f2f", "&:hover": { background: "rgba(255,59,48,0.1)", color: "#ff4444" } }}>
                     <Box sx={{ width: 34, height: 34, borderRadius: "10px", background: "rgba(255,59,48,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,100,100,0.6)", flexShrink: 0 }}>
                         <LogoutOutlined sx={{ fontSize: "1.1rem" }} />
                     </Box>
                     Log out
                 </Button>
-
-                {/* Divider */}
-                <Box sx={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)", mx: 1, my: 0.5 }} />
-
-                {/* Cancel */}
-                <Button
-                    fullWidth
-                    onClick={() => setMoreOpen(false)}
-                    sx={{
-                        display: "flex", alignItems: "center", gap: 1.5,
-                        px: 2, py: 1.4, borderRadius: "12px",
-                        textTransform: "none", justifyContent: "flex-start",
-                        fontWeight: 500, fontSize: "0.875rem",
-                        color: "rgba(255,255,255,0.3)",
-                        "&:hover": { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.55)" },
-                    }}
-                >
-                    <Box sx={{ width: 34, height: 34, borderRadius: "10px", background: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.25)", flexShrink: 0 }}>
+                <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 1, my: 0.5 }} />
+                <Button fullWidth onClick={() => setMoreOpen(false)} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "12px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: (t: any) => t.palette.text.disabled, "&:hover": { background: (t: any) => t.palette.action.hover, color: (t: any) => t.palette.text.secondary } }}>
+                    <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: (t) => t.palette.action.hover, display: "flex", alignItems: "center", justifyContent: "center", color: (t: any) => t.palette.text.disabled, flexShrink: 0 }}>
                         <CloseIcon sx={{ fontSize: "1.1rem" }} />
                     </Box>
                     Cancel
