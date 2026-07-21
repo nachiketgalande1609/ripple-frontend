@@ -18,62 +18,71 @@ import {
 } from "@mui/icons-material";
 import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
+import LogoImage from "../../static/logo-transparent.png";
 import { faSignIn, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /* ─── Static CSS ────────────────────────────────────────────────── */
 const staticStyles = `
   .nav-item {
-    display: flex; align-items: center; gap: 14px;
-    padding: 9px 14px; border-radius: 12px; cursor: pointer;
-    transition: background 0.15s ease; text-decoration: none !important;
+    display: flex; align-items: center;
+    padding: 10px 14px; cursor: pointer;
+    text-decoration: none !important;
     margin: 1px 0; user-select: none; -webkit-tap-highlight-color: transparent;
-    position: relative;
+    position: relative; background: transparent;
   }
-  .nav-item:hover { background: var(--nav-hover); }
-  .nav-item.active { background: transparent; }
 
-  /* Left accent bar for active item */
+  /* Active indicator: left accent bar + bg glow */
   .nav-item.active::before {
     content: '';
     position: absolute;
-    left: -10px;
-    top: 50%; transform: translateY(-50%);
-    width: 3px; height: 18px;
-    background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%);
+    left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 22px;
+    background: linear-gradient(180deg, #7c5cfc 0%, #a78bfa 100%);
     border-radius: 0 3px 3px 0;
+    box-shadow: 0 0 8px rgba(124,92,252,0.6);
+  }
+  .nav-item.active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(124,92,252,0.12) 0%, transparent 70%);
+    border-radius: 0 8px 8px 0;
+    pointer-events: none;
   }
 
   .nav-icon {
     width: 26px; height: 26px; display: flex; align-items: center;
     justify-content: center; flex-shrink: 0; color: var(--nav-text);
-    transition: color 0.15s ease;
+    transition: color 0.18s ease, filter 0.18s ease;
+    position: relative;
   }
-  .nav-item.active .nav-icon { color: #7c5cfc; }
-  .nav-item:hover:not(.active) .nav-icon { color: var(--nav-text-active); }
+  .nav-item.active .nav-icon {
+    color: #7c5cfc;
+    filter: drop-shadow(0 0 5px rgba(124,92,252,0.5));
+  }
+  .nav-item:hover:not(.active) .nav-icon {
+    color: #7c5cfc;
+    filter: drop-shadow(0 0 7px rgba(124,92,252,0.55));
+  }
 
   .nav-label {
     font-family: 'Inter', -apple-system, sans-serif;
     font-size: 0.875rem; font-weight: 400; color: var(--nav-text); white-space: nowrap;
     display: block; margin-left: 14px;
+    transition: color 0.18s ease;
   }
   .nav-item.active .nav-label { font-weight: 600; background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .nav-item:hover:not(.active) .nav-label { color: var(--nav-text-active); }
+  .nav-item:hover:not(.active) .nav-label { color: var(--nav-text-active); font-weight: 600; }
 
-  .nav-item.create-btn {
-    background: transparent; margin-top: 4px;
-  }
-  .nav-item.create-btn:hover { background: var(--nav-hover); }
-  .nav-item.create-btn .nav-icon {
-    color: #7c5cfc !important;
-    width: 26px; height: 26px;
-  }
-  .nav-item.create-btn:hover .nav-icon { color: #a78bfa !important; }
+  .nav-item.create-btn { background: transparent; margin-top: 4px; }
+  .nav-item.create-btn .nav-icon { color: #7c5cfc !important; width: 26px; height: 26px; }
+  .nav-item.create-btn:hover .nav-icon { color: #a78bfa !important; filter: drop-shadow(0 0 7px rgba(124,92,252,0.55)); }
   .nav-item.create-btn .nav-label { background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent !important; font-weight: 600; }
 
   .nav-item.danger .nav-icon,
   .nav-item.danger .nav-label { color: var(--nav-danger) !important; }
-  .nav-item.danger:hover { background: var(--nav-danger-bg); }
+  .nav-item.danger:hover .nav-icon { filter: drop-shadow(0 0 6px rgba(239,68,68,0.4)); }
 
   .profile-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 
@@ -844,16 +853,17 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                             display: "flex",
                             alignItems: "center",
                             height: 52,
-                            px: "16px",
+                            px: "14px",
                             mb: 1,
                             flexShrink: 0,
                             overflow: "hidden",
                         }}
                     >
-                        <span className="brand-text">
-                            <span className="brand-char">R</span>
-                            <span className="brand-char" style={labelStyle}>ipple</span>
-                        </span>
+                        {/* 26px icon wrapper matches nav-icon width */}
+                        <Box sx={{ width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <img src={LogoImage} alt="Ripple" style={{ width: 34, height: 34, objectFit: "contain" }} />
+                        </Box>
+                        <span className="brand-text brand-char" style={{ ...labelStyle, marginLeft: 14 }}>Ripple</span>
                     </Box>
 
                     <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
