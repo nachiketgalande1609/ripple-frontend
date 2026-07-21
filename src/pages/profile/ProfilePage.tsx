@@ -529,7 +529,7 @@ const ProfilePage = () => {
             />
 
             {/* ── Profile content ── */}
-            <Box sx={{ maxWidth: 600, mx: "auto", px: { xs: 2, sm: 3 } }}>
+            <Box sx={{ maxWidth: 600, mx: "auto", px: "8px" }}>
                 {/* Avatar + action buttons row (avatar overlaps banner) */}
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mt: -5.5 }}>
                     {/* Gradient ring around avatar */}
@@ -715,7 +715,7 @@ const ProfilePage = () => {
                     mx: "auto",
                     mt: 0.5,
                     mb: 0.5,
-                    px: 2,
+                    px: "8px",
                     position: "sticky",
                     top: 50,
                     zIndex: 9,
