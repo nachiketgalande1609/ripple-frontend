@@ -62,6 +62,10 @@ const staticStyles = `
   .nav-item:hover .nav-icon { animation: nav-icon-bounce 0.4s cubic-bezier(0.34,1.56,0.64,1); }
   .nav-item.create-btn:hover .nav-icon { animation: nav-icon-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
 
+  .nav-item.active {
+    background: var(--nav-bg);
+    box-shadow: inset 2px 2px 5px var(--nav-neo-shadow1), inset -2px -2px 5px var(--nav-neo-shadow2);
+  }
   .nav-item.active .nav-icon { color: #1e293b; }
   .nav-item:hover:not(.active) .nav-icon { color: #475569; }
 
@@ -148,6 +152,9 @@ function useNavCssVars() {
             "--nav-danger": theme.palette.error.main,
             "--nav-danger-bg": `${theme.palette.error.main}14`,
         };
+        const isDark = theme.palette.mode === "dark";
+        vars["--nav-neo-shadow1"] = isDark ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.10)";
+        vars["--nav-neo-shadow2"] = isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.90)";
         Object.entries(vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
     }, [theme]);
 }
@@ -897,7 +904,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
 
                     {currentUser?.id && (
                         <>
-                            <Box className="nav-item" onClick={() => navigate(`/profile/${currentUser.id}`)} sx={{ display: "flex" }}>
+                            <Box className={`nav-item${location.pathname === `/profile/${currentUser.id}` ? " active" : ""}`} onClick={() => navigate(`/profile/${currentUser.id}`)} sx={{ display: "flex" }}>
                                 <span className="nav-icon">
                                     <img src={currentUser?.profile_picture_url || BlankProfileImage} alt="Profile" className="profile-avatar" />
                                 </span>
@@ -905,7 +912,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                     Profile
                                 </span>
                             </Box>
-                            <Box className="nav-item" onClick={() => navigate("/settings?setting=profiledetails")} sx={{ display: "flex" }}>
+                            <Box className={`nav-item${location.pathname === "/settings" ? " active" : ""}`} onClick={() => navigate("/settings?setting=profiledetails")} sx={{ display: "flex" }}>
                                 <span className="nav-icon">
                                     <SettingsOutlined sx={{ fontSize: "1.5rem" }} />
                                 </span>
