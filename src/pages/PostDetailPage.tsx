@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import {
   ArrowBack,
+  ChevronLeft,
   FavoriteBorder,
   Favorite,
   ChatBubbleOutline,
@@ -1000,74 +1001,45 @@ const PostDetailPage = () => {
             justifyContent: "space-between",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
-            <IconButton
-              onClick={handleLike}
-              disableRipple
-              className={likeAnimating ? "like-btn-pop" : ""}
-              sx={{
-                p: 0.9,
-                color: isLiked
-                  ? (t) => t.palette.error.main
-                  : (t) => t.palette.text.disabled,
-                transition: "color 0.15s",
-                "&:hover": {
-                  bgcolor: "transparent",
-                  color: isLiked
-                    ? (t) => t.palette.error.light
-                    : (t) => t.palette.text.secondary,
-                },
-              }}
-            >
-              {isLiked ? (
-                <Favorite sx={{ fontSize: 21 }} />
-              ) : (
-                <FavoriteBorder sx={{ fontSize: 21 }} />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <IconButton
+                onClick={handleLike}
+                disableRipple
+                className={likeAnimating ? "like-btn-pop" : ""}
+                sx={{
+                  p: 0.9,
+                  color: isLiked ? (t) => t.palette.error.main : (t) => t.palette.text.disabled,
+                  transition: "color 0.15s",
+                  "&:hover": { bgcolor: "transparent", color: isLiked ? (t) => t.palette.error.light : (t) => t.palette.text.secondary },
+                }}
+              >
+                {isLiked ? <Favorite sx={{ fontSize: 21 }} /> : <FavoriteBorder sx={{ fontSize: 21 }} />}
+              </IconButton>
+              {likeCount > 0 && (
+                <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.secondary, fontWeight: 500 }}>
+                  {likeCount}
+                </Typography>
               )}
-            </IconButton>
-            <Typography
-              sx={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "0.78rem",
-                color:
-                  likeCount > 0
-                    ? (t) => t.palette.text.secondary
-                    : (t) => t.palette.text.disabled,
-                fontWeight: 500,
-                minWidth: "20px",
-              }}
-            >
-              {likeCount > 0 ? likeCount : ""}
-            </Typography>
-            <IconButton
-              disableRipple
-              onClick={() => commentInputRef.current?.focus()}
-              sx={{
-                p: 0.9,
-                ml: 0.5,
-                color: (t) => t.palette.text.disabled,
-                "&:hover": {
-                  bgcolor: "transparent",
-                  color: (t) => t.palette.text.secondary,
-                },
-              }}
-            >
-              <ChatBubbleOutline sx={{ fontSize: 20 }} />
-            </IconButton>
-            <Typography
-              sx={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "0.78rem",
-                color:
-                  commentCount > 0
-                    ? (t) => t.palette.text.secondary
-                    : (t) => t.palette.text.disabled,
-                fontWeight: 500,
-                minWidth: "20px",
-              }}
-            >
-              {commentCount > 0 ? commentCount : ""}
-            </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <IconButton
+                disableRipple
+                onClick={() => commentInputRef.current?.focus()}
+                sx={{
+                  p: 0.9,
+                  color: (t) => t.palette.text.disabled,
+                  "&:hover": { bgcolor: "transparent", color: (t) => t.palette.text.secondary },
+                }}
+              >
+                <ChatBubbleOutline sx={{ fontSize: 20 }} />
+              </IconButton>
+              {commentCount > 0 && (
+                <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.secondary, fontWeight: 500 }}>
+                  {commentCount}
+                </Typography>
+              )}
+            </Box>
           </Box>
           <IconButton
             disableRipple
@@ -1122,29 +1094,21 @@ const PostDetailPage = () => {
             gap: 1.25,
           }}
         >
-          <Avatar
-            src={currentUser?.profile_picture_url || BlankProfileImage}
-            sx={{
-              width: 28,
-              height: 28,
-              flexShrink: 0,
-              border: "1.5px solid",
-              borderColor: (t) => t.palette.divider,
-            }}
-          />
           <Box
             sx={{
               flex: 1,
               display: "flex",
               alignItems: "center",
-              bgcolor: (t) => t.palette.background.paper,
-              borderRadius: "20px",
-              border: "1px solid",
-              borderColor: (t) => t.palette.divider,
+              backgroundColor: "var(--nav-bg)",
+              borderRadius: "14px",
+              border: "none",
+              boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
               px: 1.75,
               py: 0.6,
-              transition: "border-color 0.2s",
-              "&:focus-within": { borderColor: replyingTo ? "rgba(100,116,139,0.4)" : "rgba(100,116,139,0.25)" },
+              transition: "box-shadow 0.2s ease",
+              "&:focus-within": {
+                boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+              },
             }}
           >
             <TextField
@@ -1180,26 +1144,20 @@ const PostDetailPage = () => {
             size="small"
             sx={{
               p: 0.85,
-              bgcolor: commentText.trim() ? tokens.accentDim : "transparent",
-              color: commentText.trim()
-                ? tokens.accent
-                : (t) => t.palette.text.disabled,
-              border: "1px solid",
-              borderColor: commentText.trim()
-                ? "rgba(212,169,106,0.25)"
-                : (t) => t.palette.divider,
-              borderRadius: "50%",
-              transition: "all 0.2s ease",
+              backgroundColor: "var(--nav-bg)",
+              border: "none",
+              color: commentText.trim() ? tokens.accent : (t) => t.palette.text.disabled,
+              borderRadius: "10px",
+              boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+              transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
               "&:hover": {
-                bgcolor: commentText.trim()
-                  ? "rgba(212,169,106,0.22)"
-                  : "transparent",
-                transform: commentText.trim() ? "scale(1.1)" : "none",
+                backgroundColor: "var(--nav-bg)",
+                boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
               },
               "&.Mui-disabled": {
+                backgroundColor: "var(--nav-bg)",
                 color: (t) => t.palette.action.disabled,
-                bgcolor: "transparent",
-                borderColor: (t) => t.palette.divider,
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
               },
             }}
           >
@@ -1245,19 +1203,20 @@ const PostDetailPage = () => {
                 mb: 1.5,
                 alignSelf: "flex-start",
                 color: (t) => t.palette.text.secondary,
-                bgcolor: (t) => t.palette.background.paper,
-                border: "1px solid",
-                borderColor: (t) => t.palette.divider,
-                boxShadow: 1,
+                backgroundColor: "var(--nav-bg)",
+                border: "none",
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
                 "&:hover": {
-                  bgcolor: (t) => t.palette.action.hover,
+                  backgroundColor: "var(--nav-bg)",
+                  boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
                   color: (t) => t.palette.text.primary,
                 },
                 borderRadius: "10px",
                 p: 0.75,
               }}
             >
-              <ArrowBack sx={{ fontSize: 19 }} />
+              <ChevronLeft sx={{ fontSize: 22 }} />
             </IconButton>
 
             {/* Main card */}

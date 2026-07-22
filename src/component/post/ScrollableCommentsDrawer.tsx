@@ -361,21 +361,21 @@ export default function ScrollableCommentsDrawer({
             </Box>
           )}
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, backgroundColor: (t) => t.palette.action.hover, borderRadius: "24px", border: "1px solid", borderColor: replyingTo ? ACCENT + "60" : (t) => t.palette.divider, px: 0.875, py: 0.875, transition: "border-color 0.2s ease, box-shadow 0.2s ease", "&:focus-within": { boxShadow: "0 0 0 3px rgba(100,116,139,0.08)" } }}>
-            <Avatar src={currentUser?.profile_picture_url || BlankProfileImage} sx={{ width: 32, height: 32, flexShrink: 0, border: "1.5px solid", borderColor: (t) => t.palette.divider }} />
-
-            <TextField
-              fullWidth variant="standard"
-              placeholder={replyingTo ? `Reply to @${replyingTo.username}…` : "Add a comment…"}
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && canSend) { e.preventDefault(); handleSend(); } }}
-              inputRef={commentInputRef}
-              InputProps={{
-                disableUnderline: true,
-                sx: { fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", color: (t) => t.palette.text.primary, "& input::placeholder": { color: (t) => t.palette.text.disabled } },
-              }}
-            />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ flex: 1, display: "flex", alignItems: "center", backgroundColor: "var(--nav-bg)", borderRadius: "14px", border: "none", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", pl: 2, pr: 0.875, py: 0.875, transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)", "&:focus-within": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)" } }}>
+              <TextField
+                fullWidth variant="standard"
+                placeholder={replyingTo ? `Reply to @${replyingTo.username}…` : "Add a comment…"}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && canSend) { e.preventDefault(); handleSend(); } }}
+                inputRef={commentInputRef}
+                InputProps={{
+                  disableUnderline: true,
+                  sx: { fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", color: (t) => t.palette.text.primary, "& input::placeholder": { color: (t) => t.palette.text.disabled } },
+                }}
+              />
+            </Box>
 
             <IconButton onClick={(e) => setEmojiAnchorEl(e.currentTarget)} size="small" sx={{ color: (t) => t.palette.text.disabled, p: 0.75, flexShrink: 0, "&:hover": { color: (t) => t.palette.text.secondary, backgroundColor: "transparent" } }}>
               <EmojiIcon sx={{ fontSize: "18px" }} />

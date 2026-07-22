@@ -264,15 +264,15 @@ const SettingsPage = () => {
                   borderRadius: "12px",
                   marginBottom: "8px",
                   cursor: "pointer",
-                  transition: "all 0.15s ease",
+                  transition: "background 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  backgroundColor: (t) => t.palette.action.hover,
-                  border: "1px solid",
-                  borderColor: (t) => t.palette.divider,
-                  "&:hover": { backgroundColor: (t) => t.palette.action.selected },
-                  "&:active": { transform: "scale(0.98)", backgroundColor: (t) => t.palette.action.focus },
+                  backgroundColor: "var(--nav-bg)",
+                  border: "none",
+                  boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                  "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)" },
+                  "&:active": { transform: "scale(0.98)" },
                 }}
               >
                 <ListItemText
@@ -389,19 +389,19 @@ const SettingsPage = () => {
                   width: "100%",
                   textAlign: "left",
                   padding: "10px 14px",
-                  borderRadius: "10px",
-                  marginBottom: "4px",
+                  borderRadius: "16px",
+                  marginBottom: "6px",
                   cursor: "pointer",
                   transition: "all 0.18s ease",
                   display: "flex",
                   alignItems: "center",
                   gap: "12px",
-                  backgroundColor: isActive ? (t) => t.palette.action.selected : "transparent",
-                  boxShadow: isActive ? (t) => `inset 0 0 0 1px ${t.palette.divider}` : "none",
+                  backgroundColor: isActive ? "var(--nav-bg)" : "transparent",
+                  boxShadow: isActive ? "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)" : "none",
+                  transition: "background 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
                   "&:hover": {
-                    backgroundColor: isActive
-                      ? (t) => t.palette.action.selected
-                      : (t) => t.palette.action.hover,
+                    backgroundColor: "var(--nav-bg)",
+                    boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
                   },
                   "&:active": { transform: "scale(0.98)" },
                 }}

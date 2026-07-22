@@ -341,8 +341,6 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                             gap: 1,
                             px: 1.75,
                             py: 1.25,
-                            borderBottom: "1px solid",
-                            borderColor: (t) => t.palette.divider,
                             flexShrink: 0,
                         }}
                     >
@@ -477,8 +475,6 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                     gap: 0.75,
                                     px: 1.25,
                                     py: 1,
-                                    borderTop: "1px solid",
-                                    borderColor: (t) => t.palette.divider,
                                     flexShrink: 0,
                                 }}
                             >
@@ -499,8 +495,11 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                         fontSize: "0.825rem",
                                         px: 1.5,
                                         py: 0.6,
-                                        borderRadius: "10px",
-                                        backgroundColor: (t) => t.palette.action.hover,
+                                        borderRadius: "14px",
+                                        backgroundColor: "var(--nav-bg)",
+                                        border: "none",
+                                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
                                         color: (t) => t.palette.text.primary,
                                         fontFamily: "'Inter', sans-serif",
                                         "& textarea::placeholder": { color: (t) => t.palette.text.disabled, opacity: 1 },
@@ -514,10 +513,13 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                         width: 34,
                                         height: 34,
                                         flexShrink: 0,
-                                        backgroundColor: inputText.trim() ? ACCENT : "transparent",
-                                        color: inputText.trim() ? "#fff" : (t) => t.palette.text.disabled,
-                                        transition: "background 0.15s",
-                                        "&:hover": { backgroundColor: inputText.trim() ? "#6b4de0" : "transparent" },
+                                        borderRadius: "10px",
+                                        backgroundColor: "var(--nav-bg)",
+                                        border: "none",
+                                        boxShadow: inputText.trim() ? "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)" : "none",
+                                        color: inputText.trim() ? (t) => t.palette.text.primary : (t) => t.palette.text.disabled,
+                                        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                        "&:hover": { backgroundColor: "var(--nav-bg)" },
                                         "&.Mui-disabled": { color: (t) => t.palette.text.disabled },
                                     }}
                                 >
@@ -568,12 +570,16 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                             gap: 1.5,
                                             px: 2,
                                             py: 1.25,
+                                            mx: 0.75,
+                                            mb: 0.5,
+                                            width: "calc(100% - 12px)",
+                                            borderRadius: "12px",
                                             cursor: "pointer",
-                                            borderBottom: "0.5px solid",
-                                            borderColor: (t) => t.palette.divider,
-                                            transition: "background 0.1s",
-                                            "&:hover": { backgroundColor: (t) => t.palette.action.hover },
-                                            "&:last-of-type": { borderBottom: "none" },
+                                            transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), background 0.35s cubic-bezier(0.4,0,0.2,1)",
+                                            "&:hover": {
+                                                backgroundColor: "var(--nav-bg)",
+                                                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                            },
                                         }}
                                     >
                                         <Box sx={{ position: "relative", flexShrink: 0 }}>
