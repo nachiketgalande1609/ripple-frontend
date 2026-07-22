@@ -65,14 +65,16 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
     <Paper
       elevation={0}
       sx={{
-        mb: 1,
-        borderRadius: "14px",
-        border: "1px solid",
-        borderColor: (t) => t.palette.divider,
-        backgroundColor: (t) => t.palette.background.paper,
+        mb: 1.2,
+        borderRadius: "28px",
+        border: "none",
+        backgroundColor: "var(--nav-bg)",
+        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
         overflow: "hidden",
-        transition: "background-color 0.15s ease",
-        "&:hover": { backgroundColor: (t) => t.palette.action.hover },
+        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
+        "&:hover": {
+          boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+        },
       }}
     >
       <ListItem
@@ -81,7 +83,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
         sx={{
           cursor: "pointer",
           px: isMobile ? 1.5 : 2,
-          py: isMobile ? 1.25 : 1.5,
+          py: isMobile ? 1.25 : 1.8,
           display: "flex",
           alignItems: "center",
           gap: 1.5,

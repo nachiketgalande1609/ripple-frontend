@@ -140,15 +140,18 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                     onClick={(e) => setAnchorEl(e.currentTarget)}
                     size="small"
                     sx={{
-                        width: 30,
-                        height: 30,
-                        border: "1px solid",
-                        borderColor: (t) => t.palette.divider,
-                        borderRadius: 1.5,
+                        width: 38,
+                        height: 38,
+                        border: "none",
+                        borderRadius: "12px",
+                        backgroundColor: "var(--nav-bg)",
+                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
                         color: (t) => t.palette.text.secondary,
+                        transition: "box-shadow 0.2s ease, color 0.2s ease",
                         "&:hover": {
                             color: (t) => t.palette.text.primary,
-                            backgroundColor: (t) => t.palette.action.hover,
+                            backgroundColor: "var(--nav-bg)",
+                            boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
                         },
                     }}
                 >
@@ -159,7 +162,7 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
             {/* Search */}
             <Box
                 sx={{
-                    px: 1.5,
+                    px: 1,
                     py: 1.5,
                     flexShrink: 0,
                 }}
@@ -171,13 +174,12 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                         gap: 1,
                         px: 1.25,
                         py: 0.6,
-                        borderRadius: 2,
-                        backgroundColor: (t) => t.palette.action.hover,
-                        border: "1px solid transparent",
+                        borderRadius: "14px",
+                        backgroundColor: "var(--nav-bg)",
+                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                        transition: "box-shadow 0.2s ease",
                         "&:focus-within": {
-                            border: "1px solid",
-                            borderColor: (t) => t.palette.divider,
-                            backgroundColor: (t) => t.palette.background.paper,
+                            boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
                         },
                     }}
                 >
@@ -240,20 +242,19 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                                     onClick={() => handleUserClick(user.id)}
                                     sx={{
                                         px: 1.5,
-                                        py: 1,
-                                        width: "100%",
+                                        py: 1.6,
+                                        mx: 1,
+                                        mb: 0.75,
+                                        width: "calc(100% - 16px)",
                                         border: "none",
                                         cursor: "pointer",
-                                        backgroundColor: isSelected ? (t) => t.palette.action.selected : "transparent",
-                                        borderRadius: isSelected ? "8px 0 0 8px" : 0,
-                                        borderBottom: "0.5px solid",
-                                        borderColor: (t) => t.palette.divider,
-                                        transition: "background-color 0.1s ease",
+                                        backgroundColor: isSelected ? "var(--nav-bg)" : "transparent",
+                                        boxShadow: isSelected ? "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)" : "none",
+                                        borderRadius: "28px",
+                                        borderBottom: "none",
+                                        transition: "background-color 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
                                         "&:last-of-type": { borderBottom: "none" },
-                                        "&:hover": {
-                                            backgroundColor: isSelected ? (t) => t.palette.action.selected : (t) => t.palette.action.hover,
-                                            borderRadius: "8px 0 0 8px",
-                                        },
+                                        "&:hover": { backgroundColor: "transparent" },
                                         display: "flex",
                                         alignItems: "center",
                                         gap: 0,

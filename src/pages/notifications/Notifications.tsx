@@ -194,26 +194,25 @@ const NotificationsPage = () => {
         sx={{
           mb: 2,
           minHeight: 36,
-          "& .MuiTabs-indicator": {
-            backgroundColor: theme.palette.text.primary,
-            height: "2px",
-            borderRadius: "2px",
-          },
+          "& .MuiTabs-indicator": { display: "none" },
           "& .MuiTab-root": {
             textTransform: "none",
             fontSize: "0.875rem",
             fontWeight: 500,
             minHeight: 36,
             color: theme.palette.text.disabled,
-            px: 0,
-            mr: 3,
+            px: 2,
+            mr: 1,
+            borderRadius: "14px",
+            transition: "background 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
             "&.Mui-selected": {
               color: theme.palette.text.primary,
               fontWeight: 600,
+              background: "var(--nav-bg)",
+              boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
             },
           },
         }}
-        TabIndicatorProps={{ style: { bottom: 0 } }}
       >
         <Tab label="All" value={0} disableRipple />
         <Tab

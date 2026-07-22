@@ -20,6 +20,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import HistoryIcon from "@mui/icons-material/History";
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import TagIcon from "@mui/icons-material/Tag";
 import InputAdornment from "@mui/material/InputAdornment";
 import { useDebounce } from "../utils/utils";
@@ -167,28 +168,23 @@ export default function SearchPage() {
 
   const baseInputSx = {
     "& .MuiOutlinedInput-root": {
-      bgcolor: theme.palette.background.paper,
-      borderRadius: "10px",
+      bgcolor: "var(--nav-bg)",
+      borderRadius: "14px",
       fontSize: "0.9rem",
       color: theme.palette.text.primary,
-      "& fieldset": { borderColor: theme.palette.divider },
-      "&:hover fieldset": { borderColor: theme.palette.text.disabled },
-      "&.Mui-focused fieldset": {
-        borderColor: theme.palette.primary.main,
-        borderWidth: 1,
+      boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+      transition: "box-shadow 0.2s ease",
+      "& fieldset": { border: "none" },
+      "&:hover fieldset": { border: "none" },
+      "&.Mui-focused fieldset": { border: "none" },
+      "&.Mui-focused": {
+        boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
       },
     },
     "& input::placeholder": { color: theme.palette.text.disabled, opacity: 1 },
   };
 
-  const tagInputSx = {
-    ...baseInputSx,
-    "& .MuiOutlinedInput-root": {
-      ...baseInputSx["& .MuiOutlinedInput-root"],
-      "& fieldset": { borderColor: `${theme.palette.primary.main}40` },
-      "&:hover fieldset": { borderColor: theme.palette.primary.main },
-    },
-  };
+  const tagInputSx = { ...baseInputSx };
 
   // ── Shared components ────────────────────────────────────────
 
@@ -347,11 +343,14 @@ export default function SearchPage() {
         <ListItemButton
           onClick={() => handleUserClick(user)}
           sx={{
-            borderRadius: "10px",
-            px: 1.5,
-            py: 1,
-            "&:hover": { bgcolor: (t) => t.palette.action.hover },
-            transition: "background 0.15s ease",
+            borderRadius: "24px",
+            px: 2,
+            py: 1.75,
+            "&:hover": {
+              bgcolor: "var(--nav-bg)",
+              boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+            },
+            transition: "background 0.15s ease, box-shadow 0.15s ease",
           }}
         >
           <ListItemAvatar sx={{ minWidth: 48 }}>
@@ -421,11 +420,14 @@ export default function SearchPage() {
         <ListItemButton
           onClick={() => setTagQuery(item.tag)}
           sx={{
-            borderRadius: "10px",
-            px: 1.5,
-            py: 1,
-            "&:hover": { bgcolor: (t) => t.palette.action.hover },
-            transition: "background 0.15s ease",
+            borderRadius: "14px",
+            px: 2,
+            py: 1.25,
+            "&:hover": {
+              bgcolor: "var(--nav-bg)",
+              boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+            },
+            transition: "background 0.15s ease, box-shadow 0.15s ease",
           }}
         >
           <Box
@@ -695,11 +697,9 @@ export default function SearchPage() {
           top: 0,
           zIndex: 10,
           bgcolor: (t) => t.palette.background.default,
-          borderBottom: "1px solid",
-          borderColor: (t) => t.palette.divider,
         }}
       >
-        <Box sx={{ px: 2, pt: 2, pb: 1.5, position: "relative" }}>
+        <Box sx={{ px: 1, pt: 2, pb: 1.5, position: "relative" }}>
           {activeTab === 0 ? (
             <TextField
               fullWidth
@@ -775,29 +775,34 @@ export default function SearchPage() {
           sx={{
             minHeight: 40,
             px: 1,
-            "& .MuiTabs-indicator": {
-              backgroundColor: theme.palette.primary.main,
-              height: "1.5px",
-            },
+            "& .MuiTabs-indicator": { display: "none" },
             "& .MuiTab-root": {
               minHeight: 40,
               fontSize: "0.85rem",
               fontWeight: 500,
               textTransform: "none",
               color: theme.palette.text.disabled,
-              "&.Mui-selected": { color: theme.palette.text.primary },
+              borderRadius: "14px",
+              transition: "background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease",
+              "&.Mui-selected": {
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+                background: "var(--nav-bg)",
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+              },
             },
           }}
         >
           <Tab
             label={
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <SearchIcon sx={{ fontSize: 15 }} />
+                <PersonOutlinedIcon sx={{ fontSize: 16 }} />
                 People
               </Box>
             }
           />
           <Tab
+            sx={{ ml: 1 }}
             label={
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <TagIcon sx={{ fontSize: 15 }} />

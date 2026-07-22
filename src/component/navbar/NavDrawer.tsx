@@ -44,14 +44,14 @@ const staticStyles = `
 
   .nav-item {
     display: flex; align-items: center;
-    padding: 11px 16px; cursor: pointer;
+    padding: 11px 11px; cursor: pointer;
     text-decoration: none !important;
     margin: 2px 0; user-select: none; -webkit-tap-highlight-color: transparent;
     position: relative; background: transparent;
     border-radius: 16px;
-    transition: background 0.2s ease;
+    transition: background 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1);
   }
-  .nav-item:hover:not(.active) { background: rgba(100,116,139,0.06); }
+  .nav-item:hover:not(.active) { background: transparent; }
 
   .nav-icon {
     width: 26px; height: 26px; display: flex; align-items: center;
@@ -64,7 +64,7 @@ const staticStyles = `
 
   .nav-item.active {
     background: var(--nav-bg);
-    box-shadow: inset 2px 2px 5px var(--nav-neo-shadow1), inset -2px -2px 5px var(--nav-neo-shadow2);
+    box-shadow: inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2);
   }
   .nav-item.active .nav-icon { color: #1e293b; }
   .nav-item:hover:not(.active) .nav-icon { color: #475569; }
@@ -129,10 +129,10 @@ const staticStyles = `
 `;
 
 if (typeof document !== "undefined") {
-    const existing = document.getElementById("nav-styles-v3");
+    const existing = document.getElementById("nav-styles-v4");
     if (existing) existing.remove();
     const s = document.createElement("style");
-    s.id = "nav-styles-v3";
+    s.id = "nav-styles-v4";
     s.textContent = staticStyles;
     document.head.appendChild(s);
 }
@@ -153,8 +153,8 @@ function useNavCssVars() {
             "--nav-danger-bg": `${theme.palette.error.main}14`,
         };
         const isDark = theme.palette.mode === "dark";
-        vars["--nav-neo-shadow1"] = isDark ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.10)";
-        vars["--nav-neo-shadow2"] = isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.90)";
+        vars["--nav-neo-shadow1"] = isDark ? "#000000" : "#cacaca";
+        vars["--nav-neo-shadow2"] = isDark ? "rgba(255,255,255,0.08)" : "#f6f6f6";
         Object.entries(vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
     }, [theme]);
 }
@@ -839,6 +839,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         borderRight: "1px solid",
                         borderColor: hovered ? theme.palette.divider : "transparent",
                         boxShadow: hovered ? "8px 0 32px rgba(0,0,0,0.10)" : "none",
+                        borderRadius: "0 16px 16px 0",
                         zIndex: 1201,
                     },
                 }}

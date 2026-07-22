@@ -68,11 +68,15 @@ const StatCol = ({ value, label, onClick }: { value: number; label: string; onCl
             sx={{
                 textAlign: "center",
                 flex: 1,
-                py: 1.25,
+                py: 1.5,
                 cursor: onClick ? "pointer" : "default",
-                borderRadius: "10px",
-                transition: "background 0.15s",
-                "&:hover": onClick ? { background: (t: any) => t.palette.action.hover } : {},
+                borderRadius: "14px",
+                backgroundColor: "var(--nav-bg)",
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
+                "&:hover": onClick ? {
+                    boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                } : {},
             }}
         >
             <Typography sx={{ fontWeight: 700, fontSize: "1.15rem", lineHeight: 1, color: (t: any) => t.palette.text.primary }}>{fmt}</Typography>
@@ -108,7 +112,7 @@ const postCardCss = `
 
 /* ─── Post Grid (masonry) ────────────────────────────────────── */
 const masonryCss = `
-.masonry { columns: 2; column-gap: 8px; padding: 8px; padding-top: 0; }
+.masonry { columns: 3; column-gap: 8px; padding: 8px; padding-top: 0; }
 .masonry-item { break-inside: avoid; margin-bottom: 8px; border-radius: 14px; overflow: hidden; cursor: pointer; position: relative; }
 .masonry-item img, .masonry-item video { width: 100%; display: block; }
 .masonry-item .ovl { position:absolute; inset:0; opacity:0; transition:opacity 0.22s ease;
@@ -418,7 +422,7 @@ const ProfilePage = () => {
             <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
                 {/* skeleton top bar */}
                 <Box sx={{ height: 50, borderBottom: "1px solid", borderColor: (t) => t.palette.divider }} />
-                <Box sx={{ maxWidth: 600, mx: "auto", px: "8px" }}>
+                <Box sx={{ maxWidth: 900, mx: "auto", px: "8px" }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mt: 2 }}>
                         <MuiSkeleton variant="circular" width={88} height={88} sx={{ bgcolor: (t) => t.palette.action.selected, border: "3px solid", borderColor: "background.default" }} />
                         <MuiSkeleton variant="rounded" width={96} height={32} sx={{ bgcolor: (t) => t.palette.action.selected, borderRadius: "8px" }} />
@@ -427,7 +431,7 @@ const ProfilePage = () => {
                     <MuiSkeleton variant="text" width="65%" height={14} sx={{ mt: 0.5, bgcolor: (t) => t.palette.action.hover }} />
                     <MuiSkeleton variant="rounded" height={58} sx={{ mt: 2, borderRadius: "14px", bgcolor: (t) => t.palette.action.hover }} />
                 </Box>
-                <Box sx={{ maxWidth: 600, mx: "auto", mt: 1.5 }}>
+                <Box sx={{ maxWidth: 900, mx: "auto", mt: 1.5 }}>
                     <GridSkeleton />
                 </Box>
             </Box>
@@ -438,6 +442,7 @@ const ProfilePage = () => {
 
     return (
         <Box sx={{ bgcolor: "background.default", minHeight: "100vh", pb: 8 }}>
+
             {/* ── Sticky Top Bar ── */}
             <Box
                 sx={{
@@ -448,8 +453,11 @@ const ProfilePage = () => {
                     backdropFilter: "blur(20px)",
                     WebkitBackdropFilter: "blur(20px)",
                     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(13,13,21,0.85)' : 'rgba(255,255,255,0.85)',
-                    borderBottom: scrolled ? `1px solid ${theme.palette.divider}` : "1px solid transparent",
-                    transition: "border-color 0.25s",
+                    borderBottom: `1px solid ${scrolled ? theme.palette.divider : "transparent"}`,
+                    transition: "border-color 0.25s, opacity 0.25s, transform 0.25s",
+                    opacity: scrolled ? 1 : 0,
+                    transform: scrolled ? "translateY(0)" : "translateY(-100%)",
+                    pointerEvents: scrolled ? "auto" : "none",
                     px: { xs: 1.5, sm: 2 },
                     display: "flex",
                     alignItems: "center",
@@ -460,26 +468,22 @@ const ProfilePage = () => {
                     <ArrowBack sx={{ fontSize: 20 }} />
                 </IconButton>
 
-                <Fade in={scrolled}>
-                    <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-                        <Avatar src={profileData?.profile_picture || BlankProfileImage} sx={{ width: 26, height: 26 }} />
-                        <Typography
-                            sx={{
-                                fontWeight: 600,
-                                fontSize: "0.9rem",
-                                color: (t) => t.palette.text.primary,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                            }}
-                        >
-                            {profileData?.username}
-                        </Typography>
-                        {profileData?.is_verified && <Verified sx={{ fontSize: 13, color: "#1d9bf0", flexShrink: 0 }} />}
-                    </Stack>
-                </Fade>
-
-                <Box sx={{ flex: scrolled ? "none" : 1 }} />
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+                    <Avatar src={profileData?.profile_picture || BlankProfileImage} sx={{ width: 26, height: 26 }} />
+                    <Typography
+                        sx={{
+                            fontWeight: 600,
+                            fontSize: "0.9rem",
+                            color: (t) => t.palette.text.primary,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        {profileData?.username}
+                    </Typography>
+                    {profileData?.is_verified && <Verified sx={{ fontSize: 13, color: "#1d9bf0", flexShrink: 0 }} />}
+                </Stack>
 
                 <IconButton
                     size="small"
@@ -491,9 +495,9 @@ const ProfilePage = () => {
             </Box>
 
             {/* ── Profile content ── */}
-            <Box sx={{ maxWidth: 600, mx: "auto", px: "8px" }}>
+            <Box sx={{ maxWidth: 900, mx: "auto", px: "8px" }}>
                 {/* Avatar + action buttons row */}
-                <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mt: 2 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mt: 2 }}>
                     <Avatar
                         src={profileData?.profile_picture || BlankProfileImage}
                         sx={{
@@ -505,7 +509,7 @@ const ProfilePage = () => {
                     />
 
                     {/* Action buttons */}
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ pb: 0.5 }}>
+                    <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ pb: 0.5 }}>
                         {!isOwnProfile && currentUser?.id && (
                             <>
                                 <IconButton
@@ -541,13 +545,21 @@ const ProfilePage = () => {
                                 sx={{
                                     textTransform: "none",
                                     fontWeight: 500,
-                                    borderRadius: "9px",
+                                    borderRadius: "14px",
                                     fontSize: "0.8rem",
                                     px: 2.25,
                                     py: 0.75,
-                                    borderColor: (t) => t.palette.divider,
+                                    border: "none",
+                                    backgroundColor: "var(--nav-bg)",
+                                    boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
                                     color: (t) => t.palette.text.secondary,
-                                    "&:hover": { borderColor: (t) => t.palette.text.primary, bgcolor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
+                                    transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                    "&:hover": {
+                                        border: "none",
+                                        boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                                        color: (t) => t.palette.text.primary,
+                                        backgroundColor: "var(--nav-bg)",
+                                    },
                                 }}
                             >
                                 Edit profile
@@ -635,14 +647,9 @@ const ProfilePage = () => {
                 {/* Stats pill */}
                 <Stack
                     direction="row"
-                    divider={<Box sx={{ width: "1px", bgcolor: (t) => t.palette.divider, my: 1 }} />}
+                    gap={1}
                     sx={{
                         mt: 2,
-                        background: (t) => t.palette.action.hover,
-                        border: "1px solid",
-                        borderColor: (t) => t.palette.divider,
-                        borderRadius: "14px",
-                        overflow: "hidden",
                     }}
                 >
                     <StatCol value={profileData?.posts_count || 0} label="Posts" />
@@ -662,28 +669,15 @@ const ProfilePage = () => {
             {/* ── Tabs ── */}
             <Box
                 sx={{
-                    maxWidth: 600,
+                    maxWidth: 900,
                     mx: "auto",
                     mt: 0.5,
                     mb: 0.5,
                     px: "8px",
-                    position: "sticky",
-                    top: 50,
-                    zIndex: 9,
-                    backdropFilter: "blur(20px)",
-                    WebkitBackdropFilter: "blur(20px)",
                     py: 1.25,
                 }}
             >
-                <Box
-                    sx={{
-                        display: "flex",
-                        gap: 1,
-                        backgroundColor: (t) => t.palette.action.hover,
-                        borderRadius: "12px",
-                        p: 0.5,
-                    }}
-                >
+                <Box sx={{ display: "flex", gap: 1 }}>
                     {[
                         { label: "Posts", icon: <GridOn sx={{ fontSize: 15 }} /> },
                         ...(isOwnProfile ? [{ label: "Saved", icon: <BookmarkBorder sx={{ fontSize: 15 }} /> }] : []),
@@ -701,21 +695,19 @@ const ProfilePage = () => {
                                 alignItems: "center",
                                 justifyContent: "center",
                                 gap: 0.75,
-                                py: 0.875,
-                                borderRadius: "9px",
+                                py: 1.5,
+                                borderRadius: "14px",
                                 cursor: "pointer",
-                                transition: "all 0.18s ease",
-                                backgroundColor: tabValue === i
-                                    ? (t) => t.palette.background.paper
-                                    : "transparent",
+                                transition: "background 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                backgroundColor: tabValue === i ? "var(--nav-bg)" : "transparent",
                                 boxShadow: tabValue === i
-                                    ? "0 1px 4px rgba(0,0,0,0.15)"
+                                    ? "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)"
                                     : "none",
                                 color: tabValue === i
-                                    ? ACCENT_COLOR
-                                    : (t) => t.palette.text.disabled,
+                                    ? (t: any) => t.palette.text.primary
+                                    : (t: any) => t.palette.text.disabled,
                                 "&:hover": {
-                                    color: tabValue === i ? ACCENT_COLOR : (t) => t.palette.text.secondary,
+                                    color: (t: any) => t.palette.text.secondary,
                                 },
                             }}
                         >
@@ -734,7 +726,7 @@ const ProfilePage = () => {
             </Box>
 
             {/* ── Posts Tab ── */}
-            <Box sx={{ maxWidth: 600, mx: "auto" }} hidden={tabValue !== 0}>
+            <Box sx={{ maxWidth: 900, mx: "auto" }} hidden={tabValue !== 0}>
                 {tabValue === 0 && (
                     <Fade in timeout={250}>
                         <div>
@@ -797,7 +789,7 @@ const ProfilePage = () => {
 
             {/* ── Saved Tab ── */}
             {isOwnProfile && (
-                <Box sx={{ maxWidth: 600, mx: "auto" }} hidden={tabValue !== savedTabIndex}>
+                <Box sx={{ maxWidth: 900, mx: "auto" }} hidden={tabValue !== savedTabIndex}>
                     {tabValue === savedTabIndex && (
                         <Fade in timeout={250}>
                             <div>
@@ -824,7 +816,7 @@ const ProfilePage = () => {
             )}
 
             {/* ── Tagged Tab ── */}
-            <Box sx={{ maxWidth: 600, mx: "auto" }} hidden={tabValue !== taggedTabIndex}>
+            <Box sx={{ maxWidth: 900, mx: "auto" }} hidden={tabValue !== taggedTabIndex}>
                 {tabValue === taggedTabIndex && (
                     <Fade in timeout={250}>
                         <div>

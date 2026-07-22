@@ -243,16 +243,16 @@ const MessageInput: React.FC<MessageInputProps> = ({
         <Box
           sx={{
             flex: 1,
-            backgroundColor: (t) => t.palette.action.hover,
+            backgroundColor: "var(--nav-bg)",
             borderRadius: "14px",
-            border: "1px solid",
-            borderColor: (t) => t.palette.divider,
+            border: "none",
+            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
             px: 1.5,
             py: "8px",
             display: "flex",
             alignItems: "flex-end",
             gap: "4px",
-            transition: "border-color 0.15s",
+            transition: "box-shadow 0.2s ease",
           }}
         >
           <TextField
