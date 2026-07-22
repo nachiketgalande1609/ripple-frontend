@@ -30,11 +30,11 @@ function DialogIconWrap({ children, danger = false, muted = false }: { children:
                 width: 34,
                 height: 34,
                 borderRadius: "10px",
-                background: danger ? "rgba(255,59,48,0.08)" : muted ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.06)",
+                backgroundColor: danger ? "rgba(211,47,47,0.08)" : "action.hover",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: danger ? "rgba(255,100,100,0.6)" : muted ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.5)",
+                color: danger ? "error.main" : muted ? "text.disabled" : "text.secondary",
                 transition: "all 0.2s ease",
                 flexShrink: 0,
             }}
@@ -68,17 +68,22 @@ function DialogButton({
                 gap: 1.5,
                 px: 2,
                 py: 1.4,
-                borderRadius: "12px",
+                borderRadius: "30px",
                 textTransform: "none",
                 justifyContent: "flex-start",
                 fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 500,
                 fontSize: "0.875rem",
-                color: danger ? "rgba(255,100,100,0.85)" : muted ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.8)",
-                transition: "all 0.2s ease",
+                color: danger ? "error.main" : muted ? "text.disabled" : "text.primary",
+                border: "none",
+                backgroundColor: "var(--nav-bg)",
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                mb: 0.75,
                 "&:hover": {
-                    background: danger ? "rgba(255,59,48,0.1)" : muted ? "rgba(255,255,255,0.04)" : "rgba(100,116,139,0.12)",
-                    color: danger ? "#ff6b6b" : muted ? "rgba(255,255,255,0.55)" : "#fff",
+                    backgroundColor: "var(--nav-bg)",
+                    boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                    color: danger ? "error.light" : muted ? "text.secondary" : "text.primary",
                 },
             }}
         >
@@ -90,19 +95,6 @@ function DialogButton({
     );
 }
 
-/* Gradient divider */
-function DialogDivider() {
-    return (
-        <Box
-            sx={{
-                height: "1px",
-                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)",
-                mx: 1,
-                my: 0.5,
-            }}
-        />
-    );
-}
 
 export default function MoreOptionsDialog({
     openDialog,
@@ -184,11 +176,11 @@ export default function MoreOptionsDialog({
             maxWidth="xs"
             sx={{
                 "& .MuiDialog-paper": {
-                    borderRadius: "20px",
-                    background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
-                    border: "1px solid rgba(255,255,255,0.07)",
-                    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)",
-                    color: "white",
+                    borderRadius: "36px",
+                    backgroundColor: "background.paper",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    boxShadow: "0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,116,139,0.08)",
                     overflow: "hidden",
                     padding: "6px",
                 },
@@ -219,7 +211,7 @@ export default function MoreOptionsDialog({
                         height: 38,
                         borderRadius: "50%",
                         objectFit: "cover",
-                        border: "2px solid rgba(100,116,139,0.5)",
+                        border: "2px solid rgba(100,116,139,0.35)",
                     }}
                 />
                 <Box>
@@ -228,7 +220,7 @@ export default function MoreOptionsDialog({
                             fontFamily: "'DM Sans', sans-serif",
                             fontWeight: 600,
                             fontSize: "0.9rem",
-                            color: "#fff",
+                            color: "text.primary",
                             lineHeight: 1.3,
                         }}
                     >
@@ -238,7 +230,7 @@ export default function MoreOptionsDialog({
                         sx={{
                             fontFamily: "'DM Sans', sans-serif",
                             fontSize: "0.75rem",
-                            color: "rgba(255,255,255,0.35)",
+                            color: "text.disabled",
                         }}
                     >
                         {isOwnProfile ? "Manage your profile" : "Profile options"}
@@ -246,38 +238,43 @@ export default function MoreOptionsDialog({
                 </Box>
             </Box>
 
-            <DialogDivider />
 
-            {/* Unfollow — shown to non-owners who follow this user */}
-            {!isOwnProfile && isFollowing && (
-                <DialogButton icon={<PersonRemoveRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Unfollow" onClick={handleUnfollow} danger />
-            )}
+            <Box
+                sx={{
+                    "& button": { borderRadius: "0 !important" },
+                    "& button:first-of-type": { borderRadius: "32px 32px 0 0 !important" },
+                    "& button:last-of-type": { borderRadius: "0 0 32px 32px !important", marginBottom: "0 !important" },
+                }}
+            >
+                {/* Unfollow — shown to non-owners who follow this user */}
+                {!isOwnProfile && isFollowing && (
+                    <DialogButton icon={<PersonRemoveRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Unfollow" onClick={handleUnfollow} danger />
+                )}
 
-            {/* Edit Profile — own profile only */}
-            {isOwnProfile && <DialogButton icon={<EditRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Edit Profile" onClick={handleEditProfile} />}
+                {/* Edit Profile — own profile only */}
+                {isOwnProfile && <DialogButton icon={<EditRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Edit Profile" onClick={handleEditProfile} />}
 
-            {/* Copy Profile Link — always visible */}
-            <DialogButton icon={<LinkRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Copy Profile Link" onClick={handleCopyLink} />
+                {/* Copy Profile Link — always visible */}
+                <DialogButton icon={<LinkRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Copy Profile Link" onClick={handleCopyLink} />
 
-            {/* Settings — mobile + own profile only */}
-            {isMobile && isOwnProfile && (
-                <DialogButton
-                    icon={<SettingsRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-                    label="Settings"
-                    onClick={() => {
-                        navigate("/settings");
-                        handleCloseDialog();
-                    }}
-                />
-            )}
+                {/* Settings — mobile + own profile only */}
+                {isMobile && isOwnProfile && (
+                    <DialogButton
+                        icon={<SettingsRoundedIcon sx={{ fontSize: "1.1rem" }} />}
+                        label="Settings"
+                        onClick={() => {
+                            navigate("/settings");
+                            handleCloseDialog();
+                        }}
+                    />
+                )}
 
-            {/* Logout — own profile only */}
-            {isOwnProfile && <DialogButton icon={<LogoutRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Log out" onClick={handleLogout} danger />}
+                {/* Logout — own profile only */}
+                {isOwnProfile && <DialogButton icon={<LogoutRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Log out" onClick={handleLogout} danger />}
 
-            <DialogDivider />
-
-            {/* Cancel */}
-            <DialogButton icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Cancel" onClick={handleCloseDialog} muted />
+                {/* Cancel */}
+                <DialogButton icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Cancel" onClick={handleCloseDialog} muted />
+            </Box>
         </Dialog>
     );
 }
