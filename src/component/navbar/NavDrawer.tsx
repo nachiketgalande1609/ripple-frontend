@@ -664,13 +664,6 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                       </Badge>
                   ),
               },
-              {
-                  kind: "item",
-                  segment: `profile/${currentUser.id}`,
-                  title: "Profile",
-                  icon: <img src={currentUser?.profile_picture_url || BlankProfileImage} alt="Profile" className="profile-avatar" />,
-                  activeIcon: <img src={currentUser?.profile_picture_url || BlankProfileImage} alt="Profile" className="profile-avatar" />,
-              },
           ]
         : [
               {
@@ -901,6 +894,14 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
 
                     {currentUser?.id && (
                         <>
+                            <Box className="nav-item" onClick={() => navigate(`/profile/${currentUser.id}`)} sx={{ display: "flex" }}>
+                                <span className="nav-icon">
+                                    <img src={currentUser?.profile_picture_url || BlankProfileImage} alt="Profile" className="profile-avatar" />
+                                </span>
+                                <span className="nav-label" style={labelStyle}>
+                                    Profile
+                                </span>
+                            </Box>
                             <Box className="nav-item" onClick={() => navigate("/settings?setting=profiledetails")} sx={{ display: "flex" }}>
                                 <span className="nav-icon">
                                     <SettingsOutlined sx={{ fontSize: "1.5rem" }} />
