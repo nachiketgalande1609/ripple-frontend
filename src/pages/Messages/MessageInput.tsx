@@ -46,7 +46,7 @@ type MessageInputProps = {
   selectedUser: User | null;
 };
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 
 const MessageInput: React.FC<MessageInputProps> = ({
   selectedFile, setSelectedFile, selectedFileURL, setSelectedFileURL,
@@ -137,7 +137,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             borderLeft: "3px solid",
             borderColor: ACCENT,
             borderRadius: "8px",
-            backgroundColor: isDark ? "rgba(124,92,252,0.1)" : "rgba(124,92,252,0.07)",
+            backgroundColor: isDark ? "rgba(100,116,139,0.1)" : "rgba(100,116,139,0.07)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",

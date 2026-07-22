@@ -4,7 +4,7 @@ import { CircularProgress, Box, Typography, Button } from "@mui/material";
 import { CheckCircleOutline, ErrorOutline } from "@mui/icons-material";
 import { verifyUser } from "../services/api";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 
 const VerifyAccount: React.FC = () => {
   const [searchParams] = useSearchParams();

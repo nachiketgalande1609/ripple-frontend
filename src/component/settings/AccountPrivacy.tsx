@@ -3,7 +3,7 @@ import { Box, Switch, Typography, CircularProgress } from "@mui/material";
 import { updatePrivacy } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 
 const AccountPrivacy = () => {
   const notifications = useAppNotifications();

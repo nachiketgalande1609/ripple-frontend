@@ -35,7 +35,7 @@ import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import Popover from "@mui/material/Popover";
 import BlankProfileImage from "../../static/profile_blank.png";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 const BIO_MAX = 160;
 
 interface Profile {
@@ -288,7 +288,7 @@ const ProfileDetails = () => {
     borderRadius: "20px",
     background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
     border: "1px solid rgba(255,255,255,0.07)",
-    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)",
     color: "white",
     overflow: "hidden",
     width: "calc(100% - 32px)",

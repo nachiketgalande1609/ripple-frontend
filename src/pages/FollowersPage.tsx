@@ -19,7 +19,7 @@ import BlankProfileImage from "../static/profile_blank.png";
 import FollowButton from "./profile/FollowButton";
 import { getFollowers, followUser, cancelFollowRequest, unfollowUser, removeFollower } from "../services/api";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 
 interface FollowerUser {
     id: number;
@@ -59,7 +59,7 @@ const RemoveConfirmDialog = ({
                 overflow: "hidden",
                 background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
                 border: "1px solid rgba(255,255,255,0.07)",
-                boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+                boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)",
                 color: "white",
             },
             "& .MuiBackdrop-root": { backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.6)" },

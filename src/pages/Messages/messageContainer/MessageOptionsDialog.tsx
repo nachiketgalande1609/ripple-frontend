@@ -83,7 +83,7 @@ const MessageOptionsDialog = ({ open, onClose, onDelete, onInfo }: MessageOption
         border: "1px solid",
         borderColor: theme.palette.divider,
         boxShadow: isDark
-            ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)"
+            ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)"
             : "0 8px 32px rgba(0,0,0,0.12)",
         overflow: "hidden",
         padding: "6px",

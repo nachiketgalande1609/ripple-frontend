@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 
-export const ACCENT_COLOR = '#7c5cfc';
+export const ACCENT_COLOR = '#64748B';
 
 export const theme = createTheme({
   palette: {

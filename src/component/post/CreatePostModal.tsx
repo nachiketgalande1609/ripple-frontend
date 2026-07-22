@@ -25,7 +25,7 @@ interface CreatePostModalProps {
   handleClose: () => void;
 }
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 const CAPTION_LIMIT = 2200;
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) => {

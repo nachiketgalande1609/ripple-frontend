@@ -2,7 +2,7 @@ import { Box, Switch, Typography } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
 import { useAppNotifications } from "../../hooks/useNotification";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 
 const General = () => {
   const notifications = useAppNotifications();

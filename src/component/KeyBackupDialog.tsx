@@ -34,8 +34,8 @@ export default function KeyBackupDialog({ mode, open, onSubmit, onSkip }: Props)
     <Dialog open={open} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: '20px', p: 1 } }}>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 1 }}>
-          <Box sx={{ width: 48, height: 48, borderRadius: '14px', bgcolor: 'rgba(124,92,252,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <LockOutlinedIcon sx={{ color: '#7c5cfc', fontSize: 22 }} />
+          <Box sx={{ width: 48, height: 48, borderRadius: '14px', bgcolor: 'rgba(100,116,139,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <LockOutlinedIcon sx={{ color: '#64748B', fontSize: 22 }} />
           </Box>
           <Box sx={{ textAlign: 'center' }}>
             <Typography sx={{ fontWeight: 700, fontSize: '1rem', mb: 0.5, color: (t) => t.palette.text.primary }}>
@@ -82,7 +82,7 @@ export default function KeyBackupDialog({ mode, open, onSubmit, onSkip }: Props)
               variant="contained"
               onClick={handleSubmit}
               disabled={!password.trim() || loading}
-              sx={{ textTransform: 'none', borderRadius: '10px', bgcolor: '#7c5cfc', '&:hover': { bgcolor: '#6b4de0' }, fontWeight: 600 }}
+              sx={{ textTransform: 'none', borderRadius: '10px', bgcolor: '#64748B', '&:hover': { bgcolor: '#6b4de0' }, fontWeight: 600 }}
             >
               {loading ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : mode === 'backup' ? 'Back up' : 'Restore'}
             </Button>

@@ -9,6 +9,7 @@ import {
     Add as AddIcon,
     FavoriteBorder,
     Favorite,
+    Search as SearchFilled,
     SearchRounded,
     ChatBubbleOutlineRounded,
     ChatBubbleRounded,
@@ -24,74 +25,72 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /* ─── Static CSS ────────────────────────────────────────────────── */
 const staticStyles = `
-  .nav-item {
-    display: flex; align-items: center;
-    padding: 10px 14px; cursor: pointer;
-    text-decoration: none !important;
-    margin: 1px 0; user-select: none; -webkit-tap-highlight-color: transparent;
-    position: relative; background: transparent;
+  @keyframes nav-icon-bounce {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.32); }
+    65%  { transform: scale(0.88); }
+    100% { transform: scale(1); }
+  }
+  @keyframes nav-icon-pop {
+    0%   { transform: scale(1) rotate(0deg); }
+    30%  { transform: scale(1.28) rotate(-8deg); }
+    60%  { transform: scale(0.92) rotate(4deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  @keyframes nav-label-in {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
   }
 
-  /* Active indicator: left accent bar + bg glow */
-  .nav-item.active::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 50%; transform: translateY(-50%);
-    width: 3px; height: 22px;
-    background: linear-gradient(180deg, #7c5cfc 0%, #a78bfa 100%);
-    border-radius: 0 3px 3px 0;
-    box-shadow: 0 0 8px rgba(124,92,252,0.6);
+  .nav-item {
+    display: flex; align-items: center;
+    padding: 11px 16px; cursor: pointer;
+    text-decoration: none !important;
+    margin: 2px 0; user-select: none; -webkit-tap-highlight-color: transparent;
+    position: relative; background: transparent;
+    border-radius: 16px;
+    transition: background 0.2s ease;
   }
-  .nav-item.active::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba(124,92,252,0.12) 0%, transparent 70%);
-    border-radius: 0 8px 8px 0;
-    pointer-events: none;
-  }
+  .nav-item:hover:not(.active) { background: rgba(100,116,139,0.06); }
 
   .nav-icon {
     width: 26px; height: 26px; display: flex; align-items: center;
     justify-content: center; flex-shrink: 0; color: var(--nav-text);
-    transition: color 0.18s ease, filter 0.18s ease;
+    transition: color 0.2s ease, filter 0.2s ease;
     position: relative;
   }
-  .nav-item.active .nav-icon {
-    color: #7c5cfc;
-    filter: drop-shadow(0 0 5px rgba(124,92,252,0.5));
-  }
-  .nav-item:hover:not(.active) .nav-icon {
-    color: #7c5cfc;
-    filter: drop-shadow(0 0 7px rgba(124,92,252,0.55));
-  }
+  .nav-item:hover .nav-icon { animation: nav-icon-bounce 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+  .nav-item.create-btn:hover .nav-icon { animation: nav-icon-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+
+  .nav-item.active .nav-icon { color: #1e293b; }
+  .nav-item:hover:not(.active) .nav-icon { color: #475569; }
 
   .nav-label {
-    font-family: 'Inter', -apple-system, sans-serif;
     font-size: 0.875rem; font-weight: 400; color: var(--nav-text); white-space: nowrap;
     display: block; margin-left: 14px;
-    transition: color 0.18s ease;
+    transition: color 0.2s ease;
   }
-  .nav-item.active .nav-label { font-weight: 600; background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .nav-item:hover:not(.active) .nav-label { color: var(--nav-text-active); font-weight: 600; }
+  .nav-item.active .nav-label { font-weight: 600; background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .nav-item:hover:not(.active) .nav-label { color: var(--nav-text-active); }
 
   .nav-item.create-btn { background: transparent; margin-top: 4px; }
-  .nav-item.create-btn .nav-icon { color: #7c5cfc !important; width: 26px; height: 26px; }
-  .nav-item.create-btn:hover .nav-icon { color: #a78bfa !important; filter: drop-shadow(0 0 7px rgba(124,92,252,0.55)); }
-  .nav-item.create-btn .nav-label { background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent !important; font-weight: 600; }
+  .nav-item.create-btn .nav-icon { color: #64748B !important; }
+  .nav-item.create-btn:hover { background: rgba(100,116,139,0.08); }
+  .nav-item.create-btn:hover .nav-icon { color: #475569 !important; }
+  .nav-item.create-btn .nav-label { background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%); -webkit-background-clip: text; background-clip: text; color: transparent !important; font-weight: 600; }
 
   .nav-item.danger .nav-icon,
   .nav-item.danger .nav-label { color: var(--nav-danger) !important; }
-  .nav-item.danger:hover .nav-icon { filter: drop-shadow(0 0 6px rgba(239,68,68,0.4)); }
+  .nav-item.danger:hover { background: rgba(239,68,68,0.06); }
 
   .profile-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 
   .brand-text {
-    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.25rem;
+    font-weight: 700; font-size: 1.25rem;
     letter-spacing: -0.5px; white-space: nowrap;
   }
   .brand-char {
-    background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%);
+    background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     display: inline-block;
   }
@@ -125,9 +124,11 @@ const staticStyles = `
   }
 `;
 
-if (typeof document !== "undefined" && !document.getElementById("nav-styles-v2")) {
+if (typeof document !== "undefined") {
+    const existing = document.getElementById("nav-styles-v3");
+    if (existing) existing.remove();
     const s = document.createElement("style");
-    s.id = "nav-styles-v2";
+    s.id = "nav-styles-v3";
     s.textContent = staticStyles;
     document.head.appendChild(s);
 }
@@ -314,7 +315,7 @@ function MobileBanner({ toast, onDismiss, onClick }: { toast: ToastItem; onDismi
                         width: 10,
                         height: 10,
                         borderRadius: "50%",
-                        background: "#7c5cfc",
+                        background: "#64748B",
                         border: "2px solid",
                         borderColor: (t) => t.palette.background.paper,
                     }}
@@ -370,7 +371,7 @@ function MobileBanner({ toast, onDismiss, onClick }: { toast: ToastItem; onDismi
                         left: 0,
                         right: 0,
                         height: "2px",
-                        background: "#7c5cfc",
+                        background: "#64748B",
                         "--toast-duration": `${TOAST_DURATION}ms`,
                     } as React.CSSProperties
                 }
@@ -462,7 +463,7 @@ function DesktopToast({
                         width: 9,
                         height: 9,
                         borderRadius: "50%",
-                        background: "#7c5cfc",
+                        background: "#64748B",
                         border: "2px solid",
                         borderColor: (t) => t.palette.background.paper,
                     }}
@@ -515,7 +516,7 @@ function DesktopToast({
                         left: 0,
                         right: 0,
                         height: "2px",
-                        background: "#7c5cfc",
+                        background: "#64748B",
                         "--toast-duration": `${TOAST_DURATION}ms`,
                     } as React.CSSProperties
                 }
@@ -771,7 +772,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                         width: 42,
                                         height: 42,
                                         borderRadius: "13px",
-                                        background: "#7c5cfc",
+                                        background: "#64748B",
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
@@ -802,8 +803,10 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
 
     const labelStyle: React.CSSProperties = {
         opacity: hovered ? 1 : 0,
-        transform: hovered ? "translateX(0)" : "translateX(-16px)",
-        transition: "opacity 0.22s ease, transform 0.22s ease",
+        transform: hovered ? "translateX(0)" : "translateX(-10px)",
+        transition: hovered
+            ? "opacity 0.2s ease 0.08s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1) 0.08s"
+            : "opacity 0.15s ease, transform 0.15s ease",
         whiteSpace: "nowrap",
     };
 
@@ -822,13 +825,13 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                     "& .MuiDrawer-paper": {
                         width: hovered ? DRAWER_OPEN : DRAWER_CLOSED,
                         minWidth: DRAWER_CLOSED,
-                        transition: "width 0.2s ease, border-color 0.25s ease",
+                        transition: "width 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.28s ease, border-color 0.28s ease",
                         boxSizing: "border-box",
                         overflowX: "hidden",
                         backgroundColor: (t) => t.palette.background.default,
                         borderRight: "1px solid",
                         borderColor: hovered ? theme.palette.divider : "transparent",
-                        boxShadow: hovered ? "4px 0 24px rgba(0,0,0,0.08)" : "none",
+                        boxShadow: hovered ? "8px 0 32px rgba(0,0,0,0.10)" : "none",
                         zIndex: 1201,
                     },
                 }}
@@ -940,7 +943,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         border: "1px solid",
                         borderColor: theme.palette.divider,
                         boxShadow: theme.palette.mode === "dark"
-                            ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)"
+                            ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)"
                             : "0 8px 32px rgba(0,0,0,0.12)",
                         overflow: "hidden",
                         padding: "6px",
@@ -952,7 +955,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                     <img
                         src={currentUser?.profile_picture_url || BlankProfileImage}
                         alt="Profile"
-                        style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(124,92,252,0.4)" }}
+                        style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(100,116,139,0.4)" }}
                     />
                     <Box>
                         <Box sx={{ fontWeight: 600, fontSize: "0.9rem", color: (t: any) => t.palette.text.primary, lineHeight: 1.3 }}>

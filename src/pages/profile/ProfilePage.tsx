@@ -99,7 +99,7 @@ const postCardCss = `
 .pc { position:relative; aspect-ratio:1; overflow:hidden; cursor:pointer; background:rgba(255,255,255,0.04); }
 .pc .pi { width:100%; height:100%; object-fit:cover; transition:transform 0.35s ease; display:block; }
 .pc .ovl { position:absolute; inset:0; opacity:0; transition:opacity 0.22s ease;
-  background:linear-gradient(135deg,rgba(124,92,252,0.45) 0%,rgba(0,0,0,0.55) 100%);
+  background:linear-gradient(135deg,rgba(100,116,139,0.45) 0%,rgba(0,0,0,0.55) 100%);
   display:flex; align-items:center; justify-content:center; gap:16px; }
 .pc:hover .ovl { opacity:1; }
 .pc:hover .pi { transform:scale(1.06); }
@@ -112,7 +112,7 @@ const masonryCss = `
 .masonry-item { break-inside: avoid; margin-bottom: 8px; border-radius: 14px; overflow: hidden; cursor: pointer; position: relative; }
 .masonry-item img, .masonry-item video { width: 100%; display: block; }
 .masonry-item .ovl { position:absolute; inset:0; opacity:0; transition:opacity 0.22s ease;
-  background:linear-gradient(135deg,rgba(124,92,252,0.45) 0%,rgba(0,0,0,0.55) 100%);
+  background:linear-gradient(135deg,rgba(100,116,139,0.45) 0%,rgba(0,0,0,0.55) 100%);
   display:flex; align-items:center; justify-content:center; gap:16px; border-radius:14px; }
 .masonry-item:hover .ovl { opacity:1; }
 .masonry-item img { transition: transform 0.35s ease; }
@@ -184,8 +184,8 @@ const EmptyState = ({ icon, title, subtitle, action }: { icon: React.ReactNode; 
                 width: 54,
                 height: 54,
                 borderRadius: "50%",
-                background: `rgba(124,92,252,0.1)`,
-                border: `1px solid rgba(124,92,252,0.2)`,
+                background: `rgba(100,116,139,0.1)`,
+                border: `1px solid rgba(100,116,139,0.2)`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

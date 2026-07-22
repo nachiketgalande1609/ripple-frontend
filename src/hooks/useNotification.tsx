@@ -65,8 +65,8 @@ const palette: Record<
   },
   info: {
     icon: "i",
-    accent: "rgba(124,92,252,0.9)",
-    glow: "rgba(124,92,252,0.18)",
+    accent: "rgba(100,116,139,0.9)",
+    glow: "rgba(100,116,139,0.18)",
   },
 };
 

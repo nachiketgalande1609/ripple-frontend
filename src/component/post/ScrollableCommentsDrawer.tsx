@@ -16,7 +16,7 @@ import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineR
 import { toggleLikeComment } from "../../services/api";
 import BlankProfileImage from "../../static/profile_blank.png";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 
 interface Comment {
   id: number;
@@ -361,7 +361,7 @@ export default function ScrollableCommentsDrawer({
             </Box>
           )}
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, backgroundColor: (t) => t.palette.action.hover, borderRadius: "24px", border: "1px solid", borderColor: replyingTo ? ACCENT + "60" : (t) => t.palette.divider, px: 0.875, py: 0.875, transition: "border-color 0.2s ease, box-shadow 0.2s ease", "&:focus-within": { boxShadow: "0 0 0 3px rgba(124,92,252,0.08)" } }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, backgroundColor: (t) => t.palette.action.hover, borderRadius: "24px", border: "1px solid", borderColor: replyingTo ? ACCENT + "60" : (t) => t.palette.divider, px: 0.875, py: 0.875, transition: "border-color 0.2s ease, box-shadow 0.2s ease", "&:focus-within": { boxShadow: "0 0 0 3px rgba(100,116,139,0.08)" } }}>
             <Avatar src={currentUser?.profile_picture_url || BlankProfileImage} sx={{ width: 32, height: 32, flexShrink: 0, border: "1.5px solid", borderColor: (t) => t.palette.divider }} />
 
             <TextField
@@ -386,7 +386,7 @@ export default function ScrollableCommentsDrawer({
               sx={{
                 width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                background: canSend ? "linear-gradient(135deg, #7c5cfc, #ff6b35)" : (t) => t.palette.action.hover,
+                background: canSend ? "linear-gradient(135deg, #64748B, #ff6b35)" : (t) => t.palette.action.hover,
                 cursor: canSend ? "pointer" : "default",
                 transition: "all 0.2s ease",
                 "&:hover": canSend ? { background: "linear-gradient(135deg, #6b4de0, #e55520)", transform: "scale(1.06)" } : {},

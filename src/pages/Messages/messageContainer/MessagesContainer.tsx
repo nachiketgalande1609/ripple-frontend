@@ -342,7 +342,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   const isSelf = (msg: Message) => msg.sender_id === currentUser.id;
 
   // ── Design tokens ─────────────────────────────────────────────────────────
-  const ACCENT = "#7c5cfc";
+  const ACCENT = "#64748B";
   const selfBg = ACCENT;
   const otherBg = theme.palette.background.paper;
   const selfTextColor = "#fff";
@@ -641,16 +641,16 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                         borderColor: ACCENT,
                         borderRadius: "8px",
                         backgroundColor: isDark
-                          ? "rgba(124,92,252,0.1)"
-                          : "rgba(124,92,252,0.07)",
+                          ? "rgba(100,116,139,0.1)"
+                          : "rgba(100,116,139,0.07)",
                         mb: "4px",
                         cursor: "pointer",
                         maxWidth: "100%",
                         transition: "background 0.15s",
                         "&:hover": {
                           backgroundColor: isDark
-                            ? "rgba(124,92,252,0.16)"
-                            : "rgba(124,92,252,0.12)",
+                            ? "rgba(100,116,139,0.16)"
+                            : "rgba(100,116,139,0.12)",
                         },
                       }}
                       onClick={() => {
@@ -863,7 +863,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                         transition: "background-color 0.4s ease",
                         backgroundColor:
                           highlightedMessageId === msg.message_id
-                            ? "rgba(124,92,252,0.15)"
+                            ? "rgba(100,116,139,0.15)"
                             : "transparent",
                         borderRadius: "16px",
                         position: "relative",
@@ -882,7 +882,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                           wordBreak: "break-word",
                           whiteSpace: "normal",
                           boxShadow: self
-                            ? "0 1px 4px rgba(124,92,252,0.2)"
+                            ? "0 1px 4px rgba(100,116,139,0.2)"
                             : isDark
                               ? "0 1px 3px rgba(0,0,0,0.2)"
                               : "0 1px 3px rgba(0,0,0,0.06)",
@@ -1174,8 +1174,8 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
               height: 64,
               borderRadius: "20px",
               backgroundColor: isDark
-                ? "rgba(124,92,252,0.12)"
-                : "rgba(124,92,252,0.08)",
+                ? "rgba(100,116,139,0.12)"
+                : "rgba(100,116,139,0.08)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1217,7 +1217,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
               color: ACCENT,
               "&:hover": {
                 borderColor: ACCENT,
-                backgroundColor: "rgba(124,92,252,0.08)",
+                backgroundColor: "rgba(100,116,139,0.08)",
               },
             }}
             onClick={(e) => setAnchorEl(e.currentTarget)}

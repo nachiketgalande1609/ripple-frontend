@@ -7,7 +7,7 @@ import BlankProfileImage from "../../static/profile_blank.png";
 import { timeAgo } from "../../utils/utils";
 import { loadPrivateKey, getOrCreateDeviceId, decryptMessage } from "../../utils/crypto";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 const MSG_PAGE = 30;
 
 type User = {
@@ -284,16 +284,16 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                     px: 2,
                     py: 0.85,
                     borderRadius: "14px 14px 0 0",
-                    background: `linear-gradient(135deg, ${ACCENT} 0%, #a78bfa 100%)`,
+                    background: `linear-gradient(135deg, ${ACCENT} 0%, #94A3B8 100%)`,
                     backdropFilter: "blur(12px)",
                     color: "#fff",
                     cursor: "pointer",
-                    boxShadow: "0 4px 24px rgba(124,92,252,0.45), 0 1px 4px rgba(0,0,0,0.15)",
+                    boxShadow: "0 4px 24px rgba(100,116,139,0.45), 0 1px 4px rgba(0,0,0,0.15)",
                     userSelect: "none",
                     transition: "transform 0.18s ease, box-shadow 0.18s ease",
                     "&:hover": {
                         transform: "translateY(-2px)",
-                        boxShadow: "0 8px 32px rgba(124,92,252,0.55), 0 2px 8px rgba(0,0,0,0.2)",
+                        boxShadow: "0 8px 32px rgba(100,116,139,0.55), 0 2px 8px rgba(0,0,0,0.2)",
                     },
                     "&:active": { opacity: 0.92 },
                 }}

@@ -21,7 +21,7 @@ import {
   unfollowUser,
 } from "../services/api";
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 
 interface FollowingUser {
   id: number;

@@ -20,7 +20,7 @@ interface UploadStoryDialogProps {
     fetchStories: () => Promise<void>;
 }
 
-const ACCENT = "#7c5cfc";
+const ACCENT = "#64748B";
 const CAPTION_LIMIT = 500;
 
 const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fetchStories }) => {

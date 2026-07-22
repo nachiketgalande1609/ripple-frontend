@@ -77,7 +77,7 @@ function DialogButton({
                 color: danger ? "rgba(255,100,100,0.85)" : muted ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.8)",
                 transition: "all 0.2s ease",
                 "&:hover": {
-                    background: danger ? "rgba(255,59,48,0.1)" : muted ? "rgba(255,255,255,0.04)" : "rgba(124,92,252,0.12)",
+                    background: danger ? "rgba(255,59,48,0.1)" : muted ? "rgba(255,255,255,0.04)" : "rgba(100,116,139,0.12)",
                     color: danger ? "#ff6b6b" : muted ? "rgba(255,255,255,0.55)" : "#fff",
                 },
             }}
@@ -187,7 +187,7 @@ export default function MoreOptionsDialog({
                     borderRadius: "20px",
                     background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
                     border: "1px solid rgba(255,255,255,0.07)",
-                    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,252,0.08)",
+                    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)",
                     color: "white",
                     overflow: "hidden",
                     padding: "6px",
@@ -219,7 +219,7 @@ export default function MoreOptionsDialog({
                         height: 38,
                         borderRadius: "50%",
                         objectFit: "cover",
-                        border: "2px solid rgba(124,92,252,0.5)",
+                        border: "2px solid rgba(100,116,139,0.5)",
                     }}
                 />
                 <Box>

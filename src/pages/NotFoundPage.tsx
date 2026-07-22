@@ -46,7 +46,7 @@ const NotFoundPage = () => {
         }
         .nf-blob-1 {
           width: 420px; height: 420px;
-          background: radial-gradient(circle, rgba(124,92,252,0.18) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(100,116,139,0.18) 0%, transparent 70%);
           top: -80px; left: -100px;
           animation: glowPulse 6s ease-in-out infinite;
         }
@@ -125,7 +125,7 @@ const NotFoundPage = () => {
         .nf-divider {
           width: 40px;
           height: 2px;
-          background: linear-gradient(90deg, #7c5cfc, #ff6b35);
+          background: linear-gradient(90deg, #64748B, #ff6b35);
           border-radius: 2px;
           margin: 20px 0;
           opacity: 0;
@@ -161,17 +161,17 @@ const NotFoundPage = () => {
           text-transform: none !important;
           border-radius: 14px !important;
           padding: 12px 32px !important;
-          background: linear-gradient(135deg, #7c5cfc, #ff6b35) !important;
+          background: linear-gradient(135deg, #64748B, #ff6b35) !important;
           color: #fff !important;
           border: none !important;
-          box-shadow: 0 8px 24px rgba(124,92,252,0.3) !important;
+          box-shadow: 0 8px 24px rgba(100,116,139,0.3) !important;
           transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease !important;
           opacity: 0;
           animation: floatUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.75s forwards;
         }
         .nf-btn:hover {
           transform: translateY(-2px) scale(1.02) !important;
-          box-shadow: 0 12px 32px rgba(124,92,252,0.45) !important;
+          box-shadow: 0 12px 32px rgba(100,116,139,0.45) !important;
         }
         .nf-btn:active {
           transform: translateY(0) scale(0.98) !important;
@@ -219,7 +219,7 @@ const NotFoundPage = () => {
                         <svg className="nf-ring" viewBox="0 0 280 280">
                             <defs>
                                 <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stopColor="#7c5cfc" stopOpacity="0.8" />
+                                    <stop offset="0%" stopColor="#64748B" stopOpacity="0.8" />
                                     <stop offset="100%" stopColor="#ff6b35" stopOpacity="0.4" />
                                 </linearGradient>
                             </defs>

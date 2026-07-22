@@ -394,7 +394,7 @@ const HomePage = () => {
                                     width: 64,
                                     height: 64,
                                     borderRadius: "18px",
-                                    backgroundColor: isDark ? "rgba(124,92,252,0.12)" : "rgba(124,92,252,0.08)",
+                                    backgroundColor: isDark ? "rgba(100,116,139,0.12)" : "rgba(100,116,139,0.08)",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
