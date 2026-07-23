@@ -120,7 +120,13 @@ const SessionCard = ({
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <AccessTimeRoundedIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />
           <Typography sx={{ fontSize: "0.77rem", color: (t) => t.palette.text.disabled }}>
-            {formatIST(session.logged_in_at)}
+            First login: {formatIST(session.logged_in_at)}
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
+          <AccessTimeRoundedIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />
+          <Typography sx={{ fontSize: "0.77rem", color: (t) => t.palette.text.disabled }}>
+            Last active: {formatIST(session.last_active)}
           </Typography>
         </Box>
       </Box>
@@ -162,7 +168,8 @@ const SkeletonCard = () => (
     <Box sx={{ flex: 1 }}>
       <Skeleton variant="text" width="45%" height={16} sx={{ bgcolor: (t) => t.palette.action.hover, mb: 0.5 }} />
       <Skeleton variant="text" width="60%" height={13} sx={{ bgcolor: (t) => t.palette.action.hover, mb: 0.25 }} />
-      <Skeleton variant="text" width="38%" height={13} sx={{ bgcolor: (t) => t.palette.action.hover }} />
+      <Skeleton variant="text" width="38%" height={13} sx={{ bgcolor: (t) => t.palette.action.hover, mb: 0.25 }} />
+      <Skeleton variant="text" width="45%" height={13} sx={{ bgcolor: (t) => t.palette.action.hover }} />
     </Box>
   </Box>
 );
