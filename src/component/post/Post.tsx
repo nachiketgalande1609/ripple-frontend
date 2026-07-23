@@ -104,10 +104,6 @@ function DialogBtn({
     muted?: boolean;
     disabled?: boolean;
 }) {
-    const theme = useTheme();
-    const isDark = theme.palette.mode === 'dark';
-    const iconBg = danger ? "rgba(255,59,48,0.08)" : warning ? "rgba(230,57,70,0.15)" : isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
-    const iconColor = danger || warning ? "rgba(255,100,100,0.6)" : muted ? theme.palette.text.disabled : theme.palette.text.secondary;
     return (
         <Button
             fullWidth
@@ -117,35 +113,39 @@ function DialogBtn({
                 display: "flex",
                 alignItems: "center",
                 gap: 1.5,
-                px: 1.5,
-                py: 1.125,
-                borderRadius: "10px",
+                px: 2,
+                py: 1.4,
+                borderRadius: "18px",
                 textTransform: "none",
                 justifyContent: "flex-start",
                 fontFamily: "'Inter', -apple-system, sans-serif",
                 fontWeight: warning ? 600 : 500,
                 fontSize: "0.875rem",
-                color: warning ? "#fff" : danger ? (isDark ? "rgba(255,100,100,0.85)" : "#d32f2f") : muted ? theme.palette.text.disabled : theme.palette.text.primary,
-                backgroundColor: warning ? "rgba(230,57,70,0.18)" : "transparent",
-                transition: "background 0.15s",
+                color: warning ? "error.light" : danger ? "error.main" : muted ? "text.disabled" : "text.primary",
+                border: "none",
+                backgroundColor: warning ? "rgba(211,47,47,0.12)" : "var(--nav-bg)",
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                mb: 0.75,
                 "&:hover": {
-                    background: warning ? "rgba(230,57,70,0.28)" : danger ? "rgba(255,59,48,0.1)" : theme.palette.action.hover,
-                    color: warning || danger ? "#ff4444" : theme.palette.text.primary,
+                    backgroundColor: warning ? "rgba(211,47,47,0.18)" : "var(--nav-bg)",
+                    boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                    color: warning || danger ? "error.light" : muted ? "text.secondary" : "text.primary",
                 },
-                "&:disabled": { color: theme.palette.text.disabled },
+                "&:disabled": { color: "text.disabled" },
             }}
         >
             <Box
                 sx={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "9px",
+                    width: 34,
+                    height: 34,
+                    borderRadius: "10px",
                     flexShrink: 0,
-                    background: iconBg,
+                    backgroundColor: danger || warning ? "rgba(211,47,47,0.08)" : "action.hover",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: iconColor,
+                    color: danger || warning ? "error.main" : muted ? "text.disabled" : "text.secondary",
                 }}
             >
                 {icon}
@@ -153,10 +153,6 @@ function DialogBtn({
             {label}
         </Button>
     );
-}
-
-function DialogDivider() {
-    return <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 0.5, my: 0.375 }} />;
 }
 
 const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
@@ -210,15 +206,11 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const isOwner = currentUser?.id === post.user_id;
 
     const dialogPaperSx = {
-        borderRadius: "20px",
-        background: isDark
-            ? "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)"
-            : theme.palette.background.paper,
-        border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : theme.palette.divider}`,
-        boxShadow: isDark
-            ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)"
-            : "0 8px 32px rgba(0,0,0,0.12)",
-        color: theme.palette.text.primary,
+        borderRadius: "36px",
+        backgroundColor: theme.palette.background.paper,
+        border: "1px solid",
+        borderColor: theme.palette.divider,
+        boxShadow: "0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,116,139,0.08)",
         overflow: "hidden",
         padding: "6px",
     };
@@ -763,33 +755,34 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                     BackdropProps={dialogBackdrop}
                     sx={{ "& .MuiDialog-paper": dialogPaperSx }}
                 >
-                    <DialogBtn
-                        icon={<EditRoundedIcon sx={{ fontSize: "1rem" }} />}
-                        label="Edit caption"
-                        onClick={() => {
-                            setIsEditing(true);
-                            setEditedContent(post.content);
-                            setOptionsDialogOpen(false);
-                            setConfirmDelete(false);
-                        }}
-                    />
-                    <DialogBtn
-                        icon={confirmDelete ? <WarningRoundedIcon sx={{ fontSize: "1rem" }} /> : <DeleteRoundedIcon sx={{ fontSize: "1rem" }} />}
-                        label={confirmDelete ? "Confirm delete" : "Delete post"}
-                        onClick={() => (confirmDelete ? handleDelete() : setConfirmDelete(true))}
-                        danger={!confirmDelete}
-                        warning={confirmDelete}
-                    />
-                    <DialogDivider />
-                    <DialogBtn
-                        icon={<CloseRoundedIcon sx={{ fontSize: "1rem" }} />}
-                        label="Cancel"
-                        onClick={() => {
-                            setOptionsDialogOpen(false);
-                            setConfirmDelete(false);
-                        }}
-                        muted
-                    />
+                    <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
+                        <DialogBtn
+                            icon={<EditRoundedIcon sx={{ fontSize: "1rem" }} />}
+                            label="Edit caption"
+                            onClick={() => {
+                                setIsEditing(true);
+                                setEditedContent(post.content);
+                                setOptionsDialogOpen(false);
+                                setConfirmDelete(false);
+                            }}
+                        />
+                        <DialogBtn
+                            icon={confirmDelete ? <WarningRoundedIcon sx={{ fontSize: "1rem" }} /> : <DeleteRoundedIcon sx={{ fontSize: "1rem" }} />}
+                            label={confirmDelete ? "Confirm delete" : "Delete post"}
+                            onClick={() => (confirmDelete ? handleDelete() : setConfirmDelete(true))}
+                            danger={!confirmDelete}
+                            warning={confirmDelete}
+                        />
+                        <DialogBtn
+                            icon={<CloseRoundedIcon sx={{ fontSize: "1rem" }} />}
+                            label="Cancel"
+                            onClick={() => {
+                                setOptionsDialogOpen(false);
+                                setConfirmDelete(false);
+                            }}
+                            muted
+                        />
+                    </Box>
                 </Dialog>
             )}
 

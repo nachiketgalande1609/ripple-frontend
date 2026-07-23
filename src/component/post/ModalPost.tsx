@@ -59,11 +59,11 @@ const dialogBackdrop = {
 };
 
 const dialogPaperSx = {
-    borderRadius: "20px",
-    background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
-    border: "1px solid rgba(255,255,255,0.07)",
-    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)",
-    color: "white",
+    borderRadius: "36px",
+    backgroundColor: "background.paper",
+    border: "1px solid",
+    borderColor: "divider",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,116,139,0.08)",
     overflow: "hidden",
     padding: "6px",
 };
@@ -80,19 +80,17 @@ function DialogIconWrap({
     warning?: boolean;
     muted?: boolean;
 }) {
-    const bg = danger ? "rgba(255,59,48,0.08)" : warning ? "rgba(230,57,70,0.15)" : muted ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.06)";
-    const color = danger || warning ? "rgba(255,100,100,0.6)" : muted ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.5)";
     return (
         <Box
             sx={{
                 width: 34,
                 height: 34,
                 borderRadius: "10px",
-                background: bg,
+                backgroundColor: danger || warning ? "rgba(211,47,47,0.08)" : "action.hover",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color,
+                color: danger || warning ? "error.main" : muted ? "text.disabled" : "text.secondary",
                 transition: "all 0.2s ease",
                 flexShrink: 0,
             }}
@@ -133,28 +131,24 @@ function DialogButton({
                 gap: 1.5,
                 px: 2,
                 py: 1.4,
-                borderRadius: "12px",
+                borderRadius: "18px",
                 textTransform: "none",
                 justifyContent: "flex-start",
                 fontFamily: "'DM Sans', sans-serif",
                 fontWeight: warning ? 600 : 500,
                 fontSize: "0.875rem",
-                color: warning ? "#fff" : danger ? "rgba(255,100,100,0.85)" : muted ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.8)",
-                backgroundColor: warning ? "rgba(230,57,70,0.18)" : "transparent",
-                transition: "all 0.2s ease",
+                color: warning ? "error.light" : danger ? "error.main" : muted ? "text.disabled" : "text.primary",
+                border: "none",
+                backgroundColor: warning ? "rgba(211,47,47,0.12)" : "var(--nav-bg)",
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                mb: 0.75,
                 "&:hover": {
-                    background: warning
-                        ? "rgba(230,57,70,0.28)"
-                        : danger
-                          ? "rgba(255,59,48,0.1)"
-                          : muted
-                            ? "rgba(255,255,255,0.04)"
-                            : "rgba(100,116,139,0.12)",
-                    color: warning || danger ? "#ff6b6b" : muted ? "rgba(255,255,255,0.55)" : "#fff",
+                    backgroundColor: warning ? "rgba(211,47,47,0.18)" : "var(--nav-bg)",
+                    boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                    color: warning || danger ? "error.light" : muted ? "text.secondary" : "text.primary",
                 },
-                "&:disabled": {
-                    color: "rgba(255,255,255,0.2)",
-                },
+                "&:disabled": { color: "text.disabled" },
             }}
         >
             <DialogIconWrap danger={danger} warning={warning} muted={muted}>
@@ -165,13 +159,13 @@ function DialogButton({
     );
 }
 
-/* ─── Gradient divider ──────────────────────────────────────────── */
+/* ─── Divider (kept for reference, unused) ──────────────────────── */
 function DialogDivider() {
     return (
         <Box
             sx={{
                 height: "1px",
-                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)",
+                backgroundColor: (t) => t.palette.divider,
                 mx: 1,
                 my: 0.5,
             }}
@@ -881,34 +875,33 @@ const ModalPost: React.FC<PostProps> = ({ postId, fetchPosts, isMobile, handleCl
                 BackdropProps={dialogBackdrop}
                 sx={{ "& .MuiDialog-paper": dialogPaperSx }}
             >
-                <DialogButton
-                    icon={
-                        confirmDeleteButtonVisibile ? (
-                            <WarningRoundedIcon sx={{ fontSize: "1.1rem" }} />
-                        ) : (
-                            <DeleteRoundedIcon sx={{ fontSize: "1.1rem" }} />
-                        )
-                    }
-                    label={deletingPostCommentLoading ? "Deleting…" : confirmDeleteButtonVisibile ? "Confirm delete" : "Delete comment"}
-                    onClick={() => (confirmDeleteButtonVisibile ? handleDeleteComment() : setConfirmDeleteButtonVisibile(true))}
-                    danger={!confirmDeleteButtonVisibile}
-                    warning={confirmDeleteButtonVisibile}
-                    disabled={deletingPostCommentLoading}
-                    loading={deletingPostCommentLoading}
-                />
-
-                <DialogDivider />
-
-                <DialogButton
-                    icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-                    label="Cancel"
-                    onClick={() => {
-                        setCommentOptionsDialog(false);
-                        setSelectedCommentId(null);
-                        setConfirmDeleteButtonVisibile(false);
-                    }}
-                    muted
-                />
+                <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
+                    <DialogButton
+                        icon={
+                            confirmDeleteButtonVisibile ? (
+                                <WarningRoundedIcon sx={{ fontSize: "1.1rem" }} />
+                            ) : (
+                                <DeleteRoundedIcon sx={{ fontSize: "1.1rem" }} />
+                            )
+                        }
+                        label={deletingPostCommentLoading ? "Deleting…" : confirmDeleteButtonVisibile ? "Confirm delete" : "Delete comment"}
+                        onClick={() => (confirmDeleteButtonVisibile ? handleDeleteComment() : setConfirmDeleteButtonVisibile(true))}
+                        danger={!confirmDeleteButtonVisibile}
+                        warning={confirmDeleteButtonVisibile}
+                        disabled={deletingPostCommentLoading}
+                        loading={deletingPostCommentLoading}
+                    />
+                    <DialogButton
+                        icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />}
+                        label="Cancel"
+                        onClick={() => {
+                            setCommentOptionsDialog(false);
+                            setSelectedCommentId(null);
+                            setConfirmDeleteButtonVisibile(false);
+                        }}
+                        muted
+                    />
+                </Box>
             </Dialog>
 
             {/* ── Post options dialog ── */}
@@ -924,42 +917,40 @@ const ModalPost: React.FC<PostProps> = ({ postId, fetchPosts, isMobile, handleCl
                     BackdropProps={dialogBackdrop}
                     sx={{ "& .MuiDialog-paper": dialogPaperSx }}
                 >
-                    <DialogButton
-                        icon={<EditRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-                        label="Edit post"
-                        onClick={() => {
-                            setIsEditing(true);
-                            setEditedContent(post?.content || "");
-                            setOptionsDialogOpen(false);
-                            setConfirmDeleteButtonVisibile(false);
-                        }}
-                    />
-
-                    <DialogButton
-                        icon={
-                            confirmDeleteButtonVisibile ? (
-                                <WarningRoundedIcon sx={{ fontSize: "1.1rem" }} />
-                            ) : (
-                                <DeleteRoundedIcon sx={{ fontSize: "1.1rem" }} />
-                            )
-                        }
-                        label={confirmDeleteButtonVisibile ? "Confirm delete" : "Delete post"}
-                        onClick={() => (confirmDeleteButtonVisibile ? handleDeletePost() : setConfirmDeleteButtonVisibile(true))}
-                        danger={!confirmDeleteButtonVisibile}
-                        warning={confirmDeleteButtonVisibile}
-                    />
-
-                    <DialogDivider />
-
-                    <DialogButton
-                        icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-                        label="Cancel"
-                        onClick={() => {
-                            setOptionsDialogOpen(false);
-                            setConfirmDeleteButtonVisibile(false);
-                        }}
-                        muted
-                    />
+                    <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
+                        <DialogButton
+                            icon={<EditRoundedIcon sx={{ fontSize: "1.1rem" }} />}
+                            label="Edit post"
+                            onClick={() => {
+                                setIsEditing(true);
+                                setEditedContent(post?.content || "");
+                                setOptionsDialogOpen(false);
+                                setConfirmDeleteButtonVisibile(false);
+                            }}
+                        />
+                        <DialogButton
+                            icon={
+                                confirmDeleteButtonVisibile ? (
+                                    <WarningRoundedIcon sx={{ fontSize: "1.1rem" }} />
+                                ) : (
+                                    <DeleteRoundedIcon sx={{ fontSize: "1.1rem" }} />
+                                )
+                            }
+                            label={confirmDeleteButtonVisibile ? "Confirm delete" : "Delete post"}
+                            onClick={() => (confirmDeleteButtonVisibile ? handleDeletePost() : setConfirmDeleteButtonVisibile(true))}
+                            danger={!confirmDeleteButtonVisibile}
+                            warning={confirmDeleteButtonVisibile}
+                        />
+                        <DialogButton
+                            icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />}
+                            label="Cancel"
+                            onClick={() => {
+                                setOptionsDialogOpen(false);
+                                setConfirmDeleteButtonVisibile(false);
+                            }}
+                            muted
+                        />
+                    </Box>
                 </Dialog>
             )}
 

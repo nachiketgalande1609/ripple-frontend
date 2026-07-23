@@ -101,17 +101,6 @@ function SheetButton({
   onClick: () => void;
   variant?: "default" | "danger" | "warning" | "muted";
 }) {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
-
-  const colors = {
-    default: { color: theme.palette.text.primary, hover: theme.palette.action.hover, hoverColor: theme.palette.text.primary, iconBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", iconColor: theme.palette.text.secondary },
-    danger: { color: isDark ? "rgba(255,100,100,0.85)" : "#d32f2f", hover: "rgba(255,59,48,0.1)", hoverColor: "#ff4444", iconBg: "rgba(255,59,48,0.08)", iconColor: "rgba(255,100,100,0.6)" },
-    warning: { color: "#fff", hover: "rgba(230,57,70,0.28)", hoverColor: "#ff6b6b", iconBg: "rgba(230,57,70,0.15)", iconColor: "rgba(255,100,100,0.6)" },
-    muted: { color: theme.palette.text.disabled, hover: theme.palette.action.hover, hoverColor: theme.palette.text.secondary, iconBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", iconColor: theme.palette.text.disabled },
-  };
-  const c = colors[variant];
-
   return (
     <Button
       fullWidth
@@ -121,30 +110,37 @@ function SheetButton({
         alignItems: "center",
         gap: 1.5,
         px: 2,
-        py: 1.3,
-        borderRadius: "12px",
+        py: 1.4,
+        borderRadius: "18px",
         textTransform: "none",
         justifyContent: "flex-start",
         fontFamily: "'Inter', sans-serif",
         fontWeight: variant === "warning" ? 600 : 500,
         fontSize: "0.875rem",
-        color: c.color,
-        bgcolor: variant === "warning" ? "rgba(230,57,70,0.18)" : "transparent",
-        transition: "all 0.18s ease",
-        "&:hover": { background: c.hover, color: c.hoverColor },
+        color: variant === "warning" ? "error.light" : variant === "danger" ? "error.main" : variant === "muted" ? "text.disabled" : "text.primary",
+        border: "none",
+        backgroundColor: variant === "warning" ? "rgba(211,47,47,0.12)" : "var(--nav-bg)",
+        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+        mb: 0.75,
+        "&:hover": {
+          backgroundColor: variant === "warning" ? "rgba(211,47,47,0.18)" : "var(--nav-bg)",
+          boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+          color: variant === "warning" || variant === "danger" ? "error.light" : variant === "muted" ? "text.secondary" : "text.primary",
+        },
       }}
     >
       <Box
         sx={{
-          width: 32,
-          height: 32,
-          borderRadius: "9px",
-          background: c.iconBg,
+          width: 34,
+          height: 34,
+          borderRadius: "10px",
+          backgroundColor: variant === "danger" || variant === "warning" ? "rgba(211,47,47,0.08)" : "action.hover",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
-          color: c.iconColor,
+          color: variant === "danger" || variant === "warning" ? "error.main" : variant === "muted" ? "text.disabled" : "text.secondary",
         }}
       >
         {icon}
@@ -377,11 +373,11 @@ const PostDetailPage = () => {
   const isDark = theme.palette.mode === "dark";
 
   const paperSx = {
-    borderRadius: "20px",
-    background: isDark ? "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)" : theme.palette.background.paper,
+    borderRadius: "36px",
+    backgroundColor: theme.palette.background.paper,
     border: "1px solid",
     borderColor: theme.palette.divider,
-    boxShadow: isDark ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)" : "0 8px 32px rgba(0,0,0,0.12)",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,116,139,0.08)",
     overflow: "hidden",
     p: "6px",
     width: "90%",
@@ -1253,60 +1249,50 @@ const PostDetailPage = () => {
             BackdropProps={backdropProps}
             sx={{ "& .MuiDialog-paper": paperSx }}
           >
-            <SheetButton
-              icon={
-                <EditRoundedIcon
-                  sx={{
-                    fontSize: "1rem",
-                    color: (t: any) => t.palette.text.secondary,
-                  }}
-                />
-              }
-              label="Edit caption"
-              onClick={() => {
-                setIsEditing(true);
-                setEditedContent(post.content);
-                setOptionsOpen(false);
-                setConfirmDelete(false);
-              }}
-            />
-            <SheetButton
-              icon={<TagPeopleIcon sx={{ fontSize: "1rem", color: (t: any) => t.palette.text.secondary }} />}
-              label="Tag people"
-              onClick={() => {
-                setTagDialogOpen(true);
-                setOptionsOpen(false);
-                setConfirmDelete(false);
-                setTagSearch("");
-                setTagResults([]);
-              }}
-            />
-            <SheetButton
-              icon={
-                confirmDelete ? (
-                  <WarningRoundedIcon sx={{ fontSize: "1rem" }} />
-                ) : (
-                  <DeleteRoundedIcon sx={{ fontSize: "1rem" }} />
-                )
-              }
-              label={
-                confirmDelete ? "Tap again to confirm delete" : "Delete post"
-              }
-              onClick={() =>
-                confirmDelete ? handleDeletePost() : setConfirmDelete(true)
-              }
-              variant={confirmDelete ? "warning" : "danger"}
-            />
-            <Divider />
-            <SheetButton
-              icon={<CloseRoundedIcon sx={{ fontSize: "1rem" }} />}
-              label="Cancel"
-              onClick={() => {
-                setOptionsOpen(false);
-                setConfirmDelete(false);
-              }}
-              variant="muted"
-            />
+            <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
+              <SheetButton
+                icon={<EditRoundedIcon sx={{ fontSize: "1rem" }} />}
+                label="Edit caption"
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditedContent(post.content);
+                  setOptionsOpen(false);
+                  setConfirmDelete(false);
+                }}
+              />
+              <SheetButton
+                icon={<TagPeopleIcon sx={{ fontSize: "1rem" }} />}
+                label="Tag people"
+                onClick={() => {
+                  setTagDialogOpen(true);
+                  setOptionsOpen(false);
+                  setConfirmDelete(false);
+                  setTagSearch("");
+                  setTagResults([]);
+                }}
+              />
+              <SheetButton
+                icon={
+                  confirmDelete ? (
+                    <WarningRoundedIcon sx={{ fontSize: "1rem" }} />
+                  ) : (
+                    <DeleteRoundedIcon sx={{ fontSize: "1rem" }} />
+                  )
+                }
+                label={confirmDelete ? "Tap again to confirm delete" : "Delete post"}
+                onClick={() => confirmDelete ? handleDeletePost() : setConfirmDelete(true)}
+                variant={confirmDelete ? "warning" : "danger"}
+              />
+              <SheetButton
+                icon={<CloseRoundedIcon sx={{ fontSize: "1rem" }} />}
+                label="Cancel"
+                onClick={() => {
+                  setOptionsOpen(false);
+                  setConfirmDelete(false);
+                }}
+                variant="muted"
+              />
+            </Box>
           </Dialog>
         )}
 

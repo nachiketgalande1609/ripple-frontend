@@ -944,15 +944,11 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 fullWidth
                 sx={{
                     "& .MuiDialog-paper": {
-                        borderRadius: "20px",
-                        background: theme.palette.mode === "dark"
-                            ? "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)"
-                            : theme.palette.background.paper,
+                        borderRadius: "36px",
+                        backgroundColor: "background.paper",
                         border: "1px solid",
-                        borderColor: theme.palette.divider,
-                        boxShadow: theme.palette.mode === "dark"
-                            ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)"
-                            : "0 8px 32px rgba(0,0,0,0.12)",
+                        borderColor: "divider",
+                        boxShadow: "0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,116,139,0.08)",
                         overflow: "hidden",
                         padding: "6px",
                     },
@@ -974,20 +970,20 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         </Box>
                     </Box>
                 </Box>
-                <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 1, my: 0.5 }} />
-                <Button fullWidth onClick={handleLogout} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "12px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: theme.palette.mode === "dark" ? "rgba(255,100,100,0.85)" : "#d32f2f", "&:hover": { background: "rgba(255,59,48,0.1)", color: "#ff4444" } }}>
-                    <Box sx={{ width: 34, height: 34, borderRadius: "10px", background: "rgba(255,59,48,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,100,100,0.6)", flexShrink: 0 }}>
-                        <LogoutOutlined sx={{ fontSize: "1.1rem" }} />
-                    </Box>
-                    Log out
-                </Button>
-                <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 1, my: 0.5 }} />
-                <Button fullWidth onClick={() => setMoreOpen(false)} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "12px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: (t: any) => t.palette.text.disabled, "&:hover": { background: (t: any) => t.palette.action.hover, color: (t: any) => t.palette.text.secondary } }}>
-                    <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: (t) => t.palette.action.hover, display: "flex", alignItems: "center", justifyContent: "center", color: (t: any) => t.palette.text.disabled, flexShrink: 0 }}>
-                        <CloseIcon sx={{ fontSize: "1.1rem" }} />
-                    </Box>
-                    Cancel
-                </Button>
+                <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
+                    <Button fullWidth onClick={handleLogout} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "18px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: "error.main", border: "none", backgroundColor: "var(--nav-bg)", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)", mb: 0.75, "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: "error.light" } }}>
+                        <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "rgba(211,47,47,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "error.main", flexShrink: 0 }}>
+                            <LogoutOutlined sx={{ fontSize: "1.1rem" }} />
+                        </Box>
+                        Log out
+                    </Button>
+                    <Button fullWidth onClick={() => setMoreOpen(false)} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "18px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: "text.disabled", border: "none", backgroundColor: "var(--nav-bg)", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)", mb: 0.75, "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: "text.secondary" } }}>
+                        <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "action.hover", display: "flex", alignItems: "center", justifyContent: "center", color: "text.disabled", flexShrink: 0 }}>
+                            <CloseIcon sx={{ fontSize: "1.1rem" }} />
+                        </Box>
+                        Cancel
+                    </Button>
+                </Box>
             </Dialog>
 
             <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />

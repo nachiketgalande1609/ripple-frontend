@@ -15,28 +15,14 @@ const dialogBackdrop = {
 };
 
 function DialogIconWrap({ children, danger = false, muted = false }: { children: React.ReactNode; danger?: boolean; muted?: boolean }) {
-    const theme = useTheme();
-    const isDark = theme.palette.mode === "dark";
-    const bg = danger
-        ? "rgba(255,59,48,0.08)"
-        : muted
-          ? isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"
-          : isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
-    const color = danger
-        ? "rgba(255,80,80,0.7)"
-        : muted
-          ? theme.palette.text.disabled
-          : theme.palette.text.secondary;
     return (
-        <Box sx={{ width: 34, height: 34, borderRadius: "10px", background: bg, display: "flex", alignItems: "center", justifyContent: "center", color, transition: "all 0.2s ease", flexShrink: 0 }}>
+        <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: danger ? "rgba(211,47,47,0.08)" : "action.hover", display: "flex", alignItems: "center", justifyContent: "center", color: danger ? "error.main" : muted ? "text.disabled" : "text.secondary", transition: "all 0.2s ease", flexShrink: 0 }}>
             {children}
         </Box>
     );
 }
 
 function DialogButton({ icon, label, onClick, danger = false, muted = false }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean; muted?: boolean }) {
-    const theme = useTheme();
-    const isDark = theme.palette.mode === "dark";
     return (
         <Button
             fullWidth
@@ -47,17 +33,22 @@ function DialogButton({ icon, label, onClick, danger = false, muted = false }: {
                 gap: 1.5,
                 px: 2,
                 py: 1.4,
-                borderRadius: "12px",
+                borderRadius: "18px",
                 textTransform: "none",
                 justifyContent: "flex-start",
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 500,
                 fontSize: "0.875rem",
-                color: danger ? (isDark ? "rgba(255,100,100,0.85)" : "#d32f2f") : muted ? theme.palette.text.disabled : theme.palette.text.primary,
-                transition: "all 0.2s ease",
+                color: danger ? "error.main" : muted ? "text.disabled" : "text.primary",
+                border: "none",
+                backgroundColor: "var(--nav-bg)",
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                mb: 0.75,
                 "&:hover": {
-                    background: danger ? "rgba(255,59,48,0.1)" : theme.palette.action.hover,
-                    color: danger ? "#ff4444" : theme.palette.text.primary,
+                    backgroundColor: "var(--nav-bg)",
+                    boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                    color: danger ? "error.light" : muted ? "text.secondary" : "text.primary",
                 },
             }}
         >
@@ -67,34 +58,24 @@ function DialogButton({ icon, label, onClick, danger = false, muted = false }: {
     );
 }
 
-function DialogDivider() {
-    return <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 1, my: 0.5 }} />;
-}
-
 const MessageOptionsDialog = ({ open, onClose, onDelete, onInfo }: MessageOptionsDialogProps) => {
-    const theme = useTheme();
-    const isDark = theme.palette.mode === "dark";
-
     const dialogPaperSx = {
-        borderRadius: "20px",
-        background: isDark
-            ? "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)"
-            : theme.palette.background.paper,
+        borderRadius: "36px",
+        backgroundColor: "background.paper",
         border: "1px solid",
-        borderColor: theme.palette.divider,
-        boxShadow: isDark
-            ? "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)"
-            : "0 8px 32px rgba(0,0,0,0.12)",
+        borderColor: "divider",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,116,139,0.08)",
         overflow: "hidden",
         padding: "6px",
     };
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs" BackdropProps={dialogBackdrop} sx={{ "& .MuiDialog-paper": dialogPaperSx }}>
-            <DialogButton icon={<DeleteRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Delete Message" onClick={onDelete} danger />
-            <DialogButton icon={<InfoRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Message Info" onClick={onInfo} />
-            <DialogDivider />
-            <DialogButton icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Cancel" onClick={onClose} muted />
+            <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
+                <DialogButton icon={<DeleteRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Delete Message" onClick={onDelete} danger />
+                <DialogButton icon={<InfoRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Message Info" onClick={onInfo} />
+                <DialogButton icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Cancel" onClick={onClose} muted />
+            </Box>
         </Dialog>
     );
 };

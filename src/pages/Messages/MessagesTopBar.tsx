@@ -94,7 +94,7 @@ const dialogBackdrop = {
   sx: { backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.6)" },
 };
 
-// ── shared sub-components (unchanged) ───────────────────────────
+// ── shared sub-components ───────────────────────────────────────
 function DialogIconWrap({
   children,
   muted = false,
@@ -108,11 +108,11 @@ function DialogIconWrap({
         width: 34,
         height: 34,
         borderRadius: "10px",
-        background: muted ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.06)",
+        backgroundColor: "action.hover",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: muted ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.5)",
+        color: muted ? "text.disabled" : "text.secondary",
         transition: "all 0.2s ease",
         flexShrink: 0,
       }}
@@ -143,36 +143,28 @@ function DialogButton({
         gap: 1.5,
         px: 2,
         py: 1.4,
-        borderRadius: "12px",
+        borderRadius: "18px",
         textTransform: "none",
         justifyContent: "flex-start",
         fontFamily: "'Inter', sans-serif",
         fontWeight: 500,
         fontSize: "0.875rem",
-        color: muted ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.8)",
-        transition: "all 0.2s ease",
+        color: muted ? "text.disabled" : "text.primary",
+        border: "none",
+        backgroundColor: "var(--nav-bg)",
+        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+        mb: 0.75,
         "&:hover": {
-          background: muted ? "rgba(255,255,255,0.04)" : "rgba(100,116,139,0.12)",
-          color: muted ? "rgba(255,255,255,0.55)" : "#fff",
+          backgroundColor: "var(--nav-bg)",
+          boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+          color: muted ? "text.secondary" : "text.primary",
         },
       }}
     >
       <DialogIconWrap muted={muted}>{icon}</DialogIconWrap>
       {label}
     </Button>
-  );
-}
-
-function DialogDivider() {
-  return (
-    <Box
-      sx={{
-        height: "1px",
-        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)",
-        mx: 1,
-        my: 0.5,
-      }}
-    />
   );
 }
 
@@ -196,11 +188,11 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
   const notifications = useAppNotifications();
 
   const dialogPaperSx = {
-    borderRadius: "20px",
-    background: "linear-gradient(160deg, #13131c 0%, #0e0e16 100%)",
-    border: "1px solid rgba(255,255,255,0.07)",
-    boxShadow: "0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,116,139,0.08)",
-    color: "white",
+    borderRadius: "36px",
+    backgroundColor: "background.paper",
+    border: "1px solid",
+    borderColor: "divider",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,116,139,0.08)",
     overflow: "hidden",
     padding: "6px",
   };
@@ -338,44 +330,44 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
         BackdropProps={dialogBackdrop}
         sx={{ "& .MuiDialog-paper": dialogPaperSx }}
       >
-        {/* Mute / Unmute */}
-        <DialogButton
-          icon={
-            isMuted ? (
-              <NotificationsRoundedIcon sx={{ fontSize: "1.1rem" }} />
-            ) : (
-              <NotificationsOffRoundedIcon sx={{ fontSize: "1.1rem" }} />
-            )
-          }
-          label={
-            muteLoading
-              ? "Updating…"
-              : isMuted
-                ? `Unmute ${selectedUser?.username}`
-                : `Mute ${selectedUser?.username}`
-          }
-          onClick={handleToggleMute}
-        />
-        <DialogDivider />
+        <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
+          {/* Mute / Unmute */}
+          <DialogButton
+            icon={
+              isMuted ? (
+                <NotificationsRoundedIcon sx={{ fontSize: "1.1rem" }} />
+              ) : (
+                <NotificationsOffRoundedIcon sx={{ fontSize: "1.1rem" }} />
+              )
+            }
+            label={
+              muteLoading
+                ? "Updating…"
+                : isMuted
+                  ? `Unmute ${selectedUser?.username}`
+                  : `Mute ${selectedUser?.username}`
+            }
+            onClick={handleToggleMute}
+          />
 
-        {/* Background */}
-        <DialogButton
-          icon={<WallpaperRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-          label="Set Chat Background"
-          onClick={() => {
-            setOpenColorDialog(true);
-            setOpenThemeDialog(false);
-          }}
-        />
-        <DialogDivider />
+          {/* Background */}
+          <DialogButton
+            icon={<WallpaperRoundedIcon sx={{ fontSize: "1.1rem" }} />}
+            label="Set Chat Background"
+            onClick={() => {
+              setOpenColorDialog(true);
+              setOpenThemeDialog(false);
+            }}
+          />
 
-        {/* Cancel */}
-        <DialogButton
-          icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-          label="Cancel"
-          onClick={() => setOpenThemeDialog(false)}
-          muted
-        />
+          {/* Cancel */}
+          <DialogButton
+            icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />}
+            label="Cancel"
+            onClick={() => setOpenThemeDialog(false)}
+            muted
+          />
+        </Box>
       </Dialog>
 
       {/* ── Background picker dialog (unchanged) ── */}
