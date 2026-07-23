@@ -412,11 +412,10 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                 ref={postRef}
                                 sx={{
                                     position: "relative",
-                                    width: "calc(100% - 16px)",
+                                    width: "100%",
                                     height: isVideo ? height || 400 : height,
                                     overflow: "hidden",
                                     backgroundColor: (t) => t.palette.background.default,
-                                    mx: 1,
                                     mb: 1,
                                     borderRadius: "12px",
                                 }}
