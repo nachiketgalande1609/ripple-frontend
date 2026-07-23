@@ -14,7 +14,18 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
 import { getActiveSessions, revokeSession, revokeAllSessions } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
-import { timeAgo } from "../../utils/utils";
+function formatIST(dateStr: string) {
+  const date = new Date(dateStr);
+  return date.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
 
 type Session = {
   id: number;
@@ -109,7 +120,7 @@ const SessionCard = ({
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <AccessTimeRoundedIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />
           <Typography sx={{ fontSize: "0.77rem", color: (t) => t.palette.text.disabled }}>
-            Logged in {timeAgo(session.logged_in_at)} ago
+            {formatIST(session.logged_in_at)}
           </Typography>
         </Box>
       </Box>
