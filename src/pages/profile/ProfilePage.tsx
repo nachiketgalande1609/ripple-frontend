@@ -16,7 +16,7 @@ import { ACCENT_COLOR } from "../../theme";
 const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts } from "../../services/api";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
@@ -33,6 +33,7 @@ import {
     MoreHoriz,
     ArrowBack,
     PersonPin,
+    RepeatRounded,
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import MoreOptionsDialog from "./MoreOptionsDialog";
@@ -124,9 +125,72 @@ const masonryCss = `
 .masonry-item:hover img { transform: scale(1.04); }
 `;
 
-const PostGrid = ({ posts, username, imageErrors, onImageError, onPostClick }: {
+const PostGrid = ({ posts, username, profilePicture, imageErrors, onImageError, onPostClick }: {
     posts: any[];
     username?: string;
+    profilePicture?: string;
+    imageErrors: Record<string, boolean>;
+    onImageError: (id: string) => void;
+    onPostClick: (id: number) => void;
+}) => (
+    <>
+        <style>{masonryCss}</style>
+        <div className="masonry">
+            {posts.map((post) => {
+                const isVideo = post.file_url && /\.(mp4|mov|webm)$/i.test(post.file_url);
+                const owner = post.username || username;
+                const avatar = post.profile_picture || profilePicture;
+                return (
+                    <div key={post.id} className="masonry-item" onClick={() => onPostClick(post.id)}>
+                        {isVideo ? (
+                            <video src={post.file_url} muted playsInline style={{ borderRadius: 14 }} />
+                        ) : !imageErrors[post.id] ? (
+                            <img src={post.file_url} alt={owner} onError={() => onImageError(post.id)} />
+                        ) : (
+                            <Box sx={{ aspectRatio: "1", bgcolor: "action.hover", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <PhotoCamera sx={{ fontSize: 20, color: "rgba(255,255,255,0.2)" }} />
+                            </Box>
+                        )}
+                        <div className="ovl" style={{ flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-end", padding: "12px", gap: 6 }}>
+                            {owner && (
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                    <img
+                                        src={avatar || BlankProfileImage}
+                                        alt={owner}
+                                        style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.6)", objectFit: "cover", flexShrink: 0 }}
+                                        onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }}
+                                    />
+                                    <span style={{ color: "#fff", fontWeight: 600, fontSize: "0.75rem", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                                        {owner}
+                                    </span>
+                                </div>
+                            )}
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <div className="med">
+                                    <Favorite sx={{ color: "#fff", fontSize: 13 }} />
+                                    <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.likes_count ?? post.like_count ?? 0}</Typography>
+                                </div>
+                                <div className="med">
+                                    <Comment sx={{ color: "#fff", fontSize: 13 }} />
+                                    <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.comments_count ?? 0}</Typography>
+                                </div>
+                                {(post.repost_count > 0) && (
+                                    <div className="med">
+                                        <RepeatRounded sx={{ color: "#fff", fontSize: 13 }} />
+                                        <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.repost_count}</Typography>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    </>
+);
+
+const RepostGrid = ({ posts, imageErrors, onImageError, onPostClick }: {
+    posts: any[];
     imageErrors: Record<string, boolean>;
     onImageError: (id: string) => void;
     onPostClick: (id: number) => void;
@@ -141,20 +205,35 @@ const PostGrid = ({ posts, username, imageErrors, onImageError, onPostClick }: {
                         {isVideo ? (
                             <video src={post.file_url} muted playsInline style={{ borderRadius: 14 }} />
                         ) : !imageErrors[post.id] ? (
-                            <img src={post.file_url} alt={username} onError={() => onImageError(post.id)} />
+                            <img src={post.file_url} alt={post.username} onError={() => onImageError(post.id)} />
                         ) : (
                             <Box sx={{ aspectRatio: "1", bgcolor: "action.hover", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                 <PhotoCamera sx={{ fontSize: 20, color: "rgba(255,255,255,0.2)" }} />
                             </Box>
                         )}
-                        <div className="ovl">
-                            <div className="med">
-                                <Favorite sx={{ color: "#fff", fontSize: 14 }} />
-                                <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.likes_count || 0}</Typography>
+                        <div className="ovl" style={{ flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-end", padding: "12px", gap: 6 }}>
+                            {/* Owner row */}
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <img
+                                    src={post.profile_picture || BlankProfileImage}
+                                    alt={post.username}
+                                    style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.6)", objectFit: "cover", flexShrink: 0 }}
+                                    onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }}
+                                />
+                                <span style={{ color: "#fff", fontWeight: 600, fontSize: "0.75rem", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                                    {post.username}
+                                </span>
                             </div>
-                            <div className="med">
-                                <Comment sx={{ color: "#fff", fontSize: 14 }} />
-                                <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.comments_count || 0}</Typography>
+                            {/* Counts row */}
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <div className="med">
+                                    <Favorite sx={{ color: "#fff", fontSize: 13 }} />
+                                    <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.like_count ?? 0}</Typography>
+                                </div>
+                                <div className="med">
+                                    <RepeatRounded sx={{ color: "#fff", fontSize: 13 }} />
+                                    <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}>{post.repost_count ?? 0}</Typography>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -234,6 +313,8 @@ const ProfilePage = () => {
     const [fetchingSavedPosts, setFetchingSavedPosts] = useState(false);
     const [taggedPosts, setTaggedPosts] = useState<any[]>([]);
     const [fetchingTaggedPosts, setFetchingTaggedPosts] = useState(false);
+    const [repostedPosts, setRepostedPosts] = useState<any[]>([]);
+    const [fetchingRepostedPosts, setFetchingRepostedPosts] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [isBlocked, setIsBlocked] = useState(false);
@@ -282,10 +363,25 @@ const ProfilePage = () => {
     };
 
     const savedTabIndex = isOwnProfile ? 1 : -1;
-    const taggedTabIndex = isOwnProfile ? 2 : 1;
+    const repostsTabIndex = isOwnProfile ? 2 : 1;
+    const taggedTabIndex = isOwnProfile ? 3 : 2;
+
+    const fetchRepostedPosts = async () => {
+        if (!userId) return;
+        try {
+            setFetchingRepostedPosts(true);
+            const res = await getUserReposts(userId);
+            setRepostedPosts(res.data || []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setFetchingRepostedPosts(false);
+        }
+    };
 
     useEffect(() => {
         if (tabValue === savedTabIndex && isOwnProfile && savedPosts.length === 0) fetchSavedPosts();
+        if (tabValue === repostsTabIndex && repostedPosts.length === 0) fetchRepostedPosts();
         if (tabValue === taggedTabIndex && taggedPosts.length === 0) fetchTaggedPosts();
     }, [tabValue, isOwnProfile]);
 
@@ -727,6 +823,7 @@ const ProfilePage = () => {
                     {[
                         { label: "Posts", icon: <GridOn sx={{ fontSize: 15 }} /> },
                         ...(isOwnProfile ? [{ label: "Saved", icon: <BookmarkBorder sx={{ fontSize: 15 }} /> }] : []),
+                        { label: "Reposts", icon: <RepeatRounded sx={{ fontSize: 15 }} /> },
                         { label: "Tagged", icon: <PersonPin sx={{ fontSize: 15 }} /> },
                     ].map((tab, i) => (
                         <Box
@@ -821,6 +918,7 @@ const ProfilePage = () => {
                                 <PostGrid
                                     posts={posts}
                                     username={profileData?.username}
+                                    profilePicture={profileData?.profile_picture}
                                     imageErrors={imageErrors}
                                     onImageError={(id) => setImageErrors((prev) => ({ ...prev, [id]: true }))}
                                     onPostClick={(id) => navigate(`/posts/${id}`)}
@@ -866,6 +964,32 @@ const ProfilePage = () => {
                     )}
                 </Box>
             )}
+
+            {/* ── Reposts Tab ── */}
+            <Box sx={{ maxWidth: 900, mx: "auto" }} hidden={tabValue !== repostsTabIndex}>
+                {tabValue === repostsTabIndex && (
+                    <Fade in timeout={250}>
+                        <div>
+                            {fetchingRepostedPosts ? (
+                                <GridSkeleton count={6} />
+                            ) : repostedPosts.length === 0 ? (
+                                <EmptyState
+                                    icon={<RepeatRounded sx={{ fontSize: 22, color: ACCENT }} />}
+                                    title="No reposts yet"
+                                    subtitle="Posts that are reposted will appear here"
+                                />
+                            ) : (
+                                <RepostGrid
+                                    posts={repostedPosts}
+                                    imageErrors={imageErrors}
+                                    onImageError={(id) => setImageErrors((prev) => ({ ...prev, [id]: true }))}
+                                    onPostClick={(id) => navigate(`/posts/${id}`)}
+                                />
+                            )}
+                        </div>
+                    </Fade>
+                )}
+            </Box>
 
             {/* ── Tagged Tab ── */}
             <Box sx={{ maxWidth: 900, mx: "auto" }} hidden={tabValue !== taggedTabIndex}>

@@ -16,12 +16,13 @@ import {
     PersonRounded as TaggedIcon,
     ArrowForwardIos,
     ArrowBackIos,
+    RepeatRounded,
 } from "@mui/icons-material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, getFollowingUsers } from "../../services/api";
+import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, getFollowingUsers, repostPost, unrepostPost } from "../../services/api";
 import ScrollableCommentsDrawer from "./ScrollableCommentsDrawer";
 import { useNavigate } from "react-router-dom";
 import { useAppNotifications } from "../../hooks/useNotification";
@@ -57,6 +58,8 @@ interface Post {
     location: string;
     tagged_users?: Array<{ id: number; username: string; profile_picture?: string }>;
     media_files?: string[];
+    repost_count?: number;
+    is_reposted?: boolean;
     comments: Array<{
         id: number;
         post_id: string;
@@ -183,6 +186,10 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const [usersList, setUsersList] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [likeAnimating, setLikeAnimating] = useState(false);
+    const [repostAnimating, setRepostAnimating] = useState(false);
+    const [saveAnimating, setSaveAnimating] = useState(false);
+    const [isReposted, setIsReposted] = useState(Boolean(post.is_reposted));
+    const [repostCount, setRepostCount] = useState(post.repost_count || 0);
 
     const filteredUsers = usersList.filter((u: User) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -201,7 +208,21 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
           70%  { transform: scale(0.9); }
           100% { transform: scale(1); }
         }
-        .like-pop { animation: likePopIn 0.35s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+        @keyframes repostSpin {
+          0%   { transform: scale(1) rotate(0deg); }
+          30%  { transform: scale(1.35) rotate(180deg); }
+          70%  { transform: scale(0.9) rotate(320deg); }
+          100% { transform: scale(1) rotate(360deg); }
+        }
+        @keyframes bookmarkPop {
+          0%   { transform: scale(1) translateY(0); }
+          35%  { transform: scale(1.4) translateY(-4px); }
+          65%  { transform: scale(0.88) translateY(1px); }
+          100% { transform: scale(1) translateY(0); }
+        }
+        .like-pop     { animation: likePopIn   0.35s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+        .repost-spin  { animation: repostSpin  0.45s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+        .bookmark-pop { animation: bookmarkPop 0.38s cubic-bezier(0.36,0.07,0.19,0.97) both; }
       `;
         document.head.appendChild(el);
     }, []);
@@ -246,6 +267,25 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
         } catch {
             setIsLiked(prev);
             setLikeCount(prevCount);
+        }
+    };
+
+    const handleRepost = async () => {
+        const prev = isReposted;
+        const prevCount = repostCount;
+        setIsReposted(!prev);
+        setRepostCount(prev ? prevCount - 1 : prevCount + 1);
+        setRepostAnimating(true);
+        setTimeout(() => setRepostAnimating(false), 450);
+        try {
+            if (prev) {
+                await unrepostPost(post.id);
+            } else {
+                await repostPost(post.id);
+            }
+        } catch {
+            setIsReposted(prev);
+            setRepostCount(prevCount);
         }
     };
 
@@ -316,6 +356,8 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const handleSavePost = async () => {
         const prev = isSaved;
         setIsSaved(!prev);
+        setSaveAnimating(true);
+        setTimeout(() => setSaveAnimating(false), 380);
         try {
             const res = await savePost(post.id);
             if (!res.success) setIsSaved(prev);
@@ -565,6 +607,31 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         >
                             <PaperPlaneIcon size={20} />
                         </IconButton>
+
+                        {/* Repost */}
+                        <IconButton
+                            disableRipple
+                            onClick={handleRepost}
+                            sx={{
+                                p: 0.75,
+                                color: isReposted ? "#22c55e" : (t) => t.palette.text.disabled,
+                                transition: "color 0.15s",
+                                "&:hover": { backgroundColor: "transparent", color: isReposted ? "#22c55e" : (t) => t.palette.text.primary },
+                            }}
+                        >
+                            <RepeatRounded className={repostAnimating ? "repost-spin" : ""} sx={{ fontSize: 21 }} />
+                        </IconButton>
+                        <Typography
+                            sx={{
+                                fontFamily: "'Inter', sans-serif",
+                                fontSize: "0.75rem",
+                                color: (t) => t.palette.text.disabled,
+                                mr: 0.5,
+                                minWidth: "14px",
+                            }}
+                        >
+                            {repostCount}
+                        </Typography>
                     </Box>
 
                     {/* Save */}
@@ -573,12 +640,14 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         onClick={handleSavePost}
                         sx={{
                             p: 0.75,
-                            color: isSaved ? ACCENT : (t) => t.palette.text.disabled,
+                            color: isSaved ? "#f59e0b" : (t) => t.palette.text.disabled,
                             transition: "color 0.15s",
-                            "&:hover": { backgroundColor: "transparent", color: isSaved ? ACCENT : (t) => t.palette.text.primary },
+                            "&:hover": { backgroundColor: "transparent", color: isSaved ? "#f59e0b" : (t) => t.palette.text.primary },
                         }}
                     >
-                        {isSaved ? <Bookmark sx={{ fontSize: 21 }} /> : <BookmarkBorderOutlined sx={{ fontSize: 21 }} />}
+                        {isSaved
+                            ? <Bookmark className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 21 }} />
+                            : <BookmarkBorderOutlined className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 21 }} />}
                     </IconButton>
                 </Box>
 

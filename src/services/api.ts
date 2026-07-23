@@ -68,6 +68,8 @@ import {
     DEACTIVATE_ACCOUNT_ENDPOINT,
     DELETE_ACCOUNT_ENDPOINT,
     GET_INSIGHTS_ENDPOINT,
+    REPOST_ENDPOINT,
+    USER_REPOSTS_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -555,6 +557,39 @@ export const updatePostTags = async (postId: number, taggedUsers: number[]) => {
 export const getTaggedPosts = async (userId: string, offset = 0, limit = 12) => {
     try {
         const response = await api.get(`${GET_TAGGED_POSTS_ENDPOINT}/${userId}`, { params: { offset, limit } });
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        else console.error("Unknown Error");
+        throw error;
+    }
+};
+
+export const repostPost = async (postId: string) => {
+    try {
+        const response = await api.post(`${REPOST_ENDPOINT}/${postId}`);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        else console.error("Unknown Error");
+        throw error;
+    }
+};
+
+export const unrepostPost = async (postId: string) => {
+    try {
+        const response = await api.delete(`${REPOST_ENDPOINT}/${postId}`);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        else console.error("Unknown Error");
+        throw error;
+    }
+};
+
+export const getUserReposts = async (userId: string) => {
+    try {
+        const response = await api.get(`${USER_REPOSTS_ENDPOINT}/${userId}`);
         return response.data;
     } catch (error: unknown) {
         if (error instanceof Error) console.error(error.message);

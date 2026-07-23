@@ -10,6 +10,7 @@ import BookmarkRoundedIcon from "@mui/icons-material/BookmarkRounded";
 import GridOnRoundedIcon from "@mui/icons-material/GridOnRounded";
 import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
+import RepeatRoundedIcon from "@mui/icons-material/RepeatRounded";
 import { getInsights } from "../services/api";
 import { usePageTitle } from "../hooks/usePageTitle";
 
@@ -30,6 +31,7 @@ interface InsightData {
     posts_by_month: PostMonth[];
     profile_views: number;
     profile_views_by_month: { month: string; year: number; month_num: number; views: number }[];
+    total_reposts: number;
 }
 
 const InsightsPage = () => {
@@ -120,13 +122,24 @@ const InsightsPage = () => {
             </Box>
 
             {/* Top KPI row */}
-            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1.5, mb: 3 }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1.5, mb: 1.5 }}>
                 {[
                     { label: "Followers", value: data.followers_count, icon: <GroupRoundedIcon sx={{ fontSize: 16 }} />, color: "#6366f1" },
                     { label: "Profile Views", value: data.profile_views, icon: <VisibilityRoundedIcon sx={{ fontSize: 16 }} />, color: "#10b981" },
                     { label: "Total Posts", value: data.total_posts, icon: <GridOnRoundedIcon sx={{ fontSize: 16 }} />, color: "#0ea5e9" },
+                ].map((kpi) => (
+                    <Box key={kpi.label} sx={{ borderRadius: "18px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2 }}>
+                        <Box sx={{ color: kpi.color, mb: 1 }}>{kpi.icon}</Box>
+                        <Typography sx={{ fontWeight: 700, fontSize: "1.45rem", color: "text.primary", lineHeight: 1 }}>{kpi.value}</Typography>
+                        <Typography sx={{ fontSize: "0.67rem", color: "text.disabled", mt: 0.5, textTransform: "uppercase", letterSpacing: "0.05em" }}>{kpi.label}</Typography>
+                    </Box>
+                ))}
+            </Box>
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1.5, mb: 3 }}>
+                {[
                     { label: "Likes", value: data.total_likes_received, icon: <FavoriteRoundedIcon sx={{ fontSize: 16 }} />, color: "#ef4444" },
                     { label: "Saves", value: data.total_saves, icon: <BookmarkRoundedIcon sx={{ fontSize: 16 }} />, color: "#f97316" },
+                    { label: "Reposts", value: data.total_reposts ?? 0, icon: <RepeatRoundedIcon sx={{ fontSize: 16 }} />, color: "#6366f1" },
                 ].map((kpi) => (
                     <Box key={kpi.label} sx={{ borderRadius: "18px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2 }}>
                         <Box sx={{ color: kpi.color, mb: 1 }}>{kpi.icon}</Box>
