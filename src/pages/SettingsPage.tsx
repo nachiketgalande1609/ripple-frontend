@@ -14,12 +14,14 @@ import ProfileDetails from "../component/settings/ProfileDetails";
 import AccountPrivacy from "../component/settings/AccountPrivacy";
 import General from "../component/settings/General";
 import NotificationsSettings from "../component/settings/NotificationsSettings";
+import LinkedDevices from "../component/settings/LinkedDevices";
 
 const menuItems = [
   { label: "Profile Details" },
   { label: "General" },
   { label: "Account Privacy" },
   { label: "Notifications" },
+  { label: "Linked Devices" },
   { label: "Blocked" },
   { label: "Comments" },
 ];
@@ -82,6 +84,7 @@ const SettingsPage = () => {
     if (currentSetting === "accountprivacy") return <AccountPrivacy />;
     if (currentSetting === "general") return <General />;
     if (currentSetting === "notifications") return <NotificationsSettings />;
+    if (currentSetting === "linkeddevices") return <LinkedDevices />;
     return (
       <Box sx={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
         <Box

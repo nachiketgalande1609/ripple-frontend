@@ -7,6 +7,9 @@ export const GENERATE_PASSWORD_RESET_OTP_ENDPOINT: string = "/api/auth/generate-
 export const VERIFY_PASSWORD_RESET_OTP_ENDPOINT: string = "/api/auth/verify-otp";
 export const PASSWORD_RESET_OTP_ENDPOINT: string = "/api/auth/reset-password";
 export const TRACK_TRAFFIC_ENDPOINT: string = "/api/auth/log";
+export const GET_SESSIONS_ENDPOINT: string = "/api/auth/sessions";
+export const REVOKE_SESSION_ENDPOINT: string = "/api/auth/sessions";
+export const REVOKE_ALL_SESSIONS_ENDPOINT: string = "/api/auth/sessions";
 
 // User Endpoints
 export const GET_PROFILE_ENDPOINT: string = "/api/users/fetch-profile-details";

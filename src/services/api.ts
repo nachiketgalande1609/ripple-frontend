@@ -53,6 +53,9 @@ import {
     GET_DEVICE_KEYS_ENDPOINT,
     GET_TAGGED_POSTS_ENDPOINT,
     UPDATE_POST_TAGS_ENDPOINT,
+    GET_SESSIONS_ENDPOINT,
+    REVOKE_SESSION_ENDPOINT,
+    REVOKE_ALL_SESSIONS_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -698,6 +701,34 @@ export const toggleMuteUser = async (mutedUserId: number): Promise<{ muted: bool
         }
         throw error;
     }
+};
+
+/////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// SESSIONS ////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
+export const getActiveSessions = async () => {
+    const response = await api.get(GET_SESSIONS_ENDPOINT);
+    return response.data.data as {
+        id: number;
+        ip: string;
+        city: string;
+        region: string;
+        country: string;
+        device_type: string;
+        browser: string;
+        os: string;
+        logged_in_at: string;
+        last_active: string;
+    }[];
+};
+
+export const revokeSession = async (sessionId: number) => {
+    await api.delete(`${REVOKE_SESSION_ENDPOINT}/${sessionId}`);
+};
+
+export const revokeAllSessions = async () => {
+    await api.delete(REVOKE_ALL_SESSIONS_ENDPOINT);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////
