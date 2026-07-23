@@ -135,18 +135,27 @@ const CSS = `
   .msg-item {
     display: flex; align-items: center; gap: 11px;
     padding: 9px 10px; border-radius: 12px; cursor: pointer;
-    border: none; border-bottom: 0.5px solid var(--msg-border);
-    width: 100%; text-align: left; background: transparent;
+    border: 1px solid var(--msg-border);
+    width: 100%; text-align: left;
+    background: var(--nav-bg);
+    box-shadow: none;
     color: var(--msg-text-primary); position: relative;
-    transition: background 0.12s ease; box-sizing: border-box; outline: none;
+    transition: box-shadow 0.25s cubic-bezier(0.4,0,0.2,1), border-color 0.2s ease;
+    box-sizing: border-box; outline: none;
     animation: fadeSlide 0.2s ease both;
+    margin-bottom: 6px;
   }
-  .msg-list li:last-child .msg-item { border-bottom: none; }
-  .msg-item:hover { background: var(--msg-surface-hover); }
+  .msg-list li:last-child .msg-item { margin-bottom: 0; }
+  .msg-item:hover {
+    background: var(--nav-bg);
+    border-color: transparent;
+    box-shadow: inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2);
+  }
   .msg-item:focus-visible { box-shadow: 0 0 0 2px var(--msg-accent); }
   .msg-item.active {
-    background: var(--msg-surface-active);
-    box-shadow: inset 3px 0 0 var(--msg-accent);
+    background: var(--nav-bg);
+    border-color: transparent;
+    box-shadow: inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2);
   }
   .msg-item.has-unread .msg-name { font-weight: 600; color: var(--msg-text-primary); }
   .msg-item.has-unread .msg-preview { color: var(--msg-text-secondary); font-weight: 500; }
@@ -217,6 +226,9 @@ function useMessagesListCssVars() {
             "--msg-accent": "#378ADD",
             "--msg-accent-glow": "rgba(55,138,221,0.12)",
             "--msg-accent-border": "rgba(55,138,221,0.3)",
+            "--nav-bg": p.background.default,
+            "--nav-neo-shadow1": p.mode === "dark" ? "#000000" : "#cacaca",
+            "--nav-neo-shadow2": p.mode === "dark" ? "rgba(255,255,255,0.08)" : "#f6f6f6",
         };
         Object.entries(vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
     }, [theme]);

@@ -792,9 +792,41 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                     <AddIcon sx={{ color: "#fff", fontSize: "1.3rem" }} />
                                 </Box>
                             </Box>
-                            {rightItems.map((item) => (
+                            {rightItems.filter((i) => i.segment !== `profile/${currentUser?.id}`).map((item) => (
                                 <MobNavItem key={item.segment} item={item} />
                             ))}
+                            {/* Profile avatar */}
+                            <Box
+                                component={Link}
+                                to={`/profile/${currentUser?.id}`}
+                                sx={{
+                                    flex: 1,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    py: 1,
+                                    minHeight: 44,
+                                    WebkitTapHighlightColor: "transparent",
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: 28,
+                                        height: 28,
+                                        borderRadius: "50%",
+                                        overflow: "hidden",
+                                        border: "2px solid",
+                                        borderColor: location.pathname === `/profile/${currentUser?.id}` ? "text.primary" : "transparent",
+                                        transition: "border-color 0.15s",
+                                    }}
+                                >
+                                    <img
+                                        src={currentUser?.profile_picture_url || BlankProfileImage}
+                                        alt="Profile"
+                                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                    />
+                                </Box>
+                            </Box>
                         </>
                     ) : (
                         loggedOutItems.map((item) => <MobNavItem key={item.segment} item={item} />)

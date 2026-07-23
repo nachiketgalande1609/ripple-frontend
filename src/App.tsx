@@ -26,7 +26,7 @@ function ThemeTogglePill() {
                 bottom: -2,
                 right: 10,
                 zIndex: 1301,
-                display: "flex",
+                display: { xs: "none", sm: "flex" },
                 alignItems: "center",
                 px: 1.75,
                 py: 0.85,
