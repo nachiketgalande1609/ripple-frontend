@@ -330,7 +330,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
         BackdropProps={dialogBackdrop}
         sx={{ "& .MuiDialog-paper": dialogPaperSx }}
       >
-        <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
+        <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "32px 32px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 32px 32px !important", marginBottom: "0 !important" } }}>
           {/* Mute / Unmute */}
           <DialogButton
             icon={

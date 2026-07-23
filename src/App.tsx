@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import { CssVarsProvider, extendTheme, useColorScheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { Box } from "@mui/material";
@@ -8,6 +8,8 @@ import AppContent from "./AppContent";
 
 function ThemeTogglePill() {
     const { mode, setMode } = useColorScheme();
+    const location = useLocation();
+    if (location.pathname.startsWith("/messages")) return null;
     const [spinning, setSpinning] = React.useState(false);
 
     const handleToggle = () => {
@@ -93,8 +95,8 @@ const App = () => {
             <CssBaseline />
             <Router>
                 <AppContent />
+                <ThemeTogglePill />
             </Router>
-            <ThemeTogglePill />
         </CssVarsProvider>
     );
 };

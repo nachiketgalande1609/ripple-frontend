@@ -183,13 +183,13 @@ interface ToastItem {
 type NavItem =
     | { kind: "divider" }
     | {
-          kind: "item";
-          segment: string;
-          title: string;
-          icon: React.ReactNode;
-          activeIcon: React.ReactNode;
-          extraClass?: string;
-      };
+        kind: "item";
+        segment: string;
+        title: string;
+        icon: React.ReactNode;
+        activeIcon: React.ReactNode;
+        extraClass?: string;
+    };
 
 const TOAST_DURATION = 4000;
 
@@ -628,67 +628,67 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
 
     const navItems: NavItem[] = currentUser
         ? [
-              {
-                  kind: "item",
-                  segment: "",
-                  title: "Home",
-                  icon: <HomeOutlined sx={{ fontSize: "1.5rem" }} />,
-                  activeIcon: <HomeFilled sx={{ fontSize: "1.5rem" }} />,
-              },
-              {
-                  kind: "item",
-                  segment: "search",
-                  title: "Search",
-                  icon: <SearchRounded sx={{ fontSize: "1.5rem" }} />,
-                  activeIcon: <SearchRounded sx={{ fontSize: "1.5rem" }} />,
-              },
-              {
-                  kind: "item",
-                  segment: "messages",
-                  title: "Messages",
-                  icon: (
-                      <Badge badgeContent={unreadMessagesCount} {...badgeProps}>
-                          <ChatBubbleOutlineRounded sx={{ fontSize: "1.5rem" }} />
-                      </Badge>
-                  ),
-                  activeIcon: (
-                      <Badge badgeContent={unreadMessagesCount} {...badgeProps}>
-                          <ChatBubbleRounded sx={{ fontSize: "1.5rem" }} />
-                      </Badge>
-                  ),
-              },
-              {
-                  kind: "item",
-                  segment: "notifications",
-                  title: "Notifications",
-                  icon: (
-                      <Badge badgeContent={unreadNotificationsCount} {...badgeProps}>
-                          <FavoriteBorder sx={{ fontSize: "1.5rem" }} />
-                      </Badge>
-                  ),
-                  activeIcon: (
-                      <Badge badgeContent={unreadNotificationsCount} {...badgeProps}>
-                          <Favorite sx={{ fontSize: "1.5rem" }} />
-                      </Badge>
-                  ),
-              },
-          ]
+            {
+                kind: "item",
+                segment: "",
+                title: "Home",
+                icon: <HomeOutlined sx={{ fontSize: "1.5rem" }} />,
+                activeIcon: <HomeFilled sx={{ fontSize: "1.5rem" }} />,
+            },
+            {
+                kind: "item",
+                segment: "search",
+                title: "Search",
+                icon: <SearchRounded sx={{ fontSize: "1.5rem" }} />,
+                activeIcon: <SearchRounded sx={{ fontSize: "1.5rem" }} />,
+            },
+            {
+                kind: "item",
+                segment: "messages",
+                title: "Messages",
+                icon: (
+                    <Badge badgeContent={unreadMessagesCount} {...badgeProps}>
+                        <ChatBubbleOutlineRounded sx={{ fontSize: "1.5rem" }} />
+                    </Badge>
+                ),
+                activeIcon: (
+                    <Badge badgeContent={unreadMessagesCount} {...badgeProps}>
+                        <ChatBubbleRounded sx={{ fontSize: "1.5rem" }} />
+                    </Badge>
+                ),
+            },
+            {
+                kind: "item",
+                segment: "notifications",
+                title: "Notifications",
+                icon: (
+                    <Badge badgeContent={unreadNotificationsCount} {...badgeProps}>
+                        <FavoriteBorder sx={{ fontSize: "1.5rem" }} />
+                    </Badge>
+                ),
+                activeIcon: (
+                    <Badge badgeContent={unreadNotificationsCount} {...badgeProps}>
+                        <Favorite sx={{ fontSize: "1.5rem" }} />
+                    </Badge>
+                ),
+            },
+        ]
         : [
-              {
-                  kind: "item",
-                  segment: "login",
-                  title: "Log in",
-                  icon: <FontAwesomeIcon icon={faSignIn} style={{ fontSize: "1rem" }} />,
-                  activeIcon: <FontAwesomeIcon icon={faSignIn} style={{ fontSize: "1rem" }} />,
-              },
-              {
-                  kind: "item",
-                  segment: "register",
-                  title: "Register",
-                  icon: <FontAwesomeIcon icon={faUserPlus} style={{ fontSize: "1rem" }} />,
-                  activeIcon: <FontAwesomeIcon icon={faUserPlus} style={{ fontSize: "1rem" }} />,
-              },
-          ];
+            {
+                kind: "item",
+                segment: "login",
+                title: "Log in",
+                icon: <FontAwesomeIcon icon={faSignIn} style={{ fontSize: "1rem" }} />,
+                activeIcon: <FontAwesomeIcon icon={faSignIn} style={{ fontSize: "1rem" }} />,
+            },
+            {
+                kind: "item",
+                segment: "register",
+                title: "Register",
+                icon: <FontAwesomeIcon icon={faUserPlus} style={{ fontSize: "1rem" }} />,
+                activeIcon: <FontAwesomeIcon icon={faUserPlus} style={{ fontSize: "1rem" }} />,
+            },
+        ];
 
     const isActive = (segment: string) => (segment === "messages" ? location.pathname.startsWith("/messages") : location.pathname === `/${segment}`);
 
@@ -970,7 +970,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         </Box>
                     </Box>
                 </Box>
-                <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
+                <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "32px 32px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 32px 32px !important", marginBottom: "0 !important" } }}>
                     <Button fullWidth onClick={handleLogout} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "18px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: "error.main", border: "none", backgroundColor: "var(--nav-bg)", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)", mb: 0.75, "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: "error.light" } }}>
                         <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "rgba(211,47,47,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "error.main", flexShrink: 0 }}>
                             <LogoutOutlined sx={{ fontSize: "1.1rem" }} />

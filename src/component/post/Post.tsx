@@ -340,11 +340,11 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
             <Box
                 sx={{
                     width: "100%",
-                    backgroundColor: (t) => t.palette.background.paper,
+                    backgroundColor: "var(--nav-bg)",
                     borderRadius,
                     overflow: "hidden",
-                    border: "1px solid",
-                    borderColor: (t) => t.palette.divider,
+                    border: "none",
+                    boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
                 }}
             >
                 {/* ── Header ── */}
@@ -412,10 +412,13 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                 ref={postRef}
                                 sx={{
                                     position: "relative",
-                                    width: "100%",
+                                    width: "calc(100% - 16px)",
                                     height: isVideo ? height || 400 : height,
                                     overflow: "hidden",
                                     backgroundColor: (t) => t.palette.background.default,
+                                    mx: 1,
+                                    mb: 1,
+                                    borderRadius: "12px",
                                 }}
                             >
                                 {isVideo ? (

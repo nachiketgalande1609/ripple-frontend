@@ -67,9 +67,10 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
       sx={{
         mb: 1.2,
         borderRadius: "28px",
-        border: "none",
+        border: "1px solid",
+        borderColor: (t: any) => t.palette.divider,
         backgroundColor: "var(--nav-bg)",
-        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+        boxShadow: "none",
         overflow: "hidden",
         transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
         "&:hover": {
