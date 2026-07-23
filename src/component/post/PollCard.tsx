@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Box, Typography, Avatar, Button, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Typography, Avatar, Button, useMediaQuery, useTheme, Tooltip } from "@mui/material";
 import { PollOutlined } from "@mui/icons-material";
+import { formatDateInUserTz } from "../../utils/utils";
 import { votePoll } from "../../services/api";
 import BlankProfileImage from "../../static/profile_blank.png";
 
@@ -92,9 +93,11 @@ export default function PollCard({ poll }: PollCardProps) {
                             created a poll
                         </Typography>
                     </Box>
-                    <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mt: 0.2 }}>
-                        {timeAgo(poll.created_at)}
-                    </Typography>
+                    <Tooltip title={formatDateInUserTz(poll.created_at)} placement="bottom-start">
+                        <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mt: 0.2, cursor: "default" }}>
+                            {timeAgo(poll.created_at)}
+                        </Typography>
+                    </Tooltip>
                 </Box>
                 <PollOutlined sx={{ color: "#6366f1", fontSize: "1.25rem", flexShrink: 0 }} />
             </Box>

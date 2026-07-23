@@ -64,6 +64,7 @@ export const SETTINGS_ENDPOINT: string = "/api/settings";
 export const BLOCK_USER_ENDPOINT: string = "/api/settings/block";
 export const GET_BLOCKED_USERS_ENDPOINT: string = "/api/settings/blocked";
 export const CHANGE_PASSWORD_ENDPOINT: string = "/api/settings/change-password";
+export const UPDATE_TIMEZONE_ENDPOINT: string = "/api/settings/timezone";
 export const DEACTIVATE_ACCOUNT_ENDPOINT: string = "/api/settings/deactivate";
 export const DELETE_ACCOUNT_ENDPOINT: string = "/api/settings/delete-account";
 

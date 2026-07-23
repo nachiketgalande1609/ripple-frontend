@@ -18,6 +18,7 @@ import LinkedDevices from "../component/settings/LinkedDevices";
 import BlockedUsers from "../component/settings/BlockedUsers";
 import ChangePassword from "../component/settings/ChangePassword";
 import AccountManagement from "../component/settings/AccountManagement";
+import Timezone from "../component/settings/Timezone";
 import { usePageTitle } from "../hooks/usePageTitle";
 
 const menuItems = [
@@ -26,6 +27,7 @@ const menuItems = [
   { label: "Account Privacy" },
   { label: "Notifications" },
   { label: "Change Password" },
+  { label: "Timezone" },
   { label: "Linked Devices" },
   { label: "Blocked" },
   { label: "Account" },
@@ -93,6 +95,7 @@ const SettingsPage = () => {
     if (currentSetting === "linkeddevices") return <LinkedDevices />;
     if (currentSetting === "blocked") return <BlockedUsers />;
     if (currentSetting === "changepassword") return <ChangePassword />;
+    if (currentSetting === "timezone") return <Timezone />;
     if (currentSetting === "account") return <AccountManagement />;
     return (
       <Box sx={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>

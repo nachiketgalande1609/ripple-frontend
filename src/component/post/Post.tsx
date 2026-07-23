@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme, Popover } from "@mui/material";
+import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme, Popover, Tooltip } from "@mui/material";
+import { formatDateInUserTz } from "../../utils/utils";
 import SvgIcon from "@mui/material/SvgIcon";
 import BlankProfileImage from "../../static/profile_blank.png";
 import VideoPlayer from "../../component/VideoPlayer";
@@ -42,6 +43,7 @@ interface Post {
     avatarUrl?: string;
     file_url?: string;
     timeAgo: string;
+    created_at: string;
     id: string;
     userId: string;
     liked_by_current_user: boolean;
@@ -607,16 +609,19 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                             {post.content}
                         </Typography>
                     )}
-                    <Typography
-                        sx={{
-                            fontFamily: "'Inter', sans-serif",
-                            fontSize: "0.75rem",
-                            color: (t) => t.palette.text.disabled,
-                            mt: 0.625,
-                        }}
-                    >
-                        {post.timeAgo}
-                    </Typography>
+                    <Tooltip title={post.created_at ? formatDateInUserTz(post.created_at) : ""} placement="bottom-start">
+                        <Typography
+                            sx={{
+                                fontFamily: "'Inter', sans-serif",
+                                fontSize: "0.75rem",
+                                color: (t) => t.palette.text.disabled,
+                                mt: 0.625,
+                                cursor: "default",
+                            }}
+                        >
+                            {post.timeAgo}
+                        </Typography>
+                    </Tooltip>
                 </Box>
             </Box>
 

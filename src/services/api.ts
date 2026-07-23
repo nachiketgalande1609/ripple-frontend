@@ -62,6 +62,7 @@ import {
     BLOCK_USER_ENDPOINT,
     GET_BLOCKED_USERS_ENDPOINT,
     CHANGE_PASSWORD_ENDPOINT,
+    UPDATE_TIMEZONE_ENDPOINT,
     DEACTIVATE_ACCOUNT_ENDPOINT,
     DELETE_ACCOUNT_ENDPOINT,
     GET_INSIGHTS_ENDPOINT,
@@ -874,6 +875,11 @@ export const getBlockedUsers = async () => {
 
 export const changePassword = async (currentPassword: string, newPassword: string) => {
     const res = await api.post(CHANGE_PASSWORD_ENDPOINT, { currentPassword, newPassword });
+    return res.data;
+};
+
+export const updateTimezone = async (timezone: string) => {
+    const res = await api.patch(UPDATE_TIMEZONE_ENDPOINT, { timezone });
     return res.data;
 };
 

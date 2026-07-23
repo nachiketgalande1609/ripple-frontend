@@ -610,6 +610,13 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const handleNavEnter = () => { if (leaveTimer.current) clearTimeout(leaveTimer.current); setHovered(true); };
     const handleNavLeave = () => { leaveTimer.current = setTimeout(() => { setHovered(false); setCreateOpen(false); }, 80); };
+
+    useEffect(() => {
+        if (location.pathname.startsWith("/messages") || location.pathname.startsWith("/settings")) {
+            setCreateOpen(false);
+            setHovered(false);
+        }
+    }, [location.pathname]);
     const handleCreateClick = () => {
         if (createBtnRef.current) {
             const rect = createBtnRef.current.getBoundingClientRect();
@@ -971,7 +978,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                     py: createOpen ? 1 : 0,
                     px: createOpen ? 1 : 0,
                     gap: 0.25,
-                    zIndex: 1200,
+                    zIndex: 1300,
                 }}
             >
                 {createOpen && (
