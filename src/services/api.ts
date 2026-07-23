@@ -4,6 +4,7 @@ import {
     VOTE_POLL_ENDPOINT,
     FETCH_POLLS_FEED_ENDPOINT,
     DELETE_POLL_ENDPOINT,
+    USER_SUGGESTIONS_ENDPOINT,
     REGISTER_ENDPOINT,
     LOGIN_ENDPOINT,
     GET_POSTS_ENDPOINT,
@@ -1097,5 +1098,14 @@ export const deletePoll = async (pollId: number) => {
 
 export const fetchPollsFeed = async () => {
     const response = await api.get(FETCH_POLLS_FEED_ENDPOINT);
+    return response.data;
+};
+
+////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// SUGGESTIONS APIS /////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+export const getSuggestedUsers = async () => {
+    const response = await api.get(USER_SUGGESTIONS_ENDPOINT);
     return response.data;
 };

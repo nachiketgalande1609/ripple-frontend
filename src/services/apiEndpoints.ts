@@ -13,6 +13,7 @@ export const REVOKE_ALL_SESSIONS_ENDPOINT: string = "/api/auth/sessions";
 
 // User Endpoints
 export const GET_PROFILE_ENDPOINT: string = "/api/users/fetch-profile-details";
+export const USER_SUGGESTIONS_ENDPOINT: string = "/api/users/suggestions";
 export const UPLOAD_PROFILE_PICTURE_ENDPOINT: string = "/api/users/update-profile-picture";
 export const UPDATE_PROFILE_ENDPOINT: string = "/api/users/profile/update-profile-details";
 

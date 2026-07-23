@@ -6,6 +6,7 @@ import StoryDialog from "../component/stories/StoryDialog";
 import UploadStoryDialog from "../component/stories/UploadStoryDialog";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getPosts, getStories, fetchPollsFeed } from "../services/api";
+import SuggestedUsers from "../component/SuggestedUsers";
 import PollCard from "../component/post/PollCard";
 import BlankProfileImage from "../static/profile_blank.png";
 import { ACCENT_COLOR } from "../theme";
@@ -263,6 +264,18 @@ const HomePage = () => {
                 justifyContent: "center",
             }}
         >
+            <Box
+                sx={
+                    isMobile
+                        ? { width: "100%" }
+                        : {
+                              display: "flex",
+                              gap: "32px",
+                              alignItems: "flex-start",
+                              width: "100%",
+                          }
+                }
+            >
             <Container
                 disableGutters
                 sx={{
@@ -472,6 +485,31 @@ const HomePage = () => {
                     {!hasMore && posts.length > 0 && <EndOfFeed />}
                 </Box>
             </Container>
+
+            {/* ── Right sidebar (desktop only) ── */}
+            {!isMobile && (
+                <>
+                    {/* Spacer mirrors sidebar so feed stays centered */}
+                    <Box sx={{ flex: 1, order: -1 }} />
+                    <Box
+                        sx={{
+                            flex: 1,
+                            display: "flex",
+                            justifyContent: "center",
+                            position: "sticky",
+                            top: 24,
+                            pt: "16px",
+                            pb: "40px",
+                            alignSelf: "flex-start",
+                        }}
+                    >
+                        <Box sx={{ width: 220 }}>
+                            <SuggestedUsers />
+                        </Box>
+                    </Box>
+                </>
+            )}
+            </Box>
 
             <StoryDialog
                 open={openStoryDialog}

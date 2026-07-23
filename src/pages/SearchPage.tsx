@@ -15,7 +15,9 @@ import {
   Tabs,
   Tab,
   useTheme,
+  useMediaQuery,
 } from "@mui/material";
+import SuggestedUsers from "../component/SuggestedUsers";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import HistoryIcon from "@mui/icons-material/History";
@@ -40,6 +42,7 @@ import VideoThumbnail from "../component/post/VideoThumbnail";
 
 export default function SearchPage() {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [activeTab, setActiveTab] = useState<0 | 1>(0);
 
   // People tab
@@ -713,6 +716,20 @@ export default function SearchPage() {
   // ── Render ───────────────────────────────────────────────────
 
   return (
+    <Box
+      sx={
+        isMobile
+          ? {}
+          : {
+              display: "flex",
+              gap: 3,
+              alignItems: "flex-start",
+              justifyContent: "center",
+              maxWidth: 900,
+              mx: "auto",
+            }
+      }
+    >
     <Container
       disableGutters
       sx={{
@@ -846,5 +863,22 @@ export default function SearchPage() {
 
       {activeTab === 0 ? <PeopleTab /> : <HashtagsTab />}
     </Container>
+
+    {/* ── Right sidebar (desktop only) ── */}
+    {!isMobile && (
+      <Box
+        sx={{
+          width: 280,
+          flexShrink: 0,
+          position: "sticky",
+          top: 24,
+          pt: "16px",
+          pb: "40px",
+        }}
+      >
+        <SuggestedUsers />
+      </Box>
+    )}
+    </Box>
   );
 }
