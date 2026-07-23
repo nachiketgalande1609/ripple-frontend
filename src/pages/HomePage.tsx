@@ -264,18 +264,6 @@ const HomePage = () => {
                 justifyContent: "center",
             }}
         >
-            <Box
-                sx={
-                    isMobile
-                        ? { width: "100%" }
-                        : {
-                              display: "flex",
-                              gap: "32px",
-                              alignItems: "flex-start",
-                              width: "100%",
-                          }
-                }
-            >
             <Container
                 disableGutters
                 sx={{
@@ -489,27 +477,19 @@ const HomePage = () => {
             {/* ── Right sidebar (desktop only) ── */}
             {!isMobile && (
                 <>
-                    {/* Spacer mirrors sidebar so feed stays centered */}
-                    <Box sx={{ flex: 1, order: -1 }} />
                     <Box
                         sx={{
-                            flex: 1,
-                            display: "flex",
-                            justifyContent: "center",
-                            position: "sticky",
-                            top: 24,
-                            pt: "16px",
-                            pb: "40px",
-                            alignSelf: "flex-start",
+                            position: "fixed",
+                            top: 16,
+                            right: 16,
+                            width: 290,
+                            zIndex: 10,
                         }}
                     >
-                        <Box sx={{ width: 220 }}>
-                            <SuggestedUsers />
-                        </Box>
+                        <SuggestedUsers />
                     </Box>
                 </>
             )}
-            </Box>
 
             <StoryDialog
                 open={openStoryDialog}

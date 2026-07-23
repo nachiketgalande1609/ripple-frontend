@@ -342,11 +342,11 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
             <Box
                 sx={{
                     width: "100%",
-                    backgroundColor: "var(--nav-bg)",
+                    backgroundColor: "background.paper",
                     borderRadius,
                     overflow: "hidden",
-                    border: "none",
-                    boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                    border: "1px solid",
+                    borderColor: "divider",
                 }}
             >
                 {/* ── Header ── */}

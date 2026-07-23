@@ -716,20 +716,7 @@ export default function SearchPage() {
   // ── Render ───────────────────────────────────────────────────
 
   return (
-    <Box
-      sx={
-        isMobile
-          ? {}
-          : {
-              display: "flex",
-              gap: 3,
-              alignItems: "flex-start",
-              justifyContent: "center",
-              maxWidth: 900,
-              mx: "auto",
-            }
-      }
-    >
+    <Box sx={{ display: "flex", justifyContent: "center" }}>
     <Container
       disableGutters
       sx={{
@@ -864,18 +851,8 @@ export default function SearchPage() {
       {activeTab === 0 ? <PeopleTab /> : <HashtagsTab />}
     </Container>
 
-    {/* ── Right sidebar (desktop only) ── */}
     {!isMobile && (
-      <Box
-        sx={{
-          width: 280,
-          flexShrink: 0,
-          position: "sticky",
-          top: 24,
-          pt: "16px",
-          pb: "40px",
-        }}
-      >
+      <Box sx={{ position: "fixed", top: 16, right: 16, width: 290, zIndex: 10 }}>
         <SuggestedUsers />
       </Box>
     )}

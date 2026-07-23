@@ -89,11 +89,11 @@ export default function PollCard({ poll, onDeleted }: PollCardProps) {
         <Box
             sx={{
                 width: "100%",
-                backgroundColor: "var(--nav-bg)",
+                backgroundColor: "background.paper",
                 borderRadius: isMobile ? "0px" : "14px",
                 overflow: "hidden",
-                border: "none",
-                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                border: "1px solid",
+                borderColor: "divider",
                 mb: 2,
             }}
         >
