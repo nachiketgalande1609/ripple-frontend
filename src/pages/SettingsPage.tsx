@@ -18,6 +18,7 @@ import LinkedDevices from "../component/settings/LinkedDevices";
 import BlockedUsers from "../component/settings/BlockedUsers";
 import ChangePassword from "../component/settings/ChangePassword";
 import AccountManagement from "../component/settings/AccountManagement";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const menuItems = [
   { label: "Profile Details" },
@@ -63,6 +64,7 @@ const ChevronRight = () => {
 };
 
 const SettingsPage = () => {
+  usePageTitle("Settings");
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();

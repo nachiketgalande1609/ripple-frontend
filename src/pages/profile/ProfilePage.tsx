@@ -17,6 +17,7 @@ const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
 import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView } from "../../services/api";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
     Lock,
@@ -215,6 +216,7 @@ const ProfilePage = () => {
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
     const [profileData, setProfileData] = useState<Profile | null>(null);
+    usePageTitle(profileData?.username ? `@${profileData.username}` : undefined);
     const [posts, setPosts] = useState<any[]>([]);
     const [isFollowing, setIsFollowing] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);

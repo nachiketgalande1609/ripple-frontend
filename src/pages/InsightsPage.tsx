@@ -11,6 +11,7 @@ import GridOnRoundedIcon from "@mui/icons-material/GridOnRounded";
 import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import { getInsights } from "../services/api";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 interface PostMonth { month: string; posts: number; likes: number; }
 interface TopPost { id: number; content: string; file_url: string; first_media_url: string; like_count: number; comment_count: number; save_count: number; }
@@ -32,6 +33,7 @@ interface InsightData {
 }
 
 const InsightsPage = () => {
+    usePageTitle("Insights");
     const [data, setData] = useState<InsightData | null>(null);
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState<"like_count" | "comment_count" | "save_count">("like_count");

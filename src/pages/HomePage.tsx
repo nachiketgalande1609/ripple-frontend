@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { getPosts, getStories } from "../services/api";
 import BlankProfileImage from "../static/profile_blank.png";
 import { ACCENT_COLOR } from "../theme";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const POSTS_PER_PAGE = 3;
 
@@ -150,6 +151,7 @@ function StorySkeleton() {
 const HomePage = () => {
     useEffect(() => { injectStyles(); }, []);
     useHomeCssVars();
+    usePageTitle("Home");
 
     const [posts, setPosts] = useState<any[]>([]);
     const [fetchError, setFetchError] = useState<string | null>(null);

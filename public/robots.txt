@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /profile/
+Allow: /posts/
+Disallow: /messages
+Disallow: /settings
+Disallow: /notifications
+Disallow: /insights
+
+Sitemap: https://ripple.nachiketgalande.com/sitemap.xml

@@ -3,6 +3,7 @@ import { CircularProgress } from "@mui/material";
 import { registerUser } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../static/logo-transparent.png";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = `
@@ -424,6 +425,7 @@ const strengthClass = ["", "weak", "fair", "good", "strong"];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const RegisterPage: React.FC = () => {
+  usePageTitle("Sign up");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

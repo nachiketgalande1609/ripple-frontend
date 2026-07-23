@@ -7,7 +7,8 @@ import { useGlobalStore } from "../store/store";
 import socket from "../services/socket";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import Logo from "../static/logo-transparent.png"
+import Logo from "../static/logo-transparent.png";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = `
@@ -439,6 +440,7 @@ const styles = `
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const LoginPage: React.FC = () => {
+  usePageTitle("Log in");
   const { setUser } = useGlobalStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
