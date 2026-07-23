@@ -34,6 +34,7 @@ import ResetPassword from "./pages/ResetPassword";
 import { useAppNotifications } from "./hooks/useNotification";
 import Messages from "./pages/Messages/Messages";
 import PostDetailPage from "./pages/PostDetailPage";
+import InsightsPage from "./pages/InsightsPage";
 import FollowersPage from "./pages/FollowersPage";
 import FollowingPage from "./pages/FollowingPage";
 import MobileTopBar from "./component/navbar/MobileTopBar";
@@ -545,6 +546,14 @@ const AppContent = () => {
               <PublicRoute>
                 <ResetPassword />
               </PublicRoute>
+            }
+          />
+          <Route
+            path="/insights"
+            element={
+              <PrivateRoute>
+                <InsightsPage />
+              </PrivateRoute>
             }
           />
           <Route path="*" element={<NotFoundPage />} />

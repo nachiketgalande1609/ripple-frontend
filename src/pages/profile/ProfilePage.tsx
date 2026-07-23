@@ -16,7 +16,7 @@ import { ACCENT_COLOR } from "../../theme";
 const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView } from "../../services/api";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
     Lock,
@@ -360,6 +360,7 @@ const ProfilePage = () => {
         hasMoreRef.current = true;
         setHasMore(true);
         fetchUserPosts(true);
+        if (userId && !isOwnProfile) recordProfileView(userId);
     }, [userId]);
 
     useEffect(() => {

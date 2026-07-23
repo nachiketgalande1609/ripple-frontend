@@ -58,6 +58,10 @@ import {
     REVOKE_ALL_SESSIONS_ENDPOINT,
     BLOCK_USER_ENDPOINT,
     GET_BLOCKED_USERS_ENDPOINT,
+    CHANGE_PASSWORD_ENDPOINT,
+    DEACTIVATE_ACCOUNT_ENDPOINT,
+    DELETE_ACCOUNT_ENDPOINT,
+    GET_INSIGHTS_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -865,6 +869,21 @@ export const getBlockedUsers = async () => {
     return res.data.data as { id: number; username: string; profile_picture: string }[];
 };
 
+export const changePassword = async (currentPassword: string, newPassword: string) => {
+    const res = await api.post(CHANGE_PASSWORD_ENDPOINT, { currentPassword, newPassword });
+    return res.data;
+};
+
+export const deactivateAccount = async (password: string) => {
+    const res = await api.post(DEACTIVATE_ACCOUNT_ENDPOINT, { password });
+    return res.data;
+};
+
+export const deleteAccount = async (password: string) => {
+    const res = await api.delete(DELETE_ACCOUNT_ENDPOINT, { data: { password } });
+    return res.data;
+};
+
 export const updatePrivacy = async (isPrivate: boolean) => {
     try {
         const response = await api.patch(`${SETTINGS_ENDPOINT}/update-account-privacy`, { isPrivate });
@@ -1034,4 +1053,13 @@ export const getStories = async () => {
         }
         throw error;
     }
+};
+
+export const getInsights = async () => {
+    const response = await api.get(GET_INSIGHTS_ENDPOINT);
+    return response.data;
+};
+
+export const recordProfileView = async (profileUserId: string) => {
+    try { await api.post(`/api/users/record-view/${profileUserId}`); } catch {}
 };

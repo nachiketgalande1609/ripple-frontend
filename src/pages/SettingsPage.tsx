@@ -16,15 +16,18 @@ import General from "../component/settings/General";
 import NotificationsSettings from "../component/settings/NotificationsSettings";
 import LinkedDevices from "../component/settings/LinkedDevices";
 import BlockedUsers from "../component/settings/BlockedUsers";
+import ChangePassword from "../component/settings/ChangePassword";
+import AccountManagement from "../component/settings/AccountManagement";
 
 const menuItems = [
   { label: "Profile Details" },
   { label: "General" },
   { label: "Account Privacy" },
   { label: "Notifications" },
+  { label: "Change Password" },
   { label: "Linked Devices" },
   { label: "Blocked" },
-  { label: "Comments" },
+  { label: "Account" },
 ];
 
 const DRAWER_WIDTH = 270;
@@ -87,6 +90,8 @@ const SettingsPage = () => {
     if (currentSetting === "notifications") return <NotificationsSettings />;
     if (currentSetting === "linkeddevices") return <LinkedDevices />;
     if (currentSetting === "blocked") return <BlockedUsers />;
+    if (currentSetting === "changepassword") return <ChangePassword />;
+    if (currentSetting === "account") return <AccountManagement />;
     return (
       <Box sx={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
         <Box

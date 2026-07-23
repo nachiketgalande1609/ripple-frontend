@@ -16,6 +16,7 @@ import {
     SettingsOutlined,
     LogoutOutlined,
     Close as CloseIcon,
+    BarChartRounded,
 } from "@mui/icons-material";
 import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
@@ -656,6 +657,13 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         <ChatBubbleRounded sx={{ fontSize: "1.5rem" }} />
                     </Badge>
                 ),
+            },
+            {
+                kind: "item",
+                segment: "insights",
+                title: "Insights",
+                icon: <BarChartRounded sx={{ fontSize: "1.5rem" }} />,
+                activeIcon: <BarChartRounded sx={{ fontSize: "1.5rem" }} />,
             },
             {
                 kind: "item",

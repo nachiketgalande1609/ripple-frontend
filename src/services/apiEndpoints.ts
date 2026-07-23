@@ -63,6 +63,9 @@ export const DELETE_HASHTAG_SEARCH_HISTORY_ENDPOINT = "api/search/delete-hashtag
 export const SETTINGS_ENDPOINT: string = "/api/settings";
 export const BLOCK_USER_ENDPOINT: string = "/api/settings/block";
 export const GET_BLOCKED_USERS_ENDPOINT: string = "/api/settings/blocked";
+export const CHANGE_PASSWORD_ENDPOINT: string = "/api/settings/change-password";
+export const DEACTIVATE_ACCOUNT_ENDPOINT: string = "/api/settings/deactivate";
+export const DELETE_ACCOUNT_ENDPOINT: string = "/api/settings/delete-account";
 
 // Messages Endpoints
 export const GET_ALL_MESSAGE_USERS_ENDPOINT: string = "/api/messages/fetch-users";
@@ -73,6 +76,11 @@ export const SHARE_MEDIA_ENDPOINT: string = "/api/messages/send-media";
 // E2E Encryption Key Endpoints
 export const REGISTER_DEVICE_KEY_ENDPOINT: string = "/api/keys/register";
 export const GET_DEVICE_KEYS_ENDPOINT: string = "/api/keys";
+
+export const RECORD_PROFILE_VIEW_ENDPOINT: string = "/api/users/record-view";
+
+// Insights Endpoints
+export const GET_INSIGHTS_ENDPOINT: string = "/api/insights/summary";
 
 // Stories Endpoints
 export const UPLOAD_STORY_ENDPOINT: string = "/api/stories/upload-story";
