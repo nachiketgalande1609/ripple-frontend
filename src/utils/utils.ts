@@ -63,6 +63,7 @@ export const formatDateInUserTz = (timestamp: string, options?: Intl.DateTimeFor
         hour: "2-digit",
         minute: "2-digit",
         timeZone: tz,
+        timeZoneName: "short",
         ...options,
     };
     return new Intl.DateTimeFormat("en-US", defaultOptions).format(date);

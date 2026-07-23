@@ -1047,16 +1047,15 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         sx={{
                             display: "flex",
                             alignItems: "center",
-                            height: 52,
-                            px: "14px",
+                            height: 60,
+                            px: "11px",
                             mb: 1,
                             flexShrink: 0,
                             overflow: "hidden",
                         }}
                     >
-                        {/* 26px icon wrapper matches nav-icon width */}
                         <Box sx={{ width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <img src={LogoImage} alt="Ripple" style={{ width: 34, height: 34, objectFit: "contain" }} />
+                            <img src={LogoImage} alt="Ripple" style={{ width: 42, height: 42, objectFit: "contain" }} />
                         </Box>
                         <span className="brand-text brand-char" style={{ ...labelStyle, marginLeft: 14 }}>Ripple</span>
                     </Box>

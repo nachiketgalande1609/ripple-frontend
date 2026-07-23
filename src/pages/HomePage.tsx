@@ -379,7 +379,7 @@ const HomePage = () => {
                                     sx={{ animationDelay: `${index * 60}ms`, mb: isMobile ? 0 : "10px" }}
                                 >
                                     {item._type === "poll"
-                                        ? <PollCard poll={item} />
+                                        ? <PollCard poll={item} onDeleted={(id) => setPolls((prev) => prev.filter((p) => p.id !== id))} />
                                         : <Post post={item} fetchPosts={() => fetchPosts(true)} borderRadius={isMobile ? "0px" : "14px"} />
                                     }
                                 </Box>

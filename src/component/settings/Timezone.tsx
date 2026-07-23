@@ -45,6 +45,24 @@ function getUtcOffset(tz: string): string {
     }
 }
 
+function getUtcOffsetMinutes(tz: string): number {
+    try {
+        const now = new Date();
+        // Use a fixed reference and compute offset via date formatting trick
+        const utcStr = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "UTC", year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+        }).format(now);
+        const tzStr = new Intl.DateTimeFormat("en-CA", {
+            timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+        }).format(now);
+        return (new Date(tzStr).getTime() - new Date(utcStr).getTime()) / 60000;
+    } catch {
+        return 0;
+    }
+}
+
 function buildTimezoneList() {
     const all: string[] = (Intl as any).supportedValuesOf?.("timeZone") ?? [
         "UTC", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
@@ -52,8 +70,9 @@ function buildTimezoneList() {
         "Asia/Dubai", "Asia/Kolkata", "Asia/Singapore", "Asia/Tokyo", "Asia/Shanghai",
         "Australia/Sydney", "Pacific/Auckland",
     ];
-    return all.map((tz) => ({ tz, label: `${tz.replace(/_/g, " ")} (${getUtcOffset(tz)})` }))
-              .sort((a, b) => a.tz.localeCompare(b.tz));
+    return all
+        .map((tz) => ({ tz, label: `${tz.replace(/_/g, " ")} (${getUtcOffset(tz)})`, offsetMin: getUtcOffsetMinutes(tz) }))
+        .sort((a, b) => a.offsetMin - b.offsetMin || a.tz.localeCompare(b.tz));
 }
 
 export default function Timezone() {

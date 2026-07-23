@@ -3,6 +3,7 @@ import {
     CREATE_POLL_ENDPOINT,
     VOTE_POLL_ENDPOINT,
     FETCH_POLLS_FEED_ENDPOINT,
+    DELETE_POLL_ENDPOINT,
     REGISTER_ENDPOINT,
     LOGIN_ENDPOINT,
     GET_POSTS_ENDPOINT,
@@ -1086,6 +1087,11 @@ export const createPoll = async (question: string, options: string[]) => {
 export const votePoll = async (pollId: number, optionId: number) => {
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;
     const response = await api.post(VOTE_POLL_ENDPOINT, { pollId, optionId, userId: currentUser?.id });
+    return response.data;
+};
+
+export const deletePoll = async (pollId: number) => {
+    const response = await api.delete(`${DELETE_POLL_ENDPOINT}/${pollId}`);
     return response.data;
 };
 

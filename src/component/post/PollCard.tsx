@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Box, Typography, Avatar, Button, useMediaQuery, useTheme, Tooltip } from "@mui/material";
-import { PollOutlined } from "@mui/icons-material";
+import { Box, Typography, Avatar, Button, useMediaQuery, useTheme, Tooltip, IconButton, Menu, MenuItem, Dialog, DialogContent, DialogActions } from "@mui/material";
+import { PollOutlined, MoreHoriz, DeleteOutlineRounded, CloseRounded } from "@mui/icons-material";
 import { formatDateInUserTz } from "../../utils/utils";
-import { votePoll } from "../../services/api";
+import { votePoll, deletePoll } from "../../services/api";
 import BlankProfileImage from "../../static/profile_blank.png";
 
 interface PollOption {
@@ -17,6 +17,7 @@ interface Poll {
     username: string;
     profile_picture: string;
     created_at: string;
+    user_id: number;
     options: PollOption[];
     user_voted_option: number | null;
     total_votes: number;
@@ -24,6 +25,7 @@ interface Poll {
 
 interface PollCardProps {
     poll: Poll;
+    onDeleted?: (pollId: number) => void;
 }
 
 function timeAgo(dateStr: string): string {
@@ -38,13 +40,30 @@ function timeAgo(dateStr: string): string {
     return `${d}d ago`;
 }
 
-export default function PollCard({ poll }: PollCardProps) {
+export default function PollCard({ poll, onDeleted }: PollCardProps) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const [options, setOptions] = useState<PollOption[]>(poll.options);
     const [votedOption, setVotedOption] = useState<number | null>(poll.user_voted_option);
     const [totalVotes, setTotalVotes] = useState<number>(poll.total_votes);
     const [voting, setVoting] = useState(false);
+    const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+
+    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;
+    const isOwner = currentUser?.id && Number(currentUser.id) === Number(poll.user_id);
+
+    const handleDelete = async () => {
+        setDeleting(true);
+        try {
+            await deletePoll(poll.id);
+            onDeleted?.(poll.id);
+        } catch {
+            setDeleting(false);
+            setConfirmDelete(false);
+        }
+    };
 
     const hasVoted = votedOption !== null;
 
@@ -66,6 +85,7 @@ export default function PollCard({ poll }: PollCardProps) {
     };
 
     return (
+        <>
         <Box
             sx={{
                 width: "100%",
@@ -99,7 +119,13 @@ export default function PollCard({ poll }: PollCardProps) {
                         </Typography>
                     </Tooltip>
                 </Box>
-                <PollOutlined sx={{ color: "#6366f1", fontSize: "1.25rem", flexShrink: 0 }} />
+                {isOwner ? (
+                    <IconButton size="small" onClick={() => setConfirmDelete(true)} sx={{ color: "text.disabled", p: 0.5 }}>
+                        <MoreHoriz sx={{ fontSize: "1.2rem" }} />
+                    </IconButton>
+                ) : (
+                    <PollOutlined sx={{ color: "#6366f1", fontSize: "1.25rem", flexShrink: 0 }} />
+                )}
             </Box>
 
             {/* Question */}
@@ -219,5 +245,46 @@ export default function PollCard({ poll }: PollCardProps) {
             </Typography>
             </Box>{/* end padding box */}
         </Box>
+
+        {/* Delete confirm dialog */}
+        <Dialog
+            open={confirmDelete}
+            onClose={() => !deleting && setConfirmDelete(false)}
+            maxWidth="xs"
+            fullWidth
+            sx={{ "& .MuiDialog-paper": { borderRadius: "36px", backgroundColor: "background.paper", border: "1px solid", borderColor: "divider", boxShadow: "0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,116,139,0.08)", overflow: "hidden", padding: "6px" } }}
+            BackdropProps={{ sx: { backgroundColor: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)" } }}
+        >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.75, mb: 0.5 }}>
+                <Box sx={{ width: 38, height: 38, borderRadius: "50%", backgroundColor: "rgba(211,47,47,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <DeleteOutlineRounded sx={{ fontSize: "1.2rem", color: "error.main" }} />
+                </Box>
+                <Box>
+                    <Box sx={{ fontWeight: 600, fontSize: "0.9rem", color: "text.primary", lineHeight: 1.3 }}>
+                        Delete this poll?
+                    </Box>
+                    <Box sx={{ fontSize: "0.75rem", color: "text.disabled" }}>
+                        This action cannot be undone.
+                    </Box>
+                </Box>
+            </Box>
+            <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "32px 32px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 32px 32px !important", marginBottom: "0 !important" } }}>
+                <Button fullWidth onClick={handleDelete} disabled={deleting}
+                    sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "18px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: "error.main", border: "none", backgroundColor: "var(--nav-bg)", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)", mb: 0.75, "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: "error.light" } }}>
+                    <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "rgba(211,47,47,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "error.main", flexShrink: 0 }}>
+                        <DeleteOutlineRounded sx={{ fontSize: "1.1rem" }} />
+                    </Box>
+                    {deleting ? "Deleting…" : "Delete poll"}
+                </Button>
+                <Button fullWidth onClick={() => setConfirmDelete(false)} disabled={deleting}
+                    sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "18px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: "text.disabled", border: "none", backgroundColor: "var(--nav-bg)", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)", mb: 0.75, "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: "text.secondary" } }}>
+                    <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "action.hover", display: "flex", alignItems: "center", justifyContent: "center", color: "text.disabled", flexShrink: 0 }}>
+                        <CloseRounded sx={{ fontSize: "1.1rem" }} />
+                    </Box>
+                    Cancel
+                </Button>
+            </Box>
+        </Dialog>
+        </>
     );
 }
