@@ -1,5 +1,8 @@
 import api from "./config";
 import {
+    CREATE_POLL_ENDPOINT,
+    VOTE_POLL_ENDPOINT,
+    FETCH_POLLS_FEED_ENDPOINT,
     REGISTER_ENDPOINT,
     LOGIN_ENDPOINT,
     GET_POSTS_ENDPOINT,
@@ -1062,4 +1065,23 @@ export const getInsights = async () => {
 
 export const recordProfileView = async (profileUserId: string) => {
     try { await api.post(`/api/users/record-view/${profileUserId}`); } catch {}
+};
+
+////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// POLL APIS /////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+export const createPoll = async (question: string, options: string[]) => {
+    const response = await api.post(CREATE_POLL_ENDPOINT, { question, options });
+    return response.data;
+};
+
+export const votePoll = async (pollId: number, optionId: number) => {
+    const response = await api.post(VOTE_POLL_ENDPOINT, { pollId, optionId });
+    return response.data;
+};
+
+export const fetchPollsFeed = async () => {
+    const response = await api.get(FETCH_POLLS_FEED_ENDPOINT);
+    return response.data;
 };

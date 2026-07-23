@@ -85,3 +85,9 @@ export const GET_INSIGHTS_ENDPOINT: string = "/api/insights/summary";
 // Stories Endpoints
 export const UPLOAD_STORY_ENDPOINT: string = "/api/stories/upload-story";
 export const FETCH_USER_STORIES_ENDPOINT: string = "/api/stories/fetch-user-stories";
+
+// Poll Endpoints
+export const CREATE_POLL_ENDPOINT: string = "/api/polls/create";
+export const VOTE_POLL_ENDPOINT: string = "/api/polls/vote";
+export const FETCH_POLL_ENDPOINT: string = "/api/polls/fetch";
+export const FETCH_POLLS_FEED_ENDPOINT: string = "/api/polls/feed";

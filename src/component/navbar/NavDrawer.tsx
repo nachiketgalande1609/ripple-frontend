@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import socket from "../../services/socket";
 import CreatePostModal from "../../component/post/CreatePostModal";
+import UploadStoryDialog from "../../component/stories/UploadStoryDialog";
+import CreatePollModal from "../../component/post/CreatePollModal";
 import {
     Home as HomeFilled,
     HomeOutlined,
@@ -17,8 +19,11 @@ import {
     LogoutOutlined,
     Close as CloseIcon,
     BarChartRounded,
+    CameraAlt as CameraAltIcon,
+    AutoStories as AutoStoriesIcon,
+    Poll as PollIcon,
 } from "@mui/icons-material";
-import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton } from "@mui/material";
+import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton, Popover, List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
 import LogoImage from "../../static/logo-transparent.png";
 import { faSignIn, faUserPlus } from "@fortawesome/free-solid-svg-icons";
@@ -577,6 +582,9 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const [hovered, setHovered] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [moreOpen, setMoreOpen] = useState(false);
+    const [storyOpen, setStoryOpen] = useState(false);
+    const [pollOpen, setPollOpen] = useState(false);
+    const [createAnchor, setCreateAnchor] = useState<HTMLElement | null>(null);
 
     const { toasts, push, dismiss, dismissAll } = useToastStack();
 
@@ -782,7 +790,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                 }}
                             >
                                 <Box
-                                    onClick={() => setModalOpen(true)}
+                                    onClick={(e) => setCreateAnchor(e.currentTarget)}
                                     sx={{
                                         width: 42,
                                         height: 42,
@@ -842,6 +850,41 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 </Box>
 
                 <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />
+                <UploadStoryDialog open={storyOpen} onClose={() => setStoryOpen(false)} fetchStories={async () => {}} />
+                <CreatePollModal open={pollOpen} onClose={() => setPollOpen(false)} />
+                <Popover
+                    open={Boolean(createAnchor)}
+                    anchorEl={createAnchor}
+                    onClose={() => setCreateAnchor(null)}
+                    anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                    transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+                    PaperProps={{
+                        sx: {
+                            borderRadius: "16px",
+                            border: "1px solid",
+                            borderColor: "divider",
+                            backgroundColor: "background.paper",
+                            boxShadow: "0 8px 32px rgba(0,0,0,0.28)",
+                            minWidth: 160,
+                            overflow: "hidden",
+                        },
+                    }}
+                >
+                    <List dense disablePadding>
+                        <ListItemButton onClick={() => { setCreateAnchor(null); setModalOpen(true); }} sx={{ px: 2, py: 1.25 }}>
+                            <ListItemIcon sx={{ minWidth: 34 }}><CameraAltIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
+                            <ListItemText primary="Post" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
+                        </ListItemButton>
+                        <ListItemButton onClick={() => { setCreateAnchor(null); setStoryOpen(true); }} sx={{ px: 2, py: 1.25 }}>
+                            <ListItemIcon sx={{ minWidth: 34 }}><AutoStoriesIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
+                            <ListItemText primary="Story" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
+                        </ListItemButton>
+                        <ListItemButton onClick={() => { setCreateAnchor(null); setPollOpen(true); }} sx={{ px: 2, py: 1.25 }}>
+                            <ListItemIcon sx={{ minWidth: 34 }}><PollIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
+                            <ListItemText primary="Poll" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
+                        </ListItemButton>
+                    </List>
+                </Popover>
             </>
         );
     }
@@ -864,18 +907,18 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 anchor="left"
                 open={true}
                 onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
+                onMouseLeave={() => { if (!createAnchor) setHovered(false); }}
                 sx={{
                     width: DRAWER_CLOSED,
                     minWidth: DRAWER_CLOSED,
                     flexShrink: 0,
                     "& .MuiDrawer-paper": {
-                        width: hovered ? DRAWER_OPEN : DRAWER_CLOSED,
+                        width: (hovered || Boolean(createAnchor)) ? DRAWER_OPEN : DRAWER_CLOSED,
                         minWidth: DRAWER_CLOSED,
                         transition: "width 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.28s ease, border-color 0.28s ease",
                         boxSizing: "border-box",
                         overflowX: "hidden",
-                        backgroundColor: (t) => t.palette.background.default,
+                        backgroundColor: theme.palette.mode === "light" ? "#ffffff" : theme.palette.background.default,
                         borderRight: "1px solid",
                         borderColor: hovered ? theme.palette.divider : "transparent",
                         boxShadow: hovered ? "8px 0 32px rgba(0,0,0,0.10)" : "none",
@@ -932,7 +975,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         })}
 
                         {currentUser?.id && (
-                            <Box className="nav-item create-btn" onClick={() => setModalOpen(true)} sx={{ display: "flex", mt: "6px" }}>
+                            <Box className="nav-item create-btn" onClick={(e) => setCreateAnchor(e.currentTarget as HTMLElement)} sx={{ display: "flex", mt: "6px" }}>
                                 <span className="nav-icon">
                                     <AddIcon sx={{ fontSize: "2rem" }} />
                                 </span>
@@ -1027,6 +1070,42 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
             </Dialog>
 
             <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />
+            <UploadStoryDialog open={storyOpen} onClose={() => setStoryOpen(false)} fetchStories={async () => {}} />
+            <CreatePollModal open={pollOpen} onClose={() => setPollOpen(false)} />
+            <Popover
+                open={Boolean(createAnchor)}
+                anchorEl={createAnchor}
+                onClose={() => setCreateAnchor(null)}
+                anchorOrigin={{ vertical: "center", horizontal: "right" }}
+                transformOrigin={{ vertical: "center", horizontal: "left" }}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "16px",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        backgroundColor: "background.paper",
+                        boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                        minWidth: 170,
+                        overflow: "hidden",
+                        ml: 1,
+                    },
+                }}
+            >
+                <List dense disablePadding>
+                    <ListItemButton onClick={() => { setCreateAnchor(null); setModalOpen(true); }} sx={{ px: 2, py: 1.25 }}>
+                        <ListItemIcon sx={{ minWidth: 34 }}><CameraAltIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
+                        <ListItemText primary="Post" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
+                    </ListItemButton>
+                    <ListItemButton onClick={() => { setCreateAnchor(null); setStoryOpen(true); }} sx={{ px: 2, py: 1.25 }}>
+                        <ListItemIcon sx={{ minWidth: 34 }}><AutoStoriesIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
+                        <ListItemText primary="Story" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
+                    </ListItemButton>
+                    <ListItemButton onClick={() => { setCreateAnchor(null); setPollOpen(true); }} sx={{ px: 2, py: 1.25 }}>
+                        <ListItemIcon sx={{ minWidth: 34 }}><PollIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
+                        <ListItemText primary="Poll" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
+                    </ListItemButton>
+                </List>
+            </Popover>
         </>
     );
 }

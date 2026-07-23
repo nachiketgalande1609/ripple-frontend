@@ -5,7 +5,8 @@ import EndOfFeed from "../component/EndOfFeed";
 import StoryDialog from "../component/stories/StoryDialog";
 import UploadStoryDialog from "../component/stories/UploadStoryDialog";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { getPosts, getStories } from "../services/api";
+import { getPosts, getStories, fetchPollsFeed } from "../services/api";
+import PollCard from "../component/post/PollCard";
 import BlankProfileImage from "../static/profile_blank.png";
 import { ACCENT_COLOR } from "../theme";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -153,6 +154,7 @@ const HomePage = () => {
     useHomeCssVars();
     usePageTitle("Home");
 
+    const [polls, setPolls] = useState<any[]>([]);
     const [posts, setPosts] = useState<any[]>([]);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [loadingPosts, setLoadingPosts] = useState(true);
@@ -232,6 +234,7 @@ const HomePage = () => {
     useEffect(() => {
         fetchPosts(true);
         fetchStories();
+        fetchPollsFeed().then((d) => setPolls(d?.data || [])).catch(console.error);
     }, []);
 
     useEffect(() => {
@@ -362,18 +365,23 @@ const HomePage = () => {
                         <Box sx={{ textAlign: 'center', py: 4 }}>
                             <Typography color="error" variant="body2">{fetchError}</Typography>
                         </Box>
-                    ) : posts.length > 0 ? (
+                    ) : posts.length > 0 || polls.length > 0 ? (
                         <Box>
-                            {posts.map((post, index) => (
+                            {[
+                                ...posts.map((p) => ({ ...p, _type: "post" })),
+                                ...polls.map((p) => ({ ...p, _type: "poll" })),
+                            ]
+                                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                .map((item, index) => (
                                 <Box
-                                    key={post.id}
+                                    key={`${item._type}-${item.id}`}
                                     className="post-card"
-                                    sx={{
-                                        animationDelay: `${index * 60}ms`,
-                                        mb: isMobile ? 0 : index !== posts.length - 1 ? "10px" : 0,
-                                    }}
+                                    sx={{ animationDelay: `${index * 60}ms`, mb: isMobile ? 0 : "10px" }}
                                 >
-                                    <Post post={post} fetchPosts={() => fetchPosts(true)} borderRadius={isMobile ? "0px" : "14px"} />
+                                    {item._type === "poll"
+                                        ? <PollCard poll={item} />
+                                        : <Post post={item} fetchPosts={() => fetchPosts(true)} borderRadius={isMobile ? "0px" : "14px"} />
+                                    }
                                 </Box>
                             ))}
                         </Box>
