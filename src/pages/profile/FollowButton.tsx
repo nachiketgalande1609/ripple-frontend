@@ -43,12 +43,7 @@ const stateConfig: Record<
         hoverLabel: string;
         icon: React.ReactNode;
         hoverIcon: React.ReactNode;
-        bg: string;
-        color: string;
-        hoverBg: string;
         hoverColor: string;
-        border: string;
-        hoverBorder: string;
     }
 > = {
     follow: {
@@ -56,36 +51,21 @@ const stateConfig: Record<
         hoverLabel: "Follow",
         icon: <PersonAddIcon sx={{ fontSize: 14 }} />,
         hoverIcon: <PersonAddIcon sx={{ fontSize: 14 }} />,
-        bg: "#ffffff",
-        color: "#0a0a0a",
-        hoverBg: "#e8e8e8",
-        hoverColor: "#0a0a0a",
-        border: "1.5px solid transparent",
-        hoverBorder: "1.5px solid transparent",
+        hoverColor: "inherit",
     },
     pending: {
         label: "Requested",
         hoverLabel: "Cancel",
         icon: <HourglassTopIcon sx={{ fontSize: 14 }} />,
         hoverIcon: <CloseIcon sx={{ fontSize: 14 }} />,
-        bg: "transparent",
-        color: "#888",
-        hoverBg: "rgba(255,80,80,0.08)",
         hoverColor: "#ff5050",
-        border: "1.5px solid #2a2a2a",
-        hoverBorder: "1.5px solid rgba(255,80,80,0.25)",
     },
     following: {
         label: "Following",
         hoverLabel: "Unfollow",
         icon: <CheckIcon sx={{ fontSize: 14 }} />,
         hoverIcon: <CloseIcon sx={{ fontSize: 14 }} />,
-        bg: "transparent",
-        color: "#555",
-        hoverBg: "rgba(255,80,80,0.08)",
         hoverColor: "#ff5050",
-        border: "1.5px solid #222",
-        hoverBorder: "1.5px solid rgba(255,80,80,0.25)",
     },
 };
 
@@ -122,37 +102,34 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "6px",
-                padding: "7px 16px",
-                width: "110px",
-                borderRadius: "20px",
-                border: showHoverState ? config.hoverBorder : config.border,
-                background: showHoverState ? config.hoverBg : config.bg,
-                color: showHoverState ? config.hoverColor : config.color,
+                padding: "0 16px",
+                height: "34px",
+                minWidth: "100px",
+                borderRadius: "14px",
+                border: "none",
+                background: "var(--nav-bg)",
+                boxShadow: showHoverState
+                    ? "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)"
+                    : "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                color: showHoverState ? config.hoverColor : "inherit",
                 fontSize: "13px",
                 fontWeight: 500,
                 letterSpacing: "0.01em",
                 cursor: followButtonLoading ? "default" : "pointer",
-                transition: "all 0.2s ease",
+                transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
                 outline: "none",
                 whiteSpace: "nowrap",
                 userSelect: "none",
             }}
         >
             {followButtonLoading ? (
-                <CircularProgress size={14} sx={{ color: "#555" }} />
+                <CircularProgress size={14} sx={{ color: "inherit" }} />
             ) : (
                 <>
-                    <span
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            transition: "color 0.2s ease",
-                            color: showHoverState ? config.hoverColor : config.color,
-                        }}
-                    >
+                    <span style={{ display: "flex", alignItems: "center" }}>
                         {showHoverState ? config.hoverIcon : config.icon}
                     </span>
-                    <span style={{ transition: "color 0.2s ease" }}>{showHoverState ? config.hoverLabel : config.label}</span>
+                    <span>{showHoverState ? config.hoverLabel : config.label}</span>
                 </>
             )}
         </button>

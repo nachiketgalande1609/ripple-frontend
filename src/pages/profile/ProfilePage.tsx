@@ -16,7 +16,7 @@ import { ACCENT_COLOR } from "../../theme";
 const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers } from "../../services/api";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
     Lock,
@@ -234,6 +234,7 @@ const ProfilePage = () => {
     const [fetchingTaggedPosts, setFetchingTaggedPosts] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
+    const [isBlocked, setIsBlocked] = useState(false);
 
     const isOwnProfile = currentUser?.id == userId;
 
@@ -294,10 +295,24 @@ const ProfilePage = () => {
                 setProfileData(res.data);
                 setIsFollowing(res.data.is_following);
             }
-        } catch (e) {
+        } catch (e: any) {
+            if (e?.response?.data?.error === "blocked") {
+                setIsBlocked(true);
+            }
             console.error(e);
         } finally {
             setFetchingProfile(false);
+        }
+    }
+
+    async function checkBlockedStatus() {
+        if (isOwnProfile) return;
+        try {
+            const blockedList = await getBlockedUsers();
+            const blocked = blockedList.some((u) => String(u.id) === String(userId));
+            setIsBlocked(blocked);
+        } catch (e) {
+            console.error(e);
         }
     }
 
@@ -338,7 +353,9 @@ const ProfilePage = () => {
     );
 
     useEffect(() => {
+        setIsBlocked(false);
         fetchProfile();
+        checkBlockedStatus();
         offsetRef.current = 0;
         hasMoreRef.current = true;
         setHasMore(true);
@@ -464,10 +481,6 @@ const ProfilePage = () => {
                     gap: 1,
                 }}
             >
-                <IconButton size="small" onClick={() => navigate(-1)} sx={{ color: (t) => t.palette.text.secondary, "&:hover": { color: (t) => t.palette.text.primary } }}>
-                    <ArrowBack sx={{ fontSize: 20 }} />
-                </IconButton>
-
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0 }}>
                     <Avatar src={profileData?.profile_picture || BlankProfileImage} sx={{ width: 26, height: 26 }} />
                     <Typography
@@ -484,14 +497,6 @@ const ProfilePage = () => {
                     </Typography>
                     {profileData?.is_verified && <Verified sx={{ fontSize: 13, color: "#1d9bf0", flexShrink: 0 }} />}
                 </Stack>
-
-                <IconButton
-                    size="small"
-                    onClick={() => setOpenDialog(true)}
-                    sx={{ color: (t) => t.palette.text.disabled, "&:hover": { color: (t) => t.palette.text.secondary } }}
-                >
-                    <MoreHoriz sx={{ fontSize: 20 }} />
-                </IconButton>
             </Box>
 
             {/* ── Profile content ── */}
@@ -516,13 +521,15 @@ const ProfilePage = () => {
                                     size="small"
                                     onClick={() => navigate(`/messages/${userId}`, { state: profileData })}
                                     sx={{
-                                        border: "1px solid",
-                                        borderColor: (t) => t.palette.divider,
-                                        borderRadius: "9px",
+                                        border: "none",
+                                        borderRadius: "14px",
                                         width: 34,
                                         height: 34,
+                                        backgroundColor: "var(--nav-bg)",
+                                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
                                         color: (t) => t.palette.text.secondary,
-                                        "&:hover": { borderColor: (t) => t.palette.text.secondary, color: (t) => t.palette.text.primary, bgcolor: (t) => t.palette.action.hover },
+                                        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                        "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: (t) => t.palette.text.primary, bgcolor: "var(--nav-bg)" },
                                     }}
                                 >
                                     <Message sx={{ fontSize: 17 }} />
@@ -535,35 +542,71 @@ const ProfilePage = () => {
                                     handleCancelRequest={handleCancelRequest}
                                     handleUnfollow={handleUnfollow}
                                 />
+                                <IconButton
+                                    size="small"
+                                    onClick={() => setOpenDialog(true)}
+                                    sx={{
+                                        border: "none",
+                                        borderRadius: "14px",
+                                        width: 34,
+                                        height: 34,
+                                        backgroundColor: "var(--nav-bg)",
+                                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                        color: (t) => t.palette.text.secondary,
+                                        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                        "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: (t) => t.palette.text.primary, bgcolor: "var(--nav-bg)" },
+                                    }}
+                                >
+                                    <MoreHoriz sx={{ fontSize: 18 }} />
+                                </IconButton>
                             </>
                         )}
                         {isOwnProfile && (
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={() => navigate(`/settings?setting=profiledetails`)}
-                                sx={{
-                                    textTransform: "none",
-                                    fontWeight: 500,
-                                    borderRadius: "14px",
-                                    fontSize: "0.8rem",
-                                    px: 2.25,
-                                    py: 0.75,
-                                    border: "none",
-                                    backgroundColor: "var(--nav-bg)",
-                                    boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-                                    color: (t) => t.palette.text.secondary,
-                                    transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
-                                    "&:hover": {
+                            <>
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => navigate(`/settings?setting=profiledetails`)}
+                                    sx={{
+                                        textTransform: "none",
+                                        fontWeight: 500,
+                                        borderRadius: "14px",
+                                        fontSize: "0.8rem",
+                                        px: 2.25,
+                                        py: 0.75,
                                         border: "none",
-                                        boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
-                                        color: (t) => t.palette.text.primary,
                                         backgroundColor: "var(--nav-bg)",
-                                    },
-                                }}
-                            >
-                                Edit profile
-                            </Button>
+                                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                        color: (t) => t.palette.text.secondary,
+                                        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                        "&:hover": {
+                                            border: "none",
+                                            boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                                            color: (t) => t.palette.text.primary,
+                                            backgroundColor: "var(--nav-bg)",
+                                        },
+                                    }}
+                                >
+                                    Edit profile
+                                </Button>
+                                <IconButton
+                                    size="small"
+                                    onClick={() => setOpenDialog(true)}
+                                    sx={{
+                                        border: "none",
+                                        borderRadius: "14px",
+                                        width: 34,
+                                        height: 34,
+                                        backgroundColor: "var(--nav-bg)",
+                                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                        color: (t) => t.palette.text.secondary,
+                                        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                        "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: (t) => t.palette.text.primary, bgcolor: "var(--nav-bg)" },
+                                    }}
+                                >
+                                    <MoreHoriz sx={{ fontSize: 18 }} />
+                                </IconButton>
+                            </>
                         )}
                     </Stack>
                 </Stack>
@@ -732,6 +775,12 @@ const ProfilePage = () => {
                         <div>
                             {fetchingPosts ? (
                                 <GridSkeleton />
+                            ) : isBlocked ? (
+                                <EmptyState
+                                    icon={<Lock sx={{ fontSize: 22, color: ACCENT }} />}
+                                    title="This account is blocked"
+                                    subtitle="You have blocked this user. Unblock to see their content."
+                                />
                             ) : !canViewPosts ? (
                                 <EmptyState
                                     icon={<Lock sx={{ fontSize: 22, color: ACCENT }} />}
@@ -753,7 +802,7 @@ const ProfilePage = () => {
                                                 sx={{
                                                     textTransform: "none",
                                                     fontWeight: 600,
-                                                    borderRadius: "9px",
+                                                    borderRadius: "14px",
                                                     px: 3,
                                                     fontSize: "0.82rem",
                                                     bgcolor: ACCENT,
@@ -849,6 +898,11 @@ const ProfilePage = () => {
                 fetchProfile={fetchProfile}
                 fetchUserPosts={() => fetchUserPosts(true)}
                 isFollowing={profileData?.is_following}
+                isBlocked={isBlocked}
+                onBlockToggle={() => {
+                    setIsBlocked((prev) => !prev);
+                    fetchProfile();
+                }}
             />
 
             <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />

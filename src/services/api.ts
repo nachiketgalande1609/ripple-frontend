@@ -56,6 +56,8 @@ import {
     GET_SESSIONS_ENDPOINT,
     REVOKE_SESSION_ENDPOINT,
     REVOKE_ALL_SESSIONS_ENDPOINT,
+    BLOCK_USER_ENDPOINT,
+    GET_BLOCKED_USERS_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -849,6 +851,19 @@ export const deleteHashtagSearchHistoryItem = async (historyId: number) => {
 /////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// SETTINGS APIS //////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
+
+export const blockUser = async (userId: number) => {
+    await api.post(`${BLOCK_USER_ENDPOINT}/${userId}`);
+};
+
+export const unblockUser = async (userId: number) => {
+    await api.delete(`${BLOCK_USER_ENDPOINT}/${userId}`);
+};
+
+export const getBlockedUsers = async () => {
+    const res = await api.get(GET_BLOCKED_USERS_ENDPOINT);
+    return res.data.data as { id: number; username: string; profile_picture: string }[];
+};
 
 export const updatePrivacy = async (isPrivate: boolean) => {
     try {

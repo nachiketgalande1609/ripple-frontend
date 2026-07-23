@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Typography, useMediaQuery, useTheme, Button } from "@mui/material";
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import BlockIcon from '@mui/icons-material/Block';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import socket from "../../services/socket";
 import {
@@ -13,6 +14,8 @@ import {
   getDeviceKeys,
   backupDeviceKey,
   fetchKeyBackup,
+  getBlockedUsers,
+  unblockUser,
 } from "../../services/api";
 import {
   generateKeyPair,
@@ -129,6 +132,7 @@ const Messages: React.FC<MessageProps> = ({
   );
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [initialMessageLoading, setInitialMessageLoading] = useState(false);
+  const [isBlockedUser, setIsBlockedUser] = useState(false);
 
   // E2E encryption state
   const [myDeviceId, setMyDeviceId] = useState(() => getOrCreateDeviceId());
@@ -550,6 +554,24 @@ const Messages: React.FC<MessageProps> = ({
     navigate(`/messages/${userId}`);
   };
 
+  // Check if selected user is blocked whenever it changes
+  useEffect(() => {
+    if (!selectedUser) { setIsBlockedUser(false); return; }
+    getBlockedUsers()
+      .then((list) => setIsBlockedUser(list.some((u: any) => u.id === selectedUser.id)))
+      .catch(() => setIsBlockedUser(false));
+  }, [selectedUser?.id]);
+
+  const handleUnblockFromChat = async () => {
+    if (!selectedUser) return;
+    try {
+      await unblockUser(selectedUser.id);
+      setIsBlockedUser(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   // Socket to send messages and emit stop typing
   const handleSendMessage = async () => {
     if ((!inputMessage.trim() && !selectedFile) || !selectedUser) return;
@@ -905,6 +927,20 @@ const Messages: React.FC<MessageProps> = ({
               onMuteToggle={fetchMutedUsers}
             />
 
+            {isBlockedUser && (
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1, gap: 1.5, bgcolor: (t) => t.palette.mode === "dark" ? "rgba(211,47,47,0.10)" : "rgba(211,47,47,0.07)", borderBottom: "1px solid", borderColor: "rgba(211,47,47,0.18)" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <BlockIcon sx={{ fontSize: 15, color: "error.main", flexShrink: 0 }} />
+                  <Typography sx={{ fontSize: "0.78rem", color: "error.main", fontWeight: 500 }}>
+                    You have blocked {selectedUser?.username}
+                  </Typography>
+                </Box>
+                <Button size="small" onClick={handleUnblockFromChat} sx={{ fontSize: "0.72rem", fontWeight: 600, textTransform: "none", color: "error.main", minWidth: 0, px: 1.25, py: 0.4, borderRadius: "8px", "&:hover": { bgcolor: "rgba(211,47,47,0.12)" } }}>
+                  Unblock
+                </Button>
+              </Box>
+            )}
+
             <MessagesContainer
               selectedUser={selectedUser}
               messages={messages}
@@ -919,21 +955,29 @@ const Messages: React.FC<MessageProps> = ({
               initialMessageLoading={initialMessageLoading}
             />
 
-            <MessageInput
-              selectedFile={selectedFile}
-              setSelectedFile={setSelectedFile}
-              selectedFileURL={selectedFileURL}
-              setSelectedFileURL={setSelectedFileURL}
-              inputMessage={inputMessage}
-              handleTyping={handleTyping}
-              setInputMessage={setInputMessage}
-              handleSendMessage={handleSendMessage}
-              handleFileChange={handleFileChange}
-              isSendingMessage={isSendingMessage}
-              selectedMessageForReply={selectedMessageForReply}
-              cancelReply={cancelReply}
-              selectedUser={selectedUser}
-            />
+            {isBlockedUser ? (
+              <Box sx={{ px: 2, py: 1.5, borderTop: "1px solid", borderColor: (t) => t.palette.divider, bgcolor: (t) => t.palette.background.paper }}>
+                <Typography sx={{ fontSize: "0.78rem", color: (t) => t.palette.text.disabled, textAlign: "center" }}>
+                  Unblock {selectedUser?.username} to send messages
+                </Typography>
+              </Box>
+            ) : (
+              <MessageInput
+                selectedFile={selectedFile}
+                setSelectedFile={setSelectedFile}
+                selectedFileURL={selectedFileURL}
+                setSelectedFileURL={setSelectedFileURL}
+                inputMessage={inputMessage}
+                handleTyping={handleTyping}
+                setInputMessage={setInputMessage}
+                handleSendMessage={handleSendMessage}
+                handleFileChange={handleFileChange}
+                isSendingMessage={isSendingMessage}
+                selectedMessageForReply={selectedMessageForReply}
+                cancelReply={cancelReply}
+                selectedUser={selectedUser}
+              />
+            )}
           </Box>
         )
       ) : (
@@ -978,6 +1022,20 @@ const Messages: React.FC<MessageProps> = ({
                   onMuteToggle={fetchMutedUsers}
                 />
 
+                {isBlockedUser && (
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2.5, py: 1, gap: 1.5, bgcolor: (t) => t.palette.mode === "dark" ? "rgba(211,47,47,0.10)" : "rgba(211,47,47,0.07)", borderBottom: "1px solid", borderColor: "rgba(211,47,47,0.18)" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <BlockIcon sx={{ fontSize: 15, color: "error.main", flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: "0.78rem", color: "error.main", fontWeight: 500 }}>
+                        You have blocked {selectedUser?.username}
+                      </Typography>
+                    </Box>
+                    <Button size="small" onClick={handleUnblockFromChat} sx={{ fontSize: "0.72rem", fontWeight: 600, textTransform: "none", color: "error.main", minWidth: 0, px: 1.25, py: 0.4, borderRadius: "8px", "&:hover": { bgcolor: "rgba(211,47,47,0.12)" } }}>
+                      Unblock
+                    </Button>
+                  </Box>
+                )}
+
                 {/* Messages Container */}
                 <MessagesContainer
                   selectedUser={selectedUser}
@@ -994,21 +1052,29 @@ const Messages: React.FC<MessageProps> = ({
                 />
 
                 {/* Message Input Box*/}
-                <MessageInput
-                  selectedFile={selectedFile}
-                  setSelectedFile={setSelectedFile}
-                  selectedFileURL={selectedFileURL}
-                  setSelectedFileURL={setSelectedFileURL}
-                  inputMessage={inputMessage}
-                  handleTyping={handleTyping}
-                  setInputMessage={setInputMessage}
-                  handleSendMessage={handleSendMessage}
-                  handleFileChange={handleFileChange}
-                  isSendingMessage={isSendingMessage}
-                  selectedMessageForReply={selectedMessageForReply}
-                  selectedUser={selectedUser}
-                  cancelReply={cancelReply}
-                />
+                {isBlockedUser ? (
+                  <Box sx={{ px: 2.5, py: 1.5, borderTop: "1px solid", borderColor: (t) => t.palette.divider, bgcolor: (t) => t.palette.background.paper }}>
+                    <Typography sx={{ fontSize: "0.78rem", color: (t) => t.palette.text.disabled, textAlign: "center" }}>
+                      Unblock {selectedUser?.username} to send messages
+                    </Typography>
+                  </Box>
+                ) : (
+                  <MessageInput
+                    selectedFile={selectedFile}
+                    setSelectedFile={setSelectedFile}
+                    selectedFileURL={selectedFileURL}
+                    setSelectedFileURL={setSelectedFileURL}
+                    inputMessage={inputMessage}
+                    handleTyping={handleTyping}
+                    setInputMessage={setInputMessage}
+                    handleSendMessage={handleSendMessage}
+                    handleFileChange={handleFileChange}
+                    isSendingMessage={isSendingMessage}
+                    selectedMessageForReply={selectedMessageForReply}
+                    selectedUser={selectedUser}
+                    cancelReply={cancelReply}
+                  />
+                )}
               </>
             )}
           </Box>

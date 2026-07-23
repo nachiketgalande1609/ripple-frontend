@@ -2,7 +2,7 @@ import { Dialog, Button, Box, useMediaQuery, useTheme } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAppNotifications } from "../../hooks/useNotification";
 import socket from "../../services/socket";
-import { unfollowUser } from "../../services/api";
+import { unfollowUser, blockUser, unblockUser } from "../../services/api";
 
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -10,6 +10,8 @@ import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import PersonRemoveRoundedIcon from "@mui/icons-material/PersonRemoveRounded";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
+import BlockRoundedIcon from "@mui/icons-material/BlockRounded";
+import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 
 import BlankProfileImage from "../../static/profile_blank.png";
 
@@ -20,6 +22,8 @@ interface MoreOptionsDialogProps {
     fetchProfile: () => void;
     fetchUserPosts: () => void;
     isFollowing: boolean | undefined;
+    isBlocked: boolean;
+    onBlockToggle: () => void;
 }
 
 /* Reusable icon container */
@@ -103,6 +107,8 @@ export default function MoreOptionsDialog({
     fetchProfile,
     fetchUserPosts,
     isFollowing,
+    isBlocked,
+    onBlockToggle,
 }: MoreOptionsDialogProps) {
     const navigate = useNavigate();
     const location = useLocation();
@@ -165,6 +171,23 @@ export default function MoreOptionsDialog({
                 severity: "error",
                 autoHideDuration: 3000,
             });
+        }
+    };
+
+    const handleBlockToggle = async () => {
+        try {
+            if (isBlocked) {
+                await unblockUser(Number(userId));
+                notifications.show("User unblocked", { severity: "success", autoHideDuration: 3000 });
+            } else {
+                await blockUser(Number(userId));
+                notifications.show("User blocked", { severity: "success", autoHideDuration: 3000 });
+            }
+            handleCloseDialog();
+            onBlockToggle();
+        } catch (err) {
+            console.error("Block/unblock failed:", err);
+            notifications.show("Action failed. Please try again.", { severity: "error", autoHideDuration: 3000 });
         }
     };
 
@@ -249,6 +272,19 @@ export default function MoreOptionsDialog({
                 {/* Unfollow — shown to non-owners who follow this user */}
                 {!isOwnProfile && isFollowing && (
                     <DialogButton icon={<PersonRemoveRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Unfollow" onClick={handleUnfollow} danger />
+                )}
+
+                {/* Block / Unblock — shown to non-owners */}
+                {!isOwnProfile && (
+                    <DialogButton
+                        icon={isBlocked
+                            ? <BlockOutlinedIcon sx={{ fontSize: "1.1rem" }} />
+                            : <BlockRoundedIcon sx={{ fontSize: "1.1rem" }} />
+                        }
+                        label={isBlocked ? "Unblock" : "Block"}
+                        onClick={handleBlockToggle}
+                        danger={!isBlocked}
+                    />
                 )}
 
                 {/* Edit Profile — own profile only */}

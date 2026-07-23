@@ -15,6 +15,7 @@ import AccountPrivacy from "../component/settings/AccountPrivacy";
 import General from "../component/settings/General";
 import NotificationsSettings from "../component/settings/NotificationsSettings";
 import LinkedDevices from "../component/settings/LinkedDevices";
+import BlockedUsers from "../component/settings/BlockedUsers";
 
 const menuItems = [
   { label: "Profile Details" },
@@ -85,6 +86,7 @@ const SettingsPage = () => {
     if (currentSetting === "general") return <General />;
     if (currentSetting === "notifications") return <NotificationsSettings />;
     if (currentSetting === "linkeddevices") return <LinkedDevices />;
+    if (currentSetting === "blocked") return <BlockedUsers />;
     return (
       <Box sx={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
         <Box

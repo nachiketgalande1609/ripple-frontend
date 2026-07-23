@@ -61,6 +61,8 @@ export const DELETE_HASHTAG_SEARCH_HISTORY_ENDPOINT = "api/search/delete-hashtag
 
 // Settings Endpoints
 export const SETTINGS_ENDPOINT: string = "/api/settings";
+export const BLOCK_USER_ENDPOINT: string = "/api/settings/block";
+export const GET_BLOCKED_USERS_ENDPOINT: string = "/api/settings/blocked";
 
 // Messages Endpoints
 export const GET_ALL_MESSAGE_USERS_ENDPOINT: string = "/api/messages/fetch-users";
