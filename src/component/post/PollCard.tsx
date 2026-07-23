@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Typography, Avatar, Button } from "@mui/material";
+import { Box, Typography, Avatar, Button, useMediaQuery, useTheme } from "@mui/material";
 import { PollOutlined } from "@mui/icons-material";
 import { votePoll } from "../../services/api";
 import BlankProfileImage from "../../static/profile_blank.png";
@@ -38,6 +38,8 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function PollCard({ poll }: PollCardProps) {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const [options, setOptions] = useState<PollOption[]>(poll.options);
     const [votedOption, setVotedOption] = useState<number | null>(poll.user_voted_option);
     const [totalVotes, setTotalVotes] = useState<number>(poll.total_votes);
@@ -65,15 +67,16 @@ export default function PollCard({ poll }: PollCardProps) {
     return (
         <Box
             sx={{
-                borderRadius: "24px",
+                width: "100%",
                 backgroundColor: "var(--nav-bg)",
-                boxShadow: "4px 4px 14px var(--nav-neo-shadow1), -4px -4px 14px var(--nav-neo-shadow2)",
-                border: "1px solid",
-                borderColor: "divider",
-                p: 2.5,
+                borderRadius: isMobile ? "0px" : "14px",
+                overflow: "hidden",
+                border: "none",
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
                 mb: 2,
             }}
         >
+            <Box sx={{ p: 2.5 }}>
             {/* Author row */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
                 <Avatar
@@ -126,11 +129,9 @@ export default function PollCard({ poll }: PollCardProps) {
                                 sx={{
                                     textTransform: "none",
                                     borderRadius: "12px",
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    backgroundColor: "var(--nav-bg)",
-                                    boxShadow:
-                                        "inset 2px 2px 6px var(--nav-neo-shadow1), inset -2px -2px 6px var(--nav-neo-shadow2)",
+                                    border: "none",
+                                    backgroundColor: (t: any) => t.palette.action.hover,
+                                    boxShadow: "none",
                                     color: "text.primary",
                                     fontWeight: 500,
                                     fontSize: "0.88rem",
@@ -139,9 +140,8 @@ export default function PollCard({ poll }: PollCardProps) {
                                     px: 2,
                                     transition: "all 0.2s ease",
                                     "&:hover": {
-                                        borderColor: "#6366f1",
+                                        backgroundColor: "rgba(99,102,241,0.08)",
                                         color: "#6366f1",
-                                        backgroundColor: "rgba(99,102,241,0.05)",
                                     },
                                     "&:disabled": { opacity: 0.6 },
                                 }}
@@ -157,9 +157,8 @@ export default function PollCard({ poll }: PollCardProps) {
                             key={opt.id}
                             sx={{
                                 borderRadius: "12px",
-                                border: "1px solid",
-                                borderColor: isVoted ? "#6366f1" : "divider",
-                                backgroundColor: "var(--nav-bg)",
+                                border: isVoted ? "1px solid #6366f1" : "none",
+                                backgroundColor: (t: any) => t.palette.action.hover,
                                 overflow: "hidden",
                                 position: "relative",
                                 px: 2,
@@ -215,6 +214,7 @@ export default function PollCard({ poll }: PollCardProps) {
                     </Box>
                 )}
             </Typography>
+            </Box>{/* end padding box */}
         </Box>
     );
 }

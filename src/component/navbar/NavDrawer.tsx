@@ -47,6 +47,25 @@ const staticStyles = `
     from { opacity: 0; transform: translateX(-8px); }
     to   { opacity: 1; transform: translateX(0); }
   }
+  @keyframes create-panel-in {
+    from { opacity: 0; transform: translateX(-10px) scaleX(0.92); }
+    to   { opacity: 1; transform: translateX(0) scaleX(1); }
+  }
+  @keyframes create-item-in {
+    from { opacity: 0; transform: translateX(-12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .create-panel-open {
+    animation: create-panel-in 0.22s cubic-bezier(0.34,1.4,0.64,1) both;
+    transform-origin: left center;
+  }
+  .create-item {
+    opacity: 0;
+    animation: create-item-in 0.2s cubic-bezier(0.34,1.4,0.64,1) both;
+  }
+  .create-item:nth-child(1) { animation-delay: 0.06s; }
+  .create-item:nth-child(2) { animation-delay: 0.11s; }
+  .create-item:nth-child(3) { animation-delay: 0.16s; }
 
   .nav-item {
     display: flex; align-items: center;
@@ -585,6 +604,19 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const [storyOpen, setStoryOpen] = useState(false);
     const [pollOpen, setPollOpen] = useState(false);
     const [createAnchor, setCreateAnchor] = useState<HTMLElement | null>(null);
+    const [createOpen, setCreateOpen] = useState(false);
+    const [panelTop, setPanelTop] = useState(0);
+    const createBtnRef = useRef<HTMLDivElement>(null);
+    const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const handleNavEnter = () => { if (leaveTimer.current) clearTimeout(leaveTimer.current); setHovered(true); };
+    const handleNavLeave = () => { leaveTimer.current = setTimeout(() => { setHovered(false); setCreateOpen(false); }, 80); };
+    const handleCreateClick = () => {
+        if (createBtnRef.current) {
+            const rect = createBtnRef.current.getBoundingClientRect();
+            setPanelTop(rect.top);
+        }
+        setCreateOpen((o) => !o);
+    };
 
     const { toasts, push, dismiss, dismissAll } = useToastStack();
 
@@ -860,30 +892,41 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                     transformOrigin={{ vertical: "bottom", horizontal: "center" }}
                     PaperProps={{
                         sx: {
-                            borderRadius: "16px",
+                            borderRadius: "20px",
+                            background: (t) => t.palette.mode === "dark" ? "rgba(30,30,40,0.85)" : "rgba(255,255,255,0.85)",
+                            backdropFilter: "blur(18px)",
                             border: "1px solid",
                             borderColor: "divider",
-                            backgroundColor: "background.paper",
-                            boxShadow: "0 8px 32px rgba(0,0,0,0.28)",
-                            minWidth: 160,
-                            overflow: "hidden",
+                            boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
+                            p: 1.5,
+                            mb: 1,
                         },
                     }}
                 >
-                    <List dense disablePadding>
-                        <ListItemButton onClick={() => { setCreateAnchor(null); setModalOpen(true); }} sx={{ px: 2, py: 1.25 }}>
-                            <ListItemIcon sx={{ minWidth: 34 }}><CameraAltIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
-                            <ListItemText primary="Post" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
-                        </ListItemButton>
-                        <ListItemButton onClick={() => { setCreateAnchor(null); setStoryOpen(true); }} sx={{ px: 2, py: 1.25 }}>
-                            <ListItemIcon sx={{ minWidth: 34 }}><AutoStoriesIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
-                            <ListItemText primary="Story" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
-                        </ListItemButton>
-                        <ListItemButton onClick={() => { setCreateAnchor(null); setPollOpen(true); }} sx={{ px: 2, py: 1.25 }}>
-                            <ListItemIcon sx={{ minWidth: 34 }}><PollIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
-                            <ListItemText primary="Poll" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
-                        </ListItemButton>
-                    </List>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                        {[
+                            { label: "Post", icon: <CameraAltIcon sx={{ fontSize: "1.4rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setCreateAnchor(null); setModalOpen(true); } },
+                            { label: "Story", icon: <AutoStoriesIcon sx={{ fontSize: "1.4rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setCreateAnchor(null); setStoryOpen(true); } },
+                            { label: "Poll", icon: <PollIcon sx={{ fontSize: "1.4rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setCreateAnchor(null); setPollOpen(true); } },
+                        ].map(({ label, icon, color, bg, action }) => (
+                            <Box
+                                key={label}
+                                onClick={action}
+                                sx={{
+                                    display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75,
+                                    px: 2, py: 1.5, borderRadius: "14px", cursor: "pointer",
+                                    transition: "background 0.15s, transform 0.12s",
+                                    "&:hover": { background: bg, transform: "translateY(-2px)" },
+                                    "&:active": { transform: "scale(0.94)" },
+                                }}
+                            >
+                                <Box sx={{ width: 46, height: 46, borderRadius: "13px", background: bg, display: "flex", alignItems: "center", justifyContent: "center", color }}>
+                                    {icon}
+                                </Box>
+                                <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "text.secondary", letterSpacing: "0.02em" }}>{label}</Typography>
+                            </Box>
+                        ))}
+                    </Box>
                 </Popover>
             </>
         );
@@ -900,20 +943,78 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
         whiteSpace: "nowrap",
     };
 
+    const CREATE_PANEL_W = 180;
+    const navBg = theme.palette.mode === "light" ? "#ffffff" : theme.palette.background.default;
+    const drawerEdge = hovered ? DRAWER_OPEN : DRAWER_CLOSED;
+
     return (
         <>
+            {/* ── fly-out create panel ── */}
+            <Box
+                onMouseEnter={handleNavEnter}
+                onMouseLeave={handleNavLeave}
+                sx={{
+                    position: "fixed",
+                    top: panelTop,
+                    left: drawerEdge,
+                    width: createOpen ? CREATE_PANEL_W : 0,
+                    overflow: "hidden",
+                    backgroundColor: navBg,
+                    borderTop: createOpen ? "1px solid" : "none",
+                    borderRight: createOpen ? "1px solid" : "none",
+                    borderBottom: createOpen ? "1px solid" : "none",
+                    borderColor: "divider",
+                    borderRadius: "0 16px 16px 0",
+                    transition: `left 0.28s cubic-bezier(0.4,0,0.2,1), width 0.2s cubic-bezier(0.34,1.2,0.64,1)`,
+                    display: "flex",
+                    flexDirection: "column",
+                    py: createOpen ? 1 : 0,
+                    px: createOpen ? 1 : 0,
+                    gap: 0.25,
+                    zIndex: 1200,
+                }}
+            >
+                {createOpen && (
+                    <Box className="create-panel-open" sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
+                        {[
+                            { label: "Post", icon: <CameraAltIcon sx={{ fontSize: "1.15rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setCreateOpen(false); setModalOpen(true); } },
+                            { label: "Story", icon: <AutoStoriesIcon sx={{ fontSize: "1.15rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setCreateOpen(false); setStoryOpen(true); } },
+                            { label: "Poll", icon: <PollIcon sx={{ fontSize: "1.15rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setCreateOpen(false); setPollOpen(true); } },
+                        ].map(({ label, icon, color, bg, action }) => (
+                            <Box
+                                key={label}
+                                onClick={action}
+                                className="create-item"
+                                sx={{
+                                    display: "flex", alignItems: "center", gap: 1.5,
+                                    px: 1.5, py: 1.1, borderRadius: "12px",
+                                    cursor: "pointer", whiteSpace: "nowrap",
+                                    transition: "background 0.15s",
+                                    "&:hover": { background: bg },
+                                }}
+                            >
+                                <Box sx={{ width: 32, height: 32, borderRadius: "9px", background: bg, display: "flex", alignItems: "center", justifyContent: "center", color, flexShrink: 0 }}>
+                                    {icon}
+                                </Box>
+                                <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "text.primary" }}>{label}</Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                )}
+            </Box>
+
             <Drawer
                 variant="permanent"
                 anchor="left"
                 open={true}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => { if (!createAnchor) setHovered(false); }}
+                onMouseEnter={handleNavEnter}
+                onMouseLeave={handleNavLeave}
                 sx={{
                     width: DRAWER_CLOSED,
                     minWidth: DRAWER_CLOSED,
                     flexShrink: 0,
                     "& .MuiDrawer-paper": {
-                        width: (hovered || Boolean(createAnchor)) ? DRAWER_OPEN : DRAWER_CLOSED,
+                        width: hovered ? DRAWER_OPEN : DRAWER_CLOSED,
                         minWidth: DRAWER_CLOSED,
                         transition: "width 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.28s ease, border-color 0.28s ease",
                         boxSizing: "border-box",
@@ -975,13 +1076,16 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         })}
 
                         {currentUser?.id && (
-                            <Box className="nav-item create-btn" onClick={(e) => setCreateAnchor(e.currentTarget as HTMLElement)} sx={{ display: "flex", mt: "6px" }}>
+                            <Box
+                                ref={createBtnRef}
+                                className={`nav-item create-btn${createOpen ? " active" : ""}`}
+                                onClick={handleCreateClick}
+                                sx={{ display: "flex", mt: "6px" }}
+                            >
                                 <span className="nav-icon">
-                                    <AddIcon sx={{ fontSize: "2rem" }} />
+                                    <AddIcon sx={{ fontSize: "2rem", transition: "transform 0.25s", transform: createOpen ? "rotate(45deg)" : "rotate(0deg)" }} />
                                 </span>
-                                <span className="nav-label" style={labelStyle}>
-                                    Create
-                                </span>
+                                <span className="nav-label" style={labelStyle}>Create</span>
                             </Box>
                         )}
                     </Box>
@@ -1072,40 +1176,6 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
             <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />
             <UploadStoryDialog open={storyOpen} onClose={() => setStoryOpen(false)} fetchStories={async () => {}} />
             <CreatePollModal open={pollOpen} onClose={() => setPollOpen(false)} />
-            <Popover
-                open={Boolean(createAnchor)}
-                anchorEl={createAnchor}
-                onClose={() => setCreateAnchor(null)}
-                anchorOrigin={{ vertical: "center", horizontal: "right" }}
-                transformOrigin={{ vertical: "center", horizontal: "left" }}
-                PaperProps={{
-                    sx: {
-                        borderRadius: "16px",
-                        border: "1px solid",
-                        borderColor: "divider",
-                        backgroundColor: "background.paper",
-                        boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                        minWidth: 170,
-                        overflow: "hidden",
-                        ml: 1,
-                    },
-                }}
-            >
-                <List dense disablePadding>
-                    <ListItemButton onClick={() => { setCreateAnchor(null); setModalOpen(true); }} sx={{ px: 2, py: 1.25 }}>
-                        <ListItemIcon sx={{ minWidth: 34 }}><CameraAltIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
-                        <ListItemText primary="Post" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
-                    </ListItemButton>
-                    <ListItemButton onClick={() => { setCreateAnchor(null); setStoryOpen(true); }} sx={{ px: 2, py: 1.25 }}>
-                        <ListItemIcon sx={{ minWidth: 34 }}><AutoStoriesIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
-                        <ListItemText primary="Story" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
-                    </ListItemButton>
-                    <ListItemButton onClick={() => { setCreateAnchor(null); setPollOpen(true); }} sx={{ px: 2, py: 1.25 }}>
-                        <ListItemIcon sx={{ minWidth: 34 }}><PollIcon sx={{ fontSize: "1.1rem", color: "text.secondary" }} /></ListItemIcon>
-                        <ListItemText primary="Poll" primaryTypographyProps={{ fontSize: "0.88rem", fontWeight: 600 }} />
-                    </ListItemButton>
-                </List>
-            </Popover>
         </>
     );
 }

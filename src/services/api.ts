@@ -1072,12 +1072,14 @@ export const recordProfileView = async (profileUserId: string) => {
 ////////////////////////////////////////////////////////////////////////////////////
 
 export const createPoll = async (question: string, options: string[]) => {
-    const response = await api.post(CREATE_POLL_ENDPOINT, { question, options });
+    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;
+    const response = await api.post(CREATE_POLL_ENDPOINT, { question, options, userId: currentUser?.id });
     return response.data;
 };
 
 export const votePoll = async (pollId: number, optionId: number) => {
-    const response = await api.post(VOTE_POLL_ENDPOINT, { pollId, optionId });
+    const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;
+    const response = await api.post(VOTE_POLL_ENDPOINT, { pollId, optionId, userId: currentUser?.id });
     return response.data;
 };
 
