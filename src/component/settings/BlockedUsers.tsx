@@ -147,7 +147,7 @@ const BlockedUsers = () => {
     };
 
     return (
-        <Box sx={{ maxWidth: 520, mx: "auto", px: { xs: 0, sm: 1 } }}>
+        <Box sx={{ width: "100%", maxWidth: 620 }}>
             {/* Header */}
             <Box sx={{ mb: 2.5 }}>
                 <Typography sx={{ fontSize: "0.95rem", fontWeight: 600, color: (t) => t.palette.text.primary }}>

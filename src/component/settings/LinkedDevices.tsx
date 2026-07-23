@@ -221,7 +221,7 @@ const LinkedDevices = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 520, mx: "auto", px: { xs: 0, sm: 1 } }}>
+    <Box sx={{ width: "100%", maxWidth: 620 }}>
       {/* Header row */}
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
         <Box>
