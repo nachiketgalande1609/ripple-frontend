@@ -38,6 +38,7 @@ import InsightsPage from "./pages/InsightsPage";
 import FollowersPage from "./pages/FollowersPage";
 import FollowingPage from "./pages/FollowingPage";
 import MobileTopBar from "./component/navbar/MobileTopBar";
+import ReelsPage from "./pages/ReelsPage";
 
 type User = {
   id: number;
@@ -553,6 +554,14 @@ const AppContent = () => {
             element={
               <PrivateRoute>
                 <InsightsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/reels"
+            element={
+              <PrivateRoute>
+                <ReelsPage />
               </PrivateRoute>
             }
           />

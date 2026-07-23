@@ -45,6 +45,7 @@ export const UPDATE_POST_TAGS_ENDPOINT: string = "/api/posts/update-tags";
 export const SAVE_POST_ENDPOINT: string = "/api/posts/save-post";
 export const REPOST_ENDPOINT: string = "/api/posts/repost";
 export const USER_REPOSTS_ENDPOINT: string = "/api/posts/reposts/user";
+export const REELS_ENDPOINT: string = "/api/posts/reels";
 
 // Notifications Endpoints
 export const GET_NOTIFICATIONS_ENDPOINT: string = "/api/notifications/fetch-notifications";

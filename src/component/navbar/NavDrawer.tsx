@@ -22,6 +22,7 @@ import {
     CameraAlt as CameraAltIcon,
     AutoStories as AutoStoriesIcon,
     Poll as PollIcon,
+    SlowMotionVideoRounded,
 } from "@mui/icons-material";
 import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton, Popover, List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
@@ -151,6 +152,18 @@ const staticStyles = `
     transform-origin: left;
     animation: progress-drain var(--toast-duration, 4s) linear forwards;
   }
+
+  /* ── Reels dark nav ── */
+  .nav-dark .nav-icon { color: rgba(255,255,255,0.55) !important; }
+  .nav-dark .nav-label { color: rgba(255,255,255,0.55) !important; }
+  .nav-dark .nav-item.active .nav-icon { color: #fff !important; }
+  .nav-dark .nav-item.active .nav-label { background: none !important; -webkit-background-clip: unset !important; background-clip: unset !important; color: #fff !important; }
+  .nav-dark .nav-item:hover:not(.active) .nav-icon { color: rgba(255,255,255,0.85) !important; }
+  .nav-dark .nav-item:hover:not(.active) .nav-label { color: rgba(255,255,255,0.85) !important; }
+  .nav-dark .nav-item.create-btn .nav-icon { color: rgba(255,255,255,0.55) !important; }
+  .nav-dark .nav-item.create-btn .nav-label { background: none !important; -webkit-background-clip: unset !important; background-clip: unset !important; color: rgba(255,255,255,0.55) !important; }
+  .nav-dark .nav-item.create-btn:hover .nav-icon { color: #fff !important; }
+  .nav-dark .brand-char { background: none !important; -webkit-background-clip: unset !important; background-clip: unset !important; color: rgba(255,255,255,0.9) !important; }
 `;
 
 if (typeof document !== "undefined") {
@@ -595,6 +608,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const pathnameRef = useRef(location.pathname);
 
     const hideDrawer = ["/login", "/register", "/reset-password", "/verify-email"].includes(location.pathname);
+    const isReels = location.pathname.startsWith("/reels");
 
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -689,6 +703,13 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 title: "Search",
                 icon: <SearchRounded sx={{ fontSize: "1.5rem" }} />,
                 activeIcon: <SearchRounded sx={{ fontSize: "1.5rem" }} />,
+            },
+            {
+                kind: "item",
+                segment: "reels",
+                title: "Reels",
+                icon: <SlowMotionVideoRounded sx={{ fontSize: "1.5rem" }} />,
+                activeIcon: <SlowMotionVideoRounded sx={{ fontSize: "1.5rem" }} />,
             },
             {
                 kind: "item",
@@ -915,6 +936,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                             { label: "Post", icon: <CameraAltIcon sx={{ fontSize: "1.4rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setCreateAnchor(null); setModalOpen(true); } },
                             { label: "Story", icon: <AutoStoriesIcon sx={{ fontSize: "1.4rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setCreateAnchor(null); setStoryOpen(true); } },
                             { label: "Poll", icon: <PollIcon sx={{ fontSize: "1.4rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setCreateAnchor(null); setPollOpen(true); } },
+                            { label: "Reel", icon: <SlowMotionVideoRounded sx={{ fontSize: "1.4rem" }} />, color: "#ec4899", bg: "rgba(236,72,153,0.12)", action: () => { setCreateAnchor(null); setModalOpen(true); } },
                         ].map(({ label, icon, color, bg, action }) => (
                             <Box
                                 key={label}
@@ -951,7 +973,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     };
 
     const CREATE_PANEL_W = 180;
-    const navBg = theme.palette.mode === "light" ? "#ffffff" : theme.palette.background.default;
+    const navBg = isReels ? "#0a0a0a" : (theme.palette.mode === "light" ? "#ffffff" : theme.palette.background.default);
     const drawerEdge = hovered ? DRAWER_OPEN : DRAWER_CLOSED;
 
     return (
@@ -987,6 +1009,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                             { label: "Post", icon: <CameraAltIcon sx={{ fontSize: "1.15rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setCreateOpen(false); setModalOpen(true); } },
                             { label: "Story", icon: <AutoStoriesIcon sx={{ fontSize: "1.15rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setCreateOpen(false); setStoryOpen(true); } },
                             { label: "Poll", icon: <PollIcon sx={{ fontSize: "1.15rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setCreateOpen(false); setPollOpen(true); } },
+                            { label: "Reel", icon: <SlowMotionVideoRounded sx={{ fontSize: "1.15rem" }} />, color: "#ec4899", bg: "rgba(236,72,153,0.12)", action: () => { setCreateOpen(false); setModalOpen(true); } },
                         ].map(({ label, icon, color, bg, action }) => (
                             <Box
                                 key={label}
@@ -1026,9 +1049,9 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         transition: "width 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.28s ease, border-color 0.28s ease",
                         boxSizing: "border-box",
                         overflowX: "hidden",
-                        backgroundColor: theme.palette.mode === "light" ? "#ffffff" : theme.palette.background.default,
+                        backgroundColor: navBg,
                         borderRight: "1px solid",
-                        borderColor: hovered ? theme.palette.divider : "transparent",
+                        borderColor: isReels ? "rgba(255,255,255,0.08)" : (hovered ? theme.palette.divider : "transparent"),
                         boxShadow: hovered ? "8px 0 32px rgba(0,0,0,0.10)" : "none",
                         borderRadius: "0 16px 16px 0",
                         zIndex: 1201,
@@ -1036,6 +1059,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 }}
             >
                 <Box
+                    className={isReels ? "nav-dark" : undefined}
                     sx={{
                         display: "flex",
                         flexDirection: "column",

@@ -70,6 +70,7 @@ import {
     GET_INSIGHTS_ENDPOINT,
     REPOST_ENDPOINT,
     USER_REPOSTS_ENDPOINT,
+    REELS_ENDPOINT,
 } from "./apiEndpoints";
 
 interface UserRegisterData {
@@ -1143,4 +1144,18 @@ export const fetchPollsFeed = async () => {
 export const getSuggestedUsers = async () => {
     const response = await api.get(USER_SUGGESTIONS_ENDPOINT);
     return response.data;
+};
+
+export const getReels = async (offset = 0, limit = 10) => {
+    try {
+        const response = await api.get(REELS_ENDPOINT, { params: { offset, limit } });
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("Error fetching reels:", error.message);
+        } else {
+            console.error("Unknown error fetching reels");
+        }
+        throw error;
+    }
 };
