@@ -395,7 +395,6 @@ const SettingsPage = () => {
                   borderRadius: "16px",
                   marginBottom: "6px",
                   cursor: "pointer",
-                  transition: "all 0.18s ease",
                   display: "flex",
                   alignItems: "center",
                   gap: "12px",

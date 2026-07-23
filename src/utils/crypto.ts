@@ -30,10 +30,21 @@ export async function loadPrivateKey(deviceId: string): Promise<CryptoKey | null
   });
 }
 
+function generateUUID(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback for HTTP (non-secure) contexts
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 export function getOrCreateDeviceId(): string {
   let deviceId = localStorage.getItem("ripple_device_id");
   if (!deviceId) {
-    deviceId = crypto.randomUUID();
+    deviceId = generateUUID();
     localStorage.setItem("ripple_device_id", deviceId);
   }
   return deviceId;

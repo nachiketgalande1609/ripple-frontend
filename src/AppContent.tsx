@@ -651,15 +651,15 @@ const AppContent = () => {
       <VideoCallModal
         open={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}
-        callerId={currentUser.id}
+        callerId={currentUser?.id ?? 0}
         receiverId={callParticipantId || 0}
         localStream={localStream}
         remoteStream={remoteStream}
         pc={pc}
         handleEndCall={handleEndCall}
         // ── NEW: real user info ──
-        localUsername={currentUser.username}
-        localProfilePicture={currentUser.profile_picture_url}
+        localUsername={currentUser?.username ?? ""}
+        localProfilePicture={currentUser?.profile_picture_url ?? ""}
         remoteUsername={
           incomingCall?.callerUsername ?? // when receiving a call
           selectedUser?.username ?? // when making a call

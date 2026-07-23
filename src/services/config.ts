@@ -25,4 +25,18 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// 🔒 Log out automatically when the server returns 401 (revoked/expired token)
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            useGlobalStore.getState().setUser(null);
+            window.location.href = "/login";
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;
