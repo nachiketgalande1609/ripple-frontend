@@ -214,26 +214,47 @@ export default function SearchPage() {
   );
 
   const SkeletonRow = () => (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1 }}>
-      <Skeleton
-        variant="circular"
-        width={40}
-        height={40}
-        sx={{ bgcolor: (t) => t.palette.action.hover, flexShrink: 0 }}
-      />
-      <Box sx={{ flex: 1 }}>
-        <Skeleton
-          variant="text"
-          width="40%"
-          height={16}
-          sx={{ bgcolor: (t) => t.palette.action.hover, mb: 0.5 }}
-        />
-        <Skeleton
-          variant="text"
-          width="55%"
-          height={13}
-          sx={{ bgcolor: (t) => t.palette.action.hover }}
-        />
+    <Box sx={{ px: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", px: 2, py: 1.75 }}>
+        <Box sx={{ minWidth: 48, flexShrink: 0 }}>
+          <Skeleton
+            variant="circular"
+            width={38}
+            height={38}
+            sx={{ bgcolor: (t) => t.palette.action.hover }}
+          />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Skeleton
+            variant="text"
+            width="38%"
+            height={16}
+            sx={{ bgcolor: (t) => t.palette.action.hover, mb: 0.5 }}
+          />
+          <Skeleton
+            variant="text"
+            width="52%"
+            height={13}
+            sx={{ bgcolor: (t) => t.palette.action.hover }}
+          />
+        </Box>
+      </Box>
+    </Box>
+  );
+
+  const SkeletonGrid = () => (
+    <Box>
+      <Box sx={{ px: 2.5, pt: 1.5, pb: 1 }}>
+        <Skeleton variant="text" width={60} height={14} sx={{ bgcolor: (t) => t.palette.action.hover }} />
+      </Box>
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2px", px: "2px" }}>
+        {[...Array(9)].map((_, i) => (
+          <Skeleton
+            key={i}
+            variant="rectangular"
+            sx={{ aspectRatio: "1", width: "100%", height: "auto", bgcolor: (t) => t.palette.action.hover }}
+          />
+        ))}
       </Box>
     </Box>
   );
@@ -582,9 +603,15 @@ export default function SearchPage() {
             </Box>
           </Fade>
         )}
-        {historyLoading &&
-          !isSearching &&
-          [1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+        {historyLoading && !isSearching && (
+          <Box>
+            <SectionHeader
+              icon={<HistoryIcon sx={{ fontSize: 15, color: (t: any) => t.palette.text.disabled }} />}
+              label="Recent"
+            />
+            {[1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+          </Box>
+        )}
         {showEmpty && (
           <EmptyState
             icon={
@@ -615,9 +642,7 @@ export default function SearchPage() {
     return (
       <Box sx={{ py: 1 }}>
         {showResults && <HashtagPostGrid posts={tagResults} />}
-        {tagLoading &&
-          isSearching &&
-          [1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+        {tagLoading && isSearching && <SkeletonGrid />}
         {showNoResults && (
           <EmptyState
             icon={
@@ -658,9 +683,15 @@ export default function SearchPage() {
             </Box>
           </Fade>
         )}
-        {tagHistoryLoading &&
-          !isSearching &&
-          [1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+        {tagHistoryLoading && !isSearching && (
+          <Box>
+            <SectionHeader
+              icon={<HistoryIcon sx={{ fontSize: 15, color: (t: any) => t.palette.text.disabled }} />}
+              label="Recent"
+            />
+            {[1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+          </Box>
+        )}
         {showEmpty && (
           <EmptyState
             icon={

@@ -41,34 +41,43 @@ const NotificationSkeleton = () => (
       alignItems: "center",
       gap: 1.5,
       px: 2,
-      py: 1.5,
-      mb: 1,
-      borderRadius: "14px",
-      backgroundColor: (t) => t.palette.background.paper,
+      py: 1.8,
+      mb: 1.2,
+      borderRadius: "28px",
+      backgroundColor: "var(--nav-bg)",
       border: "1px solid",
       borderColor: (t) => t.palette.divider,
     }}
   >
+    {/* Avatar */}
     <Skeleton
       variant="circular"
       width={50}
       height={50}
-      sx={{ bgcolor: (t) => t.palette.action.hover, flexShrink: 0 }}
+      sx={{ bgcolor: (t) => t.palette.action.hover, flexShrink: 0, border: "2px solid", borderColor: (t) => t.palette.divider }}
     />
+    {/* Text lines */}
     <Box sx={{ flex: 1 }}>
       <Skeleton
         variant="text"
-        width="60%"
+        width="62%"
         height={18}
         sx={{ bgcolor: (t) => t.palette.action.hover }}
       />
       <Skeleton
         variant="text"
-        width="30%"
+        width="28%"
         height={14}
-        sx={{ bgcolor: (t) => t.palette.action.hover, mt: 0.5 }}
+        sx={{ bgcolor: (t) => t.palette.action.hover, mt: 0.4 }}
       />
     </Box>
+    {/* Post thumbnail placeholder */}
+    <Skeleton
+      variant="rounded"
+      width={50}
+      height={50}
+      sx={{ bgcolor: (t) => t.palette.action.hover, flexShrink: 0, borderRadius: "8px" }}
+    />
   </Box>
 );
 
