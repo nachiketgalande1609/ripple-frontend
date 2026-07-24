@@ -1146,6 +1146,24 @@ export const getSuggestedUsers = async () => {
     return response.data;
 };
 
+export const recordReelView = async (postId: number) => {
+    try {
+        await api.post(`${REELS_ENDPOINT}/${postId}/view`);
+    } catch {
+        // fire-and-forget — don't throw
+    }
+};
+
+export const getUserReels = async (userId: number, offset = 0, limit = 50) => {
+    try {
+        const response = await api.get(REELS_ENDPOINT, { params: { userId, offset, limit } });
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error("Error fetching user reels:", error.message);
+        throw error;
+    }
+};
+
 export const getReels = async (offset = 0, limit = 10) => {
     try {
         const response = await api.get(REELS_ENDPOINT, { params: { offset, limit } });

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
     Box,
     Avatar,
@@ -30,6 +30,7 @@ import {
     repostPost,
     unrepostPost,
     savePost,
+    recordReelView,
 } from "../services/api";
 import BlankProfileImage from "../static/profile_blank.png";
 
@@ -291,6 +292,9 @@ function SkeletonCard() {
 // ── ReelsPage ────────────────────────────────────────────────────────────
 
 export default function ReelsPage() {
+    const location = useLocation();
+    const startPostId: number | undefined = (location.state as any)?.startPostId;
+
     const [reels, setReels] = useState<Reel[]>([]);
     const [reelStates, setReelStates] = useState<Record<number, ReelState>>({});
     const [activeIdx, setActiveIdx] = useState(0);
@@ -310,6 +314,7 @@ export default function ReelsPage() {
     const sentinelRef = useRef<HTMLDivElement | null>(null);
     const offsetRef = useRef(0);
     const fetchingRef = useRef(false);
+    const lastViewedIdRef = useRef<number | null>(null);
 
     const initState = (reel: Reel): ReelState => ({
         liked: reel.liked_by_current_user === 1,
@@ -341,6 +346,15 @@ export default function ReelsPage() {
         load();
     }, []);
 
+    // Scroll to the reel that was clicked from profile
+    useEffect(() => {
+        if (!startPostId || !reels.length || !containerRef.current) return;
+        const idx = reels.findIndex((r) => r.id === startPostId);
+        if (idx < 0) return;
+        const child = containerRef.current.children[idx] as HTMLElement | undefined;
+        if (child) child.scrollIntoView({ behavior: "instant" });
+    }, [reels, startPostId]);
+
     // Auto play/pause + track active index
     useEffect(() => {
         if (!reels.length) return;
@@ -353,6 +367,11 @@ export default function ReelsPage() {
                     if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
                         video.play().catch(() => {});
                         setActiveIdx(idx);
+                        const reelId = reels[idx]?.id;
+                        if (reelId && reelId !== lastViewedIdRef.current) {
+                            lastViewedIdRef.current = reelId;
+                            recordReelView(reelId);
+                        }
                     } else {
                         video.pause();
                     }

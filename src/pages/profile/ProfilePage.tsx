@@ -16,7 +16,7 @@ import { ACCENT_COLOR } from "../../theme";
 const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts, getUserReels } from "../../services/api";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
@@ -33,6 +33,7 @@ import {
     MoreHoriz,
     PersonPin,
     RepeatRounded,
+    SlowMotionVideoRounded,
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import MoreOptionsDialog from "./MoreOptionsDialog";
@@ -314,6 +315,8 @@ const ProfilePage = () => {
     const [fetchingTaggedPosts, setFetchingTaggedPosts] = useState(false);
     const [repostedPosts, setRepostedPosts] = useState<any[]>([]);
     const [fetchingRepostedPosts, setFetchingRepostedPosts] = useState(false);
+    const [userReels, setUserReels] = useState<any[]>([]);
+    const [fetchingUserReels, setFetchingUserReels] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [isBlocked, setIsBlocked] = useState(false);
@@ -363,7 +366,21 @@ const ProfilePage = () => {
 
     const savedTabIndex = isOwnProfile ? 1 : -1;
     const repostsTabIndex = isOwnProfile ? 2 : 1;
-    const taggedTabIndex = isOwnProfile ? 3 : 2;
+    const reelsTabIndex = isOwnProfile ? 3 : 2;
+    const taggedTabIndex = isOwnProfile ? 4 : 3;
+
+    const fetchUserReels = async () => {
+        if (!userId) return;
+        try {
+            setFetchingUserReels(true);
+            const res = await getUserReels(Number(userId));
+            setUserReels(res.data || []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setFetchingUserReels(false);
+        }
+    };
 
     const fetchRepostedPosts = async () => {
         if (!userId) return;
@@ -381,6 +398,7 @@ const ProfilePage = () => {
     useEffect(() => {
         if (tabValue === savedTabIndex && isOwnProfile && savedPosts.length === 0) fetchSavedPosts();
         if (tabValue === repostsTabIndex && repostedPosts.length === 0) fetchRepostedPosts();
+        if (tabValue === reelsTabIndex && userReels.length === 0) fetchUserReels();
         if (tabValue === taggedTabIndex && taggedPosts.length === 0) fetchTaggedPosts();
     }, [tabValue, isOwnProfile]);
 
@@ -823,6 +841,7 @@ const ProfilePage = () => {
                         { label: "Posts", icon: <GridOn sx={{ fontSize: 15 }} /> },
                         ...(isOwnProfile ? [{ label: "Saved", icon: <BookmarkBorder sx={{ fontSize: 15 }} /> }] : []),
                         { label: "Reposts", icon: <RepeatRounded sx={{ fontSize: 15 }} /> },
+                        { label: "Reels", icon: <SlowMotionVideoRounded sx={{ fontSize: 15 }} /> },
                         { label: "Tagged", icon: <PersonPin sx={{ fontSize: 15 }} /> },
                     ].map((tab, i) => (
                         <Box
@@ -984,6 +1003,87 @@ const ProfilePage = () => {
                                     onImageError={(id) => setImageErrors((prev) => ({ ...prev, [id]: true }))}
                                     onPostClick={(id) => navigate(`/posts/${id}`)}
                                 />
+                            )}
+                        </div>
+                    </Fade>
+                )}
+            </Box>
+
+            {/* ── Reels Tab ── */}
+            <Box sx={{ maxWidth: 900, mx: "auto" }} hidden={tabValue !== reelsTabIndex}>
+                {tabValue === reelsTabIndex && (
+                    <Fade in timeout={250}>
+                        <div>
+                            {fetchingUserReels ? (
+                                <GridSkeleton count={6} />
+                            ) : userReels.length === 0 ? (
+                                <EmptyState
+                                    icon={<SlowMotionVideoRounded sx={{ fontSize: 22, color: ACCENT }} />}
+                                    title="No reels yet"
+                                    subtitle={isOwnProfile ? "Upload a video to create your first reel" : "No reels posted yet"}
+                                />
+                            ) : (
+                                <Box sx={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(3, 1fr)",
+                                    gap: "3px",
+                                }}>
+                                    {userReels.map((reel) => (
+                                        <Box
+                                            key={reel.id}
+                                            onClick={() => navigate("/reels", { state: { startPostId: reel.id } })}
+                                            sx={{
+                                                position: "relative",
+                                                aspectRatio: "9/16",
+                                                cursor: "pointer",
+                                                overflow: "hidden",
+                                                borderRadius: "4px",
+                                                bgcolor: "#000",
+                                                "&:hover .reel-overlay": { opacity: 1 },
+                                            }}
+                                        >
+                                            <video
+                                                src={reel.file_url}
+                                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                muted
+                                                preload="metadata"
+                                            />
+                                            <Box className="reel-overlay" sx={{
+                                                position: "absolute", inset: 0,
+                                                background: "rgba(0,0,0,0.45)",
+                                                opacity: 0,
+                                                transition: "opacity 0.2s",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                gap: 2,
+                                            }}>
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#fff" }}>
+                                                    <Favorite sx={{ fontSize: 16 }} />
+                                                    <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff" }}>{reel.like_count ?? 0}</Typography>
+                                                </Box>
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#fff" }}>
+                                                    <Comment sx={{ fontSize: 16 }} />
+                                                    <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff" }}>{reel.comment_count ?? 0}</Typography>
+                                                </Box>
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#fff" }}>
+                                                    <SlowMotionVideoRounded sx={{ fontSize: 16 }} />
+                                                    <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff" }}>{reel.view_count ?? 0}</Typography>
+                                                </Box>
+                                            </Box>
+                                            <Box sx={{
+                                                position: "absolute", bottom: 6, left: 6,
+                                                bgcolor: "rgba(0,0,0,0.55)", borderRadius: "4px", px: 0.75, py: 0.25,
+                                                display: "flex", alignItems: "center", gap: 0.4,
+                                            }}>
+                                                <SlowMotionVideoRounded sx={{ fontSize: 11, color: "#fff" }} />
+                                                <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: "#fff", lineHeight: 1 }}>
+                                                    {(reel.view_count ?? 0) >= 1000 ? `${((reel.view_count ?? 0) / 1000).toFixed(1)}K` : reel.view_count ?? 0}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Box>
                             )}
                         </div>
                     </Fade>
