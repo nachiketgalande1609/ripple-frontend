@@ -153,17 +153,6 @@ const staticStyles = `
     animation: progress-drain var(--toast-duration, 4s) linear forwards;
   }
 
-  /* ── Reels dark nav ── */
-  .nav-dark .nav-icon { color: rgba(255,255,255,0.55) !important; }
-  .nav-dark .nav-label { color: rgba(255,255,255,0.55) !important; }
-  .nav-dark .nav-item.active .nav-icon { color: #fff !important; }
-  .nav-dark .nav-item.active .nav-label { background: none !important; -webkit-background-clip: unset !important; background-clip: unset !important; color: #fff !important; }
-  .nav-dark .nav-item:hover:not(.active) .nav-icon { color: rgba(255,255,255,0.85) !important; }
-  .nav-dark .nav-item:hover:not(.active) .nav-label { color: rgba(255,255,255,0.85) !important; }
-  .nav-dark .nav-item.create-btn .nav-icon { color: rgba(255,255,255,0.55) !important; }
-  .nav-dark .nav-item.create-btn .nav-label { background: none !important; -webkit-background-clip: unset !important; background-clip: unset !important; color: rgba(255,255,255,0.55) !important; }
-  .nav-dark .nav-item.create-btn:hover .nav-icon { color: #fff !important; }
-  .nav-dark .brand-char { background: none !important; -webkit-background-clip: unset !important; background-clip: unset !important; color: rgba(255,255,255,0.9) !important; }
 `;
 
 if (typeof document !== "undefined") {
@@ -608,7 +597,6 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const pathnameRef = useRef(location.pathname);
 
     const hideDrawer = ["/login", "/register", "/reset-password", "/verify-email"].includes(location.pathname);
-    const isReels = location.pathname.startsWith("/reels");
 
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -973,7 +961,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     };
 
     const CREATE_PANEL_W = 180;
-    const navBg = isReels ? "#0a0a0a" : (theme.palette.mode === "light" ? "#ffffff" : theme.palette.background.default);
+    const navBg = theme.palette.mode === "light" ? "#ffffff" : theme.palette.background.default;
     const drawerEdge = hovered ? DRAWER_OPEN : DRAWER_CLOSED;
 
     return (
@@ -1043,15 +1031,16 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                     width: DRAWER_CLOSED,
                     minWidth: DRAWER_CLOSED,
                     flexShrink: 0,
+                    backgroundColor: "transparent",
                     "& .MuiDrawer-paper": {
                         width: hovered ? DRAWER_OPEN : DRAWER_CLOSED,
                         minWidth: DRAWER_CLOSED,
                         transition: "width 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.28s ease, border-color 0.28s ease",
                         boxSizing: "border-box",
                         overflowX: "hidden",
-                        backgroundColor: navBg,
+                        backgroundColor: theme.palette.mode === "light" ? "#ffffff" : theme.palette.background.default,
                         borderRight: "1px solid",
-                        borderColor: isReels ? "rgba(255,255,255,0.08)" : (hovered ? theme.palette.divider : "transparent"),
+                        borderColor: theme.palette.divider,
                         boxShadow: hovered ? "8px 0 32px rgba(0,0,0,0.10)" : "none",
                         borderRadius: "0 16px 16px 0",
                         zIndex: 1201,
@@ -1059,7 +1048,6 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 }}
             >
                 <Box
-                    className={isReels ? "nav-dark" : undefined}
                     sx={{
                         display: "flex",
                         flexDirection: "column",
