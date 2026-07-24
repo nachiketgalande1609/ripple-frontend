@@ -592,7 +592,7 @@ const ProfilePage = () => {
             <Box
                 sx={{
                     position: "sticky",
-                    top: 0,
+                    top: { xs: "52px", sm: 0 },
                     zIndex: 100,
                     height: 50,
                     backdropFilter: "blur(20px)",

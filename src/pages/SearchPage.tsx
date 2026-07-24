@@ -65,10 +65,6 @@ export default function SearchPage() {
   const userInputRef = useRef<HTMLInputElement>(null);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (activeTab === 0) userInputRef.current?.focus();
-    else tagInputRef.current?.focus();
-  }, [activeTab]);
 
   useEffect(() => {
     const load = async () => {
