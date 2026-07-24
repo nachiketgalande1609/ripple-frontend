@@ -123,7 +123,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
         backgroundColor: (t) => t.palette.background.paper,
         borderTop: "1px solid",
         borderColor: (t) => t.palette.divider,
-        mb: isMobile ? "60px" : 0,
+        mb: 0,
       }}
     >
       {/* ── Reply preview ── */}
@@ -308,10 +308,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
           disabled={isSendingMessage || !canSend}
           sx={{
             width: 36,
-            height: 36,
+            alignSelf: "stretch",
             borderRadius: "11px",
             flexShrink: 0,
-            mb: "6px",
             backgroundColor: canSend ? ACCENT : (t) => t.palette.action.hover,
             color: canSend ? "#fff" : (t) => t.palette.action.disabled,
             transition: "background-color 0.15s, transform 0.1s",

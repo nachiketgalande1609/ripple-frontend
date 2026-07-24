@@ -894,17 +894,30 @@ const Messages: React.FC<MessageProps> = ({
     <Box
       sx={{
         display: "flex",
-        height: isMobile ? "calc(100dvh - 60px)" : "100dvh",
+        height: isMobile ? "calc(100dvh - 52px - 54px)" : "100dvh",
+        mt: isMobile ? "52px" : 0,
       }}
     >
       {isMobile ? (
         !selectedUser ? (
-          <MessagesUserList
-            users={users}
-            onlineUsers={onlineUsers}
-            handleUserClick={handleUserClick}
-            loading={loadingUsers}
-          />
+          <Box sx={{ display: "flex", justifyContent: "center", width: "100%", overflow: "hidden" }}>
+            <Box
+              sx={{
+                width: { xs: "100%", sm: "520px", lg: "600px" },
+                maxWidth: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <MessagesUserList
+                users={users}
+                onlineUsers={onlineUsers}
+                handleUserClick={handleUserClick}
+                loading={loadingUsers}
+                mutedUserIds={mutedUserIds}
+              />
+            </Box>
+          </Box>
         ) : (
           <Box
             sx={{

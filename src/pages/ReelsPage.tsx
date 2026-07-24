@@ -25,6 +25,8 @@ import {
     BookmarkBorderRounded,
     VolumeOffRounded,
     VolumeUpRounded,
+    PauseRounded,
+    PlayArrowRounded,
 } from "@mui/icons-material";
 import {
     getReels,
@@ -93,6 +95,7 @@ interface ReelState {
     reposted: boolean;
     repostCount: number;
     saved: boolean;
+    paused: boolean;
 }
 
 // ── Action button ────────────────────────────────────────────────────────
@@ -138,9 +141,11 @@ interface ReelCardProps {
     videoRef: (el: HTMLVideoElement | null) => void;
     muted: boolean;
     onToggleMute: () => void;
+    paused: boolean;
+    onTogglePause: () => void;
 }
 
-function ReelCard({ reel, videoRef, muted, onToggleMute }: ReelCardProps) {
+function ReelCard({ reel, videoRef, muted, onToggleMute, paused, onTogglePause }: ReelCardProps) {
     const navigate = useNavigate();
 
     return (
@@ -177,6 +182,7 @@ function ReelCard({ reel, videoRef, muted, onToggleMute }: ReelCardProps) {
                     muted={muted}
                     playsInline
                     preload="metadata"
+                    onClick={onTogglePause}
                     sx={{
                         position: "absolute",
                         inset: 0,
@@ -184,6 +190,8 @@ function ReelCard({ reel, videoRef, muted, onToggleMute }: ReelCardProps) {
                         height: "100%",
                         objectFit: "cover",
                         display: "block",
+                        cursor: "pointer",
+                        WebkitTapHighlightColor: "transparent",
                     }}
                 />
 
@@ -199,26 +207,55 @@ function ReelCard({ reel, videoRef, muted, onToggleMute }: ReelCardProps) {
 
                 {/* Mute toggle — top right inside video */}
                 <Box
-                    onClick={onToggleMute}
                     sx={{
                         position: "absolute",
                         top: 16,
                         right: 16,
-                        width: 38,
-                        height: 38,
-                        borderRadius: "50%",
-                        background: "rgba(0,0,0,0.45)",
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
+                        flexDirection: "column",
+                        gap: 1,
                         zIndex: 2,
                     }}
                 >
-                    {muted
-                        ? <VolumeOffRounded sx={{ color: "#fff", fontSize: "1.2rem" }} />
-                        : <VolumeUpRounded sx={{ color: "#fff", fontSize: "1.2rem" }} />
-                    }
+                    <Box
+                        onClick={onToggleMute}
+                        sx={{
+                            width: 38,
+                            height: 38,
+                            borderRadius: "50%",
+                            background: "rgba(0,0,0,0.45)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                            WebkitTapHighlightColor: "transparent",
+                        }}
+                    >
+                        {muted
+                            ? <VolumeOffRounded sx={{ color: "#fff", fontSize: "1.2rem" }} />
+                            : <VolumeUpRounded sx={{ color: "#fff", fontSize: "1.2rem" }} />
+                        }
+                    </Box>
+
+                    {/* Pause indicator — below mute, only show when paused */}
+                    {paused && (
+                        <Box
+                            onClick={onTogglePause}
+                            sx={{
+                                width: 38,
+                                height: 38,
+                                borderRadius: "50%",
+                                background: "rgba(0,0,0,0.45)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: "pointer",
+                                WebkitTapHighlightColor: "transparent",
+                            }}
+                        >
+                            <PauseRounded sx={{ color: "#fff", fontSize: "1.2rem" }} />
+                        </Box>
+                    )}
                 </Box>
 
                 {/* Bottom-left info */}
@@ -326,6 +363,7 @@ export default function ReelsPage() {
         reposted: reel.is_reposted === 1,
         repostCount: reel.repost_count,
         saved: reel.saved_by_current_user === 1,
+        paused: false,
     });
 
     // Initial fetch
@@ -368,10 +406,11 @@ export default function ReelsPage() {
                     const idx = Number((entry.target as HTMLElement).dataset.reelIndex);
                     const video = videoRefs.current[idx];
                     if (!video) return;
+                    const reelId = reels[idx]?.id;
+                    const state = reelId ? reelStates[reelId] : null;
                     if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-                        video.play().catch(() => {});
+                        if (!state?.paused) video.play().catch(() => {});
                         setActiveIdx(idx);
-                        const reelId = reels[idx]?.id;
                         if (reelId && reelId !== lastViewedIdRef.current) {
                             lastViewedIdRef.current = reelId;
                             recordReelView(reelId);
@@ -386,16 +425,39 @@ export default function ReelsPage() {
         const wrappers = containerRef.current?.querySelectorAll("[data-reel-index]");
         wrappers?.forEach((el) => obs.observe(el));
         return () => obs.disconnect();
-    }, [reels]);
+    }, [reels, reelStates]);
 
-    // Infinite scroll sentinel
+    // Infinite scroll sentinel — continue loading from start when end is reached
     useEffect(() => {
         if (!sentinelRef.current) return;
         const obs = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting && hasMore && !fetchingRef.current) loadMore();
+                if (entries[0].isIntersecting && !fetchingRef.current) {
+                    if (hasMore) {
+                        loadMore();
+                    } else {
+                        // Reached end, reload from the beginning to create infinite loop
+                        fetchingRef.current = true;
+                        setLoadingMore(true);
+                        getReels(0, 10)
+                            .then((res) => {
+                                if (res.success && res.data.length > 0) {
+                                    setReels((prev) => [...prev, ...res.data]);
+                                    setReelStates((prev) => {
+                                        const next = { ...prev };
+                                        res.data.forEach((r: Reel) => { next[r.id] = initState(r); });
+                                        return next;
+                                    });
+                                }
+                            })
+                            .finally(() => {
+                                fetchingRef.current = false;
+                                setLoadingMore(false);
+                            });
+                    }
+                }
             },
-            { threshold: 0.1 },
+            { threshold: 0, rootMargin: "200px" },
         );
         obs.observe(sentinelRef.current);
         return () => obs.disconnect();
@@ -474,6 +536,20 @@ export default function ReelsPage() {
         if (!wasSaved) triggerAnim(setSaveAnim);
         try { await savePost(String(id)); } catch {
             setReelStates((prev) => ({ ...prev, [id]: { ...prev[id], saved: wasSaved } }));
+        }
+    };
+
+    const handleTogglePause = () => {
+        if (!activeReel || !activeState) return;
+        const id = activeReel.id;
+        const video = videoRefs.current[activeIdx];
+        if (!video) return;
+        const newPaused = !activeState.paused;
+        setReelStates((prev) => ({ ...prev, [id]: { ...prev[id], paused: newPaused } }));
+        if (newPaused) {
+            video.pause();
+        } else {
+            video.play().catch(() => {});
         }
     };
 
@@ -579,13 +655,27 @@ export default function ReelsPage() {
                             videoRef={setVideoRef(idx)}
                             muted={muted}
                             onToggleMute={() => setMuted((m) => !m)}
+                            paused={state?.paused || false}
+                            onTogglePause={() => {
+                                const id = reel.id;
+                                const newPaused = !state?.paused;
+                                setReelStates((prev) => ({ ...prev, [id]: { ...prev[id], paused: newPaused } }));
+                                const video = videoRefs.current[idx];
+                                if (video) {
+                                    if (newPaused) {
+                                        video.pause();
+                                    } else {
+                                        video.play().catch(() => {});
+                                    }
+                                }
+                            }}
                         />
                         {activeIdx === idx && state && renderActionButtons(reel, state)}
                     </Box>
                     );
                 })}
 
-                <Box ref={sentinelRef} sx={{ height: 1 }} />
+                <Box ref={sentinelRef} sx={{ height: "100vh" }} />
 
                 {loadingMore && (
                     <Box sx={{ display: "flex", justifyContent: "center", py: 2, background: "#000" }}>

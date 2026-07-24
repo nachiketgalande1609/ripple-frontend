@@ -49,7 +49,7 @@ export default function MobileTopBar({
       }}
     >
       {/* Brand */}
-      <span className="brand-text">Ripple</span>
+      <span className="brand-text" style={{ fontSize: "1rem" }}>Ripple</span>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
         {/* Create */}
