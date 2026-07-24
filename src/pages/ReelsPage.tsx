@@ -490,54 +490,54 @@ export default function ReelsPage() {
         );
     }
 
+    const renderActionButtons = (reel: Reel, state: ReelState) => (
+        <Box
+            sx={{
+                position: "absolute",
+                /* just outside the right edge of the 9:16 video */
+                left: "calc(50% + calc(100vh * 9 / 32) + 10px)",
+                bottom: "20px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2.5,
+                zIndex: 10,
+            }}
+        >
+            <ActionBtn
+                icon={
+                    state.liked
+                        ? <FavoriteRounded sx={{ color: "#e53935", fontSize: "1.8rem", animation: likeAnim ? "reel-pop 0.42s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }} />
+                        : <FavoriteBorderRounded sx={{ color: "#fff", fontSize: "1.8rem" }} />
+                }
+                count={state.likeCount}
+                onClick={handleLike}
+            />
+            <ActionBtn
+                icon={<ChatBubbleOutlineRounded sx={{ color: "#fff", fontSize: "1.7rem" }} />}
+                count={reel.comment_count}
+                onClick={() => setCommentReel(reel)}
+            />
+            <ActionBtn
+                icon={
+                    <RepeatRounded sx={{ color: state.reposted ? "#43a047" : "#fff", fontSize: "1.8rem", animation: repostAnim ? "reel-spin 0.42s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }} />
+                }
+                count={state.repostCount}
+                onClick={handleRepost}
+            />
+            <ActionBtn
+                icon={
+                    state.saved
+                        ? <BookmarkRounded sx={{ color: "#ffb300", fontSize: "1.8rem", animation: saveAnim ? "reel-pop 0.42s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }} />
+                        : <BookmarkBorderRounded sx={{ color: "#fff", fontSize: "1.8rem" }} />
+                }
+                onClick={handleSave}
+            />
+        </Box>
+    );
+
     return (
         <>
-            {/* Fixed action buttons — always visible, never scroll */}
-            {activeState && (
-                <Box
-                    sx={{
-                        position: "fixed",
-                        right: 24,
-                        bottom: "15vh",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 2.5,
-                        zIndex: 100,
-                    }}
-                >
-                    <ActionBtn
-                        icon={
-                            activeState.liked
-                                ? <FavoriteRounded sx={{ color: "#e53935", fontSize: "1.8rem", animation: likeAnim ? "reel-pop 0.42s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }} />
-                                : <FavoriteBorderRounded sx={{ color: "#fff", fontSize: "1.8rem" }} />
-                        }
-                        count={activeState.likeCount}
-                        onClick={handleLike}
-                    />
-                    <ActionBtn
-                        icon={<ChatBubbleOutlineRounded sx={{ color: "#fff", fontSize: "1.7rem" }} />}
-                        count={activeReel.comment_count}
-                        onClick={() => setCommentReel(activeReel)}
-                    />
-                    <ActionBtn
-                        icon={
-                            <RepeatRounded sx={{ color: activeState.reposted ? "#43a047" : "#fff", fontSize: "1.8rem", animation: repostAnim ? "reel-spin 0.42s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }} />
-                        }
-                        count={activeState.repostCount}
-                        onClick={handleRepost}
-                    />
-                    <ActionBtn
-                        icon={
-                            activeState.saved
-                                ? <BookmarkRounded sx={{ color: "#ffb300", fontSize: "1.8rem", animation: saveAnim ? "reel-pop 0.42s cubic-bezier(0.34,1.56,0.64,1) both" : "none" }} />
-                                : <BookmarkBorderRounded sx={{ color: "#fff", fontSize: "1.8rem" }} />
-                        }
-                        onClick={handleSave}
-                    />
-                </Box>
-            )}
-
             {/* Scrollable video feed */}
             <Box
                 ref={containerRef}
@@ -551,11 +551,13 @@ export default function ReelsPage() {
                     scrollbarWidth: "none",
                 }}
             >
-                {reels.map((reel, idx) => (
+                {reels.map((reel, idx) => {
+                    const state = reelStates[reel.id];
+                    return (
                     <Box
                         key={reel.id}
                         data-reel-index={idx}
-                        sx={{ width: "100%", height: "100vh", flexShrink: 0, scrollSnapAlign: "start", scrollSnapStop: "always" }}
+                        sx={{ position: "relative", width: "100%", height: "100vh", flexShrink: 0, scrollSnapAlign: "start", scrollSnapStop: "always" }}
                     >
                         <ReelCard
                             reel={reel}
@@ -563,8 +565,10 @@ export default function ReelsPage() {
                             muted={muted}
                             onToggleMute={() => setMuted((m) => !m)}
                         />
+                        {activeIdx === idx && state && renderActionButtons(reel, state)}
                     </Box>
-                ))}
+                    );
+                })}
 
                 <Box ref={sentinelRef} sx={{ height: 1 }} />
 
