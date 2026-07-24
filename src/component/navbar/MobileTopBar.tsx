@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Badge, Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
-import { FavoriteBorder, Favorite, MenuRounded } from "@mui/icons-material";
+import { FavoriteBorder, Favorite, MenuRounded, AddRounded } from "@mui/icons-material";
 import { useGlobalStore } from "../../store/store";
 
 interface MobileTopBarProps {
@@ -14,7 +14,8 @@ export default function MobileTopBar({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const location = useLocation();
-  const { setProfileMenuOpen } = useGlobalStore();
+  const { setProfileMenuOpen, setMobileCreateOpen } = useGlobalStore();
+  const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : null;
 
   const hideBar = [
     "/login",
@@ -50,6 +51,23 @@ export default function MobileTopBar({
       <span className="brand-text">Ripple</span>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+        {/* Create */}
+        {!!currentUser?.id && (
+          <IconButton
+            onClick={() => setMobileCreateOpen(true)}
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: "10px",
+              color: (t) => t.palette.text.secondary,
+              transition: "background 0.15s, color 0.15s",
+              "&:active": { transform: "scale(0.92)" },
+            }}
+          >
+            <AddRounded sx={{ fontSize: "1.8rem" }} />
+          </IconButton>
+        )}
+
         {/* Notifications */}
         <IconButton
           onClick={() => navigate("/notifications")}
@@ -79,9 +97,9 @@ export default function MobileTopBar({
             }}
           >
             {isNotifActive ? (
-              <Favorite sx={{ fontSize: "1.2rem" }} />
+              <Favorite sx={{ fontSize: "1.8rem" }} />
             ) : (
-              <FavoriteBorder sx={{ fontSize: "1.2rem" }} />
+              <FavoriteBorder sx={{ fontSize: "1.8rem" }} />
             )}
           </Badge>
         </IconButton>
@@ -99,7 +117,7 @@ export default function MobileTopBar({
               "&:active": { transform: "scale(0.92)" },
             }}
           >
-            <MenuRounded sx={{ fontSize: "1.3rem" }} />
+            <MenuRounded sx={{ fontSize: "1.8rem" }} />
           </IconButton>
         )}
       </Box>

@@ -117,6 +117,10 @@ const postCardCss = `
 const masonryCss = `
 .masonry { columns: 3; column-gap: 8px; padding: 8px; padding-top: 0; }
 .masonry-item { break-inside: avoid; margin-bottom: 8px; border-radius: 14px; overflow: hidden; cursor: pointer; position: relative; }
+@media (max-width: 600px) {
+  .masonry { column-gap: 3px; padding: 3px; }
+  .masonry-item { margin-bottom: 3px; border-radius: 8px; }
+}
 .masonry-item img, .masonry-item video { width: 100%; display: block; }
 .masonry-item .ovl { position:absolute; inset:0; opacity:0; transition:opacity 0.22s ease;
   background:linear-gradient(135deg,rgba(100,116,139,0.45) 0%,rgba(0,0,0,0.55) 100%);
@@ -337,10 +341,15 @@ const ProfilePage = () => {
     }, []);
 
     useEffect(() => {
+        window.scrollTo(0, 0);
+        setScrolled(false);
         const handleScroll = () => setScrolled(window.scrollY > 80);
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            setScrolled(false);
+        };
+    }, [userId]);
 
     const fetchSavedPosts = async () => {
         if (!isOwnProfile) return;
@@ -605,14 +614,14 @@ const ProfilePage = () => {
                     position: "sticky",
                     top: { xs: "52px", sm: 0 },
                     zIndex: 100,
-                    height: 50,
+                    height: scrolled ? 50 : 0,
+                    overflow: "hidden",
                     backdropFilter: "blur(20px)",
                     WebkitBackdropFilter: "blur(20px)",
                     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(13,13,21,0.85)' : 'rgba(255,255,255,0.85)',
                     borderBottom: `1px solid ${scrolled ? theme.palette.divider : "transparent"}`,
-                    transition: "border-color 0.25s, opacity 0.25s, transform 0.25s",
+                    transition: scrolled ? "height 0.2s ease, opacity 0.2s, border-color 0.2s" : "none",
                     opacity: scrolled ? 1 : 0,
-                    transform: scrolled ? "translateY(0)" : "translateY(-100%)",
                     pointerEvents: scrolled ? "auto" : "none",
                     px: { xs: 1.5, sm: 2 },
                     display: "flex",

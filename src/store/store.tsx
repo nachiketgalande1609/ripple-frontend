@@ -15,6 +15,7 @@ interface globalStoreState {
     postUploading: boolean;
     profileTabValue: number;
     profileMenuOpen: boolean;
+    mobileCreateOpen: boolean;
     setUser: (user: User | null) => void;
     setUnreadNotificationsCount: (count: number | null) => void;
     setUnreadMessagesCount: (count: number | null) => void;
@@ -22,6 +23,7 @@ interface globalStoreState {
     setPostUploading: (isUploading: boolean) => void;
     setProfileTabValue: (value: number) => void;
     setProfileMenuOpen: (open: boolean) => void;
+    setMobileCreateOpen: (open: boolean) => void;
 }
 
 export const useGlobalStore = create<globalStoreState>((set) => ({
@@ -31,6 +33,7 @@ export const useGlobalStore = create<globalStoreState>((set) => ({
     postUploading: false,
     profileTabValue: 0,
     profileMenuOpen: false,
+    mobileCreateOpen: false,
     setUser: (user) => {
         localStorage.setItem("user", JSON.stringify(user));
         set({ user });
@@ -41,4 +44,5 @@ export const useGlobalStore = create<globalStoreState>((set) => ({
     setPostUploading: (isUploading) => set({ postUploading: isUploading }),
     setProfileTabValue: (value) => set({ profileTabValue: value }),
     setProfileMenuOpen: (open) => set({ profileMenuOpen: open }),
+    setMobileCreateOpen: (open) => set({ mobileCreateOpen: open }),
 }));

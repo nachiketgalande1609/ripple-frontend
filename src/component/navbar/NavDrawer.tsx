@@ -27,6 +27,7 @@ import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography
 import BlankProfileImage from "../../static/profile_blank.png";
 import LogoImage from "../../static/logo-transparent.png";
 import { faSignIn, faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import { useGlobalStore } from "../../store/store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /* ─── Static CSS ────────────────────────────────────────────────── */
@@ -599,6 +600,8 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const hideDrawer = ["/login", "/register", "/reset-password", "/verify-email"].includes(location.pathname);
 
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const { mobileCreateOpen, setMobileCreateOpen } = useGlobalStore();
+    const topBarCreateRef = useRef<HTMLDivElement>(null);
 
     const [hovered, setHovered] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -612,6 +615,13 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const handleNavEnter = () => { if (leaveTimer.current) clearTimeout(leaveTimer.current); setHovered(true); };
     const handleNavLeave = () => { leaveTimer.current = setTimeout(() => { setHovered(false); setCreateOpen(false); }, 80); };
+
+    useEffect(() => {
+        if (mobileCreateOpen && topBarCreateRef.current) {
+            setCreateAnchor(topBarCreateRef.current);
+            setMobileCreateOpen(false);
+        }
+    }, [mobileCreateOpen]);
 
     useEffect(() => {
         if (location.pathname.startsWith("/messages") || location.pathname.startsWith("/settings")) {
@@ -788,11 +798,12 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 >
                     <Box
                         sx={{
-                            width: 24,
-                            height: 24,
+                            width: 30,
+                            height: 30,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            "& svg": { fontSize: "1.8rem" },
                         }}
                     >
                         {active ? item.activeIcon : item.icon}
@@ -803,6 +814,9 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
 
         return (
             <>
+                {/* Hidden anchor for top-bar create trigger */}
+                <Box ref={topBarCreateRef} sx={{ position: "fixed", top: 52, right: 16, width: 0, height: 0, zIndex: -1 }} />
+
                 {/* Full-width top banner for mobile */}
                 <MobileBannerStack toasts={toasts} onDismiss={dismiss} onNavigate={handleNavigateToChat} />
 
@@ -813,14 +827,14 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: "calc(60px + env(safe-area-inset-bottom))",
+                        height: "calc(54px + env(safe-area-inset-bottom))",
                         pb: "env(safe-area-inset-bottom)",
                         backgroundColor: (t) => t.palette.background.paper,
                         borderTop: "1px solid",
                         borderColor: (t) => t.palette.divider,
                         display: "flex",
                         alignItems: "center",
-                        px: 2,
+                        px: 1,
                         zIndex: 1200,
                     }}
                 >
@@ -829,32 +843,25 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                             {leftItems.map((item) => (
                                 <MobNavItem key={item.segment} item={item} />
                             ))}
+                            {/* Reels button */}
                             <Box
+                                component={Link}
+                                to="/reels"
                                 sx={{
                                     flex: 1,
                                     display: "flex",
+                                    flexDirection: "column",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    py: 1,
+                                    textDecoration: "none",
+                                    color: isActive("reels") ? (t) => t.palette.text.primary : (t) => t.palette.text.disabled,
+                                    minHeight: 44,
+                                    WebkitTapHighlightColor: "transparent",
+                                    transition: "color 0.15s",
                                 }}
                             >
-                                <Box
-                                    onClick={(e) => setCreateAnchor(e.currentTarget)}
-                                    sx={{
-                                        width: 42,
-                                        height: 42,
-                                        borderRadius: "13px",
-                                        background: "#64748B",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        cursor: "pointer",
-                                        WebkitTapHighlightColor: "transparent",
-                                        transition: "transform 0.1s ease, opacity 0.1s ease",
-                                        "&:active": { transform: "scale(0.92)", opacity: 0.85 },
-                                    }}
-                                >
-                                    <AddIcon sx={{ color: "#fff", fontSize: "1.3rem" }} />
-                                </Box>
+                                <SlowMotionVideoRounded sx={{ fontSize: "1.8rem" }} />
                             </Box>
                             {rightItems.filter((i) => i.segment !== `profile/${currentUser?.id}`).map((item) => (
                                 <MobNavItem key={item.segment} item={item} />
@@ -875,8 +882,8 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                             >
                                 <Box
                                     sx={{
-                                        width: 28,
-                                        height: 28,
+                                        width: 32,
+                                        height: 32,
                                         borderRadius: "50%",
                                         overflow: "hidden",
                                         border: "2px solid",
