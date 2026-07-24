@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Typography, Avatar, Button, useMediaQuery, useTheme, Tooltip, IconButton, Menu, MenuItem, Dialog, DialogContent, DialogActions } from "@mui/material";
+import { Box, Typography, Avatar, Button, useMediaQuery, useTheme, Tooltip, IconButton, Dialog } from "@mui/material";
 import { PollOutlined, MoreHoriz, DeleteOutlineRounded, CloseRounded } from "@mui/icons-material";
 import { formatDateInUserTz } from "../../utils/utils";
 import { votePoll, deletePoll } from "../../services/api";
@@ -47,8 +47,7 @@ export default function PollCard({ poll, onDeleted }: PollCardProps) {
     const [votedOption, setVotedOption] = useState<number | null>(poll.user_voted_option);
     const [totalVotes, setTotalVotes] = useState<number>(poll.total_votes);
     const [voting, setVoting] = useState(false);
-    const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-    const [confirmDelete, setConfirmDelete] = useState(false);
+const [confirmDelete, setConfirmDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;

@@ -11,7 +11,6 @@ import {
     Add as AddIcon,
     FavoriteBorder,
     Favorite,
-    Search as SearchFilled,
     SearchRounded,
     ChatBubbleOutlineRounded,
     ChatBubbleRounded,
@@ -24,7 +23,7 @@ import {
     Poll as PollIcon,
     SlowMotionVideoRounded,
 } from "@mui/icons-material";
-import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton, Popover, List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton, Popover } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
 import LogoImage from "../../static/logo-transparent.png";
 import { faSignIn, faUserPlus } from "@fortawesome/free-solid-svg-icons";

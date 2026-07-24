@@ -31,7 +31,6 @@ import {
     BookmarkBorder,
     PhotoCamera,
     MoreHoriz,
-    ArrowBack,
     PersonPin,
     RepeatRounded,
 } from "@mui/icons-material";

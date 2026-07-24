@@ -14,7 +14,7 @@ import RepeatRoundedIcon from "@mui/icons-material/RepeatRounded";
 import { getInsights } from "../services/api";
 import { usePageTitle } from "../hooks/usePageTitle";
 
-interface PostMonth { month: string; posts: number; likes: number; }
+interface PostMonth { month: string; posts: number; likes: number; year?: number; }
 interface TopPost { id: number; content: string; file_url: string; first_media_url: string; like_count: number; comment_count: number; save_count: number; }
 
 interface InsightData {

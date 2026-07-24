@@ -164,8 +164,6 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const navigate = useNavigate();
     const notifications = useAppNotifications();
     const theme = useTheme();
-    const isDark = theme.palette.mode === 'dark';
-
     const [commentText, setCommentText] = useState("");
     const [comment_count, setCommentCount] = useState(post.comment_count);
     const [likeCount, setLikeCount] = useState(post.like_count);

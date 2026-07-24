@@ -86,9 +86,6 @@ const backdropProps = {
 };
 
 /* ─── Small reusable pieces ──────────────────────────────────── */
-function Divider() {
-  return <Box sx={{ height: "1px", backgroundColor: (t) => t.palette.divider, mx: 1.5, my: 0.5 }} />;
-}
 
 function SheetButton({
   icon,
@@ -370,7 +367,6 @@ const PostDetailPage = () => {
   const isOwner = currentUser?.id === post?.user_id;
 
   const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
 
   const paperSx = {
     borderRadius: "36px",

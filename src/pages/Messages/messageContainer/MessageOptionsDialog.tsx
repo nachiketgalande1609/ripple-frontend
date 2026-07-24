@@ -1,4 +1,4 @@
-import { Dialog, Box, Button, useTheme } from "@mui/material";
+import { Dialog, Box, Button } from "@mui/material";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
