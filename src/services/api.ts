@@ -392,6 +392,16 @@ export const getFollowingUsers = async () => {
     }
 };
 
+export const getMutualFollowers = async (userId: string) => {
+    try {
+        const response = await api.get(`${FOLLOW_ENDPOINT}/${userId}/mutual`);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error("Failed to fetch mutual followers:", error.message);
+        throw error;
+    }
+};
+
 export const getFollowers = async (userId: string) => {
     try {
         const response = await api.get(`${FOLLOW_ENDPOINT}/${userId}/followers`);

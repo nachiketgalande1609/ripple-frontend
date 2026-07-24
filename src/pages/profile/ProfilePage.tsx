@@ -16,7 +16,7 @@ import { ACCENT_COLOR } from "../../theme";
 const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts, getUserReels } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts, getUserReels, getMutualFollowers } from "../../services/api";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
@@ -317,6 +317,8 @@ const ProfilePage = () => {
     const [fetchingRepostedPosts, setFetchingRepostedPosts] = useState(false);
     const [userReels, setUserReels] = useState<any[]>([]);
     const [fetchingUserReels, setFetchingUserReels] = useState(false);
+    const [mutualFollowers, setMutualFollowers] = useState<{ id: number; username: string; profile_picture: string | null }[]>([]);
+    const [mutualTotal, setMutualTotal] = useState(0);
     const [scrolled, setScrolled] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [isBlocked, setIsBlocked] = useState(false);
@@ -469,13 +471,23 @@ const ProfilePage = () => {
 
     useEffect(() => {
         setIsBlocked(false);
+        setMutualFollowers([]);
+        setMutualTotal(0);
         fetchProfile();
         checkBlockedStatus();
         offsetRef.current = 0;
         hasMoreRef.current = true;
         setHasMore(true);
         fetchUserPosts(true);
-        if (userId && !isOwnProfile) recordProfileView(userId);
+        if (userId && !isOwnProfile) {
+            recordProfileView(userId);
+            getMutualFollowers(userId).then((res) => {
+                if (res.success) {
+                    setMutualFollowers(res.data);
+                    setMutualTotal(res.total);
+                }
+            }).catch(() => {});
+        }
     }, [userId]);
 
     useEffect(() => {
@@ -734,6 +746,45 @@ const ProfilePage = () => {
                     </Typography>
                     {profileData?.is_verified && <Verified sx={{ fontSize: 15, color: "#1d9bf0" }} />}
                 </Stack>
+
+                {/* Mutual followers */}
+                {!isOwnProfile && mutualFollowers.length > 0 && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.75 }}>
+                        {/* Overlapping avatars */}
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            {mutualFollowers.slice(0, 3).map((u, i) => (
+                                <Box
+                                    key={u.id}
+                                    component="img"
+                                    src={u.profile_picture || BlankProfileImage}
+                                    alt={u.username}
+                                    onClick={() => navigate(`/profile/${u.id}`)}
+                                    sx={{
+                                        width: 24, height: 24, borderRadius: "50%", objectFit: "cover",
+                                        border: "2px solid", borderColor: "background.default",
+                                        ml: i > 0 ? "-8px" : 0,
+                                        position: "relative", zIndex: 3 - i,
+                                        cursor: "pointer",
+                                        transition: "transform 0.15s",
+                                        "&:hover": { transform: "scale(1.15)", zIndex: 10 },
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                        <Typography sx={{ fontSize: "0.75rem", color: (t) => t.palette.text.disabled, lineHeight: 1.3 }}>
+                            {"Followed by "}
+                            {mutualFollowers.slice(0, 2).map((u, i) => (
+                                <Box key={u.id} component="span"
+                                    onClick={() => navigate(`/profile/${u.id}`)}
+                                    sx={{ fontWeight: 600, color: (t) => t.palette.text.secondary, cursor: "pointer", "&:hover": { color: (t) => t.palette.text.primary } }}
+                                >
+                                    {u.username}{i < Math.min(mutualFollowers.length, 2) - 1 ? ", " : ""}
+                                </Box>
+                            ))}
+                            {mutualTotal > 2 && ` +${mutualTotal - 2} more`}
+                        </Typography>
+                    </Box>
+                )}
 
                 {/* Bio */}
                 {profileData?.bio ? (

@@ -74,6 +74,7 @@ const staticStyles = `
     margin: 2px 0; user-select: none; -webkit-tap-highlight-color: transparent;
     position: relative; background: transparent;
     border-radius: 16px;
+    outline: none !important;
     transition: background 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1);
   }
   .nav-item:hover:not(.active) { background: transparent; }
