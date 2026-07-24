@@ -10,6 +10,7 @@ import {
     Skeleton as MuiSkeleton,
     CircularProgress,
     useTheme,
+    useMediaQuery,
 } from "@mui/material";
 import { ACCENT_COLOR } from "../../theme";
 
@@ -289,8 +290,9 @@ const EmptyState = ({ icon, title, subtitle, action }: { icon: React.ReactNode; 
 const ProfilePage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
-    const { postUploading } = useGlobalStore();
+    const { postUploading, profileMenuOpen, setProfileMenuOpen } = useGlobalStore();
     const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
@@ -366,10 +368,19 @@ const ProfilePage = () => {
         }
     };
 
-    const savedTabIndex = isOwnProfile ? 1 : -1;
-    const repostsTabIndex = isOwnProfile ? 2 : 1;
-    const reelsTabIndex = isOwnProfile ? 3 : 2;
-    const taggedTabIndex = isOwnProfile ? 4 : 3;
+    // On mobile, Saved tab is removed (it has its own page)
+    const showSavedTab = isOwnProfile && !isMobile;
+    const savedTabIndex = showSavedTab ? 1 : -1;
+    const repostsTabIndex = showSavedTab ? 2 : (isOwnProfile ? 1 : 1);
+    const reelsTabIndex = showSavedTab ? 3 : (isOwnProfile ? 2 : 2);
+    const taggedTabIndex = showSavedTab ? 4 : (isOwnProfile ? 3 : 3);
+
+    useEffect(() => {
+        if (profileMenuOpen) {
+            setOpenDialog(true);
+            setProfileMenuOpen(false);
+        }
+    }, [profileMenuOpen]);
 
     const fetchUserReels = async () => {
         if (!userId) return;
@@ -674,6 +685,7 @@ const ProfilePage = () => {
                                     size="small"
                                     onClick={() => setOpenDialog(true)}
                                     sx={{
+                                        display: { xs: "none", sm: "flex" },
                                         border: "none",
                                         borderRadius: "14px",
                                         width: 34,
@@ -721,6 +733,7 @@ const ProfilePage = () => {
                                     size="small"
                                     onClick={() => setOpenDialog(true)}
                                     sx={{
+                                        display: { xs: "none", sm: "flex" },
                                         border: "none",
                                         borderRadius: "14px",
                                         width: 34,
@@ -890,7 +903,7 @@ const ProfilePage = () => {
                 <Box sx={{ display: "flex", gap: 1 }}>
                     {[
                         { label: "Posts", icon: <GridOn sx={{ fontSize: 15 }} /> },
-                        ...(isOwnProfile ? [{ label: "Saved", icon: <BookmarkBorder sx={{ fontSize: 15 }} /> }] : []),
+                        ...(showSavedTab ? [{ label: "Saved", icon: <BookmarkBorder sx={{ fontSize: 15 }} /> }] : []),
                         { label: "Reposts", icon: <RepeatRounded sx={{ fontSize: 15 }} /> },
                         { label: "Reels", icon: <SlowMotionVideoRounded sx={{ fontSize: 15 }} /> },
                         { label: "Tagged", icon: <PersonPin sx={{ fontSize: 15 }} /> },

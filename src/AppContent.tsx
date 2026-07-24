@@ -39,6 +39,7 @@ import FollowersPage from "./pages/FollowersPage";
 import FollowingPage from "./pages/FollowingPage";
 import MobileTopBar from "./component/navbar/MobileTopBar";
 import ReelsPage from "./pages/ReelsPage";
+import SavedPage from "./pages/SavedPage";
 
 type User = {
   id: number;
@@ -564,6 +565,14 @@ const AppContent = () => {
             element={
               <PrivateRoute>
                 <ReelsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/saved"
+            element={
+              <PrivateRoute>
+                <SavedPage />
               </PrivateRoute>
             }
           />

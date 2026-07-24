@@ -12,6 +12,7 @@ import PersonRemoveRoundedIcon from "@mui/icons-material/PersonRemoveRounded";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import BlockRoundedIcon from "@mui/icons-material/BlockRounded";
 import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
+import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 
 import BlankProfileImage from "../../static/profile_blank.png";
 
@@ -289,6 +290,16 @@ export default function MoreOptionsDialog({
 
                 {/* Edit Profile — own profile only */}
                 {isOwnProfile && <DialogButton icon={<EditRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Edit Profile" onClick={handleEditProfile} />}
+
+                {/* Saved — own profile, mobile only (desktop has it as a tab) */}
+                {isOwnProfile && isMobile && (
+                    <DialogButton
+                        icon={<BookmarkBorderIcon sx={{ fontSize: "1.1rem" }} />}
+                        label="Saved"
+                        onClick={() => { navigate("/saved"); handleCloseDialog(); }}
+                    />
+                )}
+
 
                 {/* Copy Profile Link — always visible */}
                 <DialogButton icon={<LinkRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Copy Profile Link" onClick={handleCopyLink} />
