@@ -493,15 +493,16 @@ export default function ReelsPage() {
     const renderActionButtons = (reel: Reel, state: ReelState) => (
         <Box
             sx={{
-                position: "absolute",
-                /* just outside the right edge of the 9:16 video */
-                left: "calc(50% + calc(100vh * 9 / 32) + 10px)",
+                position: "fixed",
+                /* navbar is 68px; content center = 68 + (100vw-68)/2 = 34+50vw
+                   video half-width = 100vh*9/32; add 20px gap */
+                left: "calc(34px + 50vw + calc(100vh * 9 / 32) + 10px)",
                 bottom: "20px",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 2.5,
-                zIndex: 10,
+                zIndex: 100,
             }}
         >
             <ActionBtn
