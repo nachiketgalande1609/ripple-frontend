@@ -610,6 +610,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const [pollOpen, setPollOpen] = useState(false);
     const [createAnchor, setCreateAnchor] = useState<HTMLElement | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
+    const [mobileCreateDialogOpen, setMobileCreateDialogOpen] = useState(false);
     const [panelTop, setPanelTop] = useState(0);
     const createBtnRef = useRef<HTMLDivElement>(null);
     const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -617,8 +618,8 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const handleNavLeave = () => { leaveTimer.current = setTimeout(() => { setHovered(false); setCreateOpen(false); }, 80); };
 
     useEffect(() => {
-        if (mobileCreateOpen && topBarCreateRef.current) {
-            setCreateAnchor(topBarCreateRef.current);
+        if (mobileCreateOpen) {
+            setMobileCreateDialogOpen(true);
             setMobileCreateOpen(false);
         }
     }, [mobileCreateOpen]);
@@ -907,51 +908,53 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />
                 <UploadStoryDialog open={storyOpen} onClose={() => setStoryOpen(false)} fetchStories={async () => {}} />
                 <CreatePollModal open={pollOpen} onClose={() => setPollOpen(false)} />
-                <Popover
-                    open={Boolean(createAnchor)}
-                    anchorEl={createAnchor}
-                    onClose={() => setCreateAnchor(null)}
-                    anchorOrigin={{ vertical: "top", horizontal: "center" }}
-                    transformOrigin={{ vertical: "bottom", horizontal: "center" }}
-                    PaperProps={{
-                        sx: {
-                            borderRadius: "20px",
-                            background: (t) => t.palette.mode === "dark" ? "rgba(30,30,40,0.85)" : "rgba(255,255,255,0.85)",
-                            backdropFilter: "blur(18px)",
+                <Dialog
+                    open={mobileCreateDialogOpen}
+                    onClose={() => setMobileCreateDialogOpen(false)}
+                    maxWidth="xs"
+                    fullWidth
+                    BackdropProps={{ sx: { backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.5)" } }}
+                    sx={{
+                        "& .MuiDialog-paper": {
+                            borderRadius: "28px",
+                            backgroundColor: "background.paper",
                             border: "1px solid",
                             borderColor: "divider",
-                            boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
-                            p: 1.5,
-                            mb: 1,
+                            boxShadow: "0 24px 60px rgba(0,0,0,0.3)",
+                            p: 2,
+                            mx: 2,
                         },
                     }}
                 >
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "0.95rem", color: "text.primary", mb: 2, px: 0.5 }}>
+                        Create
+                    </Typography>
+                    <Box sx={{ display: "flex", justifyContent: "space-around" }}>
                         {[
-                            { label: "Post", icon: <CameraAltIcon sx={{ fontSize: "1.4rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setCreateAnchor(null); setModalOpen(true); } },
-                            { label: "Story", icon: <AutoStoriesIcon sx={{ fontSize: "1.4rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setCreateAnchor(null); setStoryOpen(true); } },
-                            { label: "Poll", icon: <PollIcon sx={{ fontSize: "1.4rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setCreateAnchor(null); setPollOpen(true); } },
-                            { label: "Reel", icon: <SlowMotionVideoRounded sx={{ fontSize: "1.4rem" }} />, color: "#ec4899", bg: "rgba(236,72,153,0.12)", action: () => { setCreateAnchor(null); setModalOpen(true); } },
+                            { label: "Post", icon: <CameraAltIcon sx={{ fontSize: "1.4rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setMobileCreateDialogOpen(false); setModalOpen(true); } },
+                            { label: "Story", icon: <AutoStoriesIcon sx={{ fontSize: "1.4rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setMobileCreateDialogOpen(false); setStoryOpen(true); } },
+                            { label: "Poll", icon: <PollIcon sx={{ fontSize: "1.4rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setMobileCreateDialogOpen(false); setPollOpen(true); } },
+                            { label: "Reel", icon: <SlowMotionVideoRounded sx={{ fontSize: "1.4rem" }} />, color: "#ec4899", bg: "rgba(236,72,153,0.12)", action: () => { setMobileCreateDialogOpen(false); setModalOpen(true); } },
                         ].map(({ label, icon, color, bg, action }) => (
                             <Box
                                 key={label}
                                 onClick={action}
                                 sx={{
-                                    display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75,
-                                    px: 2, py: 1.5, borderRadius: "14px", cursor: "pointer",
+                                    display: "flex", flexDirection: "column", alignItems: "center", gap: 1,
+                                    px: 1.5, py: 1.5, borderRadius: "16px", cursor: "pointer",
                                     transition: "background 0.15s, transform 0.12s",
                                     "&:hover": { background: bg, transform: "translateY(-2px)" },
                                     "&:active": { transform: "scale(0.94)" },
                                 }}
                             >
-                                <Box sx={{ width: 46, height: 46, borderRadius: "13px", background: bg, display: "flex", alignItems: "center", justifyContent: "center", color }}>
+                                <Box sx={{ width: 52, height: 52, borderRadius: "14px", background: bg, display: "flex", alignItems: "center", justifyContent: "center", color }}>
                                     {icon}
                                 </Box>
-                                <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "text.secondary", letterSpacing: "0.02em" }}>{label}</Typography>
+                                <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: "text.secondary", letterSpacing: "0.01em" }}>{label}</Typography>
                             </Box>
                         ))}
                     </Box>
-                </Popover>
+                </Dialog>
             </>
         );
     }

@@ -454,7 +454,7 @@ const AppContent = () => {
           padding: 0,
           margin: 0,
           width: "100%",
-          pt: isPublicRoute ? 0 : { xs: "56px", sm: 0 },
+          pt: isPublicRoute ? 0 : { xs: "52px", sm: 0 },
         }}
       >
         <Routes>

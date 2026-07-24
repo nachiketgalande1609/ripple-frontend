@@ -7,9 +7,13 @@ import {
     ListItemText,
     Typography,
     Skeleton,
-    InputBase,
+    TextField,
+    InputAdornment,
+    IconButton,
+    useTheme,
 } from "@mui/material";
-import { Search as SearchIcon } from "@mui/icons-material";
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 import NotificationsOffRoundedIcon from "@mui/icons-material/NotificationsOffRounded";
 import BlankProfileImage from "../../../static/profile_blank.png";
 import { timeAgo } from "../../../utils/utils";
@@ -70,6 +74,7 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
     loading = false,
     mutedUserIds = new Set(),
 }) => {
+    const theme = useTheme();
     const [search, setSearch] = useState("");
 
     const sortedUsers = useMemo(
@@ -94,36 +99,46 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
             }}
         >
             {/* Search */}
-            <Box sx={{ px: 1, pt: 2, pb: 1.5, flexShrink: 0 }}>
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        px: 1.25,
-                        py: 0.6,
-                        borderRadius: "14px",
-                        backgroundColor: "var(--nav-bg)",
-                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-                        transition: "box-shadow 0.2s ease",
-                        "&:focus-within": {
-                            boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
-                        },
+            <Box sx={{ px: 1, pt: 1, pb: 1.5, flexShrink: 0 }}>
+                <TextField
+                    fullWidth
+                    placeholder="Search messages…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    variant="outlined"
+                    size="small"
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon sx={{ color: theme.palette.text.disabled, fontSize: 20 }} />
+                            </InputAdornment>
+                        ),
+                        endAdornment: search ? (
+                            <InputAdornment position="end">
+                                <IconButton size="small" onClick={() => setSearch("")} sx={{ color: theme.palette.text.disabled, p: 0.25 }}>
+                                    <CloseIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                            </InputAdornment>
+                        ) : null,
                     }}
-                >
-                    <SearchIcon sx={{ fontSize: 15, color: (t) => t.palette.text.disabled, flexShrink: 0 }} />
-                    <InputBase
-                        placeholder="Search messages…"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        sx={{
-                            flex: 1,
-                            fontSize: "0.8rem",
-                            color: (t) => t.palette.text.primary,
-                            "& input::placeholder": { color: (t) => t.palette.text.disabled, opacity: 1 },
-                        }}
-                    />
-                </Box>
+                    sx={{
+                        "& .MuiOutlinedInput-root": {
+                            bgcolor: "var(--nav-bg)",
+                            borderRadius: "14px",
+                            fontSize: "0.9rem",
+                            color: theme.palette.text.primary,
+                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                            transition: "box-shadow 0.2s ease",
+                            "& fieldset": { border: "none" },
+                            "&:hover fieldset": { border: "none" },
+                            "&.Mui-focused fieldset": { border: "none" },
+                            "&.Mui-focused": {
+                                boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                            },
+                        },
+                        "& input::placeholder": { color: theme.palette.text.disabled, opacity: 1 },
+                    }}
+                />
             </Box>
 
             {/* List */}

@@ -724,7 +724,7 @@ export default function SearchPage() {
           bgcolor: (t) => t.palette.background.default,
         }}
       >
-        <Box sx={{ px: 1, pt: 2, pb: 1.5, position: "relative" }}>
+        <Box sx={{ px: 1, pt: 1, pb: 1.5, position: "relative" }}>
           {activeTab === 0 ? (
             <TextField
               fullWidth
