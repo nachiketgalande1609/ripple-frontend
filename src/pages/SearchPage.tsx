@@ -335,7 +335,7 @@ export default function SearchPage() {
     <Fade in timeout={200}>
       <ListItem
         disablePadding
-        sx={{ px: 1 }}
+        sx={{ px: 1, mb: 0 }}
         secondaryAction={
           onDelete ? (
             <IconButton
@@ -363,14 +363,11 @@ export default function SearchPage() {
         <ListItemButton
           onClick={() => handleUserClick(user)}
           sx={{
-            borderRadius: "24px",
-            px: 2,
-            py: 1.75,
-            "&:hover": {
-              bgcolor: "var(--nav-bg)",
-              boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-            },
-            transition: "background 0.15s ease, box-shadow 0.15s ease",
+            borderRadius: "28px",
+            px: 1.5,
+            py: 1,
+            "&:hover": { bgcolor: (t) => t.palette.action.hover },
+            transition: "background 0.15s ease",
           }}
         >
           <ListItemAvatar sx={{ minWidth: 48 }}>
@@ -414,7 +411,7 @@ export default function SearchPage() {
     <Fade in timeout={200}>
       <ListItem
         disablePadding
-        sx={{ px: 1 }}
+        sx={{ px: 1, mb: 0 }}
         secondaryAction={
           <IconButton
             edge="end"
@@ -440,14 +437,11 @@ export default function SearchPage() {
         <ListItemButton
           onClick={() => setTagQuery(item.tag)}
           sx={{
-            borderRadius: "14px",
-            px: 2,
-            py: 1.25,
-            "&:hover": {
-              bgcolor: "var(--nav-bg)",
-              boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-            },
-            transition: "background 0.15s ease, box-shadow 0.15s ease",
+            borderRadius: "28px",
+            px: 1.5,
+            py: 1,
+            "&:hover": { bgcolor: (t) => t.palette.action.hover },
+            transition: "background 0.15s ease",
           }}
         >
           <Box
