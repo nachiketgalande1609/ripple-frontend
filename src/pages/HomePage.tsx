@@ -277,7 +277,6 @@ const HomePage = () => {
                 {/* ── Stories ── */}
                 <Box
                     sx={{
-                        // px: isMobile ? "12px" : "16px",
                         pt: isMobile ? "12px" : "16px",
                         pb: "12px",
                         borderColor: (t) => t.palette.divider,
@@ -290,7 +289,7 @@ const HomePage = () => {
                             overflowX: "auto",
                             pb: "6px",
                             pt: "4px",
-                            px: "4px",
+                            px: isMobile ? "12px" : "4px",
                             "&::-webkit-scrollbar": { display: "none" },
                             scrollbarWidth: "none",
                         }}
@@ -325,7 +324,7 @@ const HomePage = () => {
                 </Box>
 
                 {/* ── Posts ── */}
-                <Box>
+                <Box sx={{ px: isMobile ? 1.5 : 0 }}>
                     {loadingPosts ? (
                         <>
                             {[0, 1, 2].map((i) => (
@@ -377,11 +376,11 @@ const HomePage = () => {
                                 <Box
                                     key={`${item._type}-${item.id}`}
                                     className="post-card"
-                                    sx={{ animationDelay: `${index * 60}ms`, mb: isMobile ? 0 : "10px" }}
+                                    sx={{ animationDelay: `${index * 60}ms`, mb: "10px" }}
                                 >
                                     {item._type === "poll"
-                                        ? <PollCard poll={item} onDeleted={(id) => setPolls((prev) => prev.filter((p) => p.id !== id))} />
-                                        : <Post post={item} fetchPosts={() => fetchPosts(true)} borderRadius={isMobile ? "0px" : "14px"} />
+                                        ? <PollCard poll={item} onDeleted={(id) => setPolls((prev) => prev.filter((p) => p.id !== id))} borderRadius="14px" />
+                                        : <Post post={item} fetchPosts={() => fetchPosts(true)} borderRadius="14px" />
                                     }
                                 </Box>
                             ))}

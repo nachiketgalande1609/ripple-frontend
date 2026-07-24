@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme, Popover, Tooltip } from "@mui/material";
 import { formatDateInUserTz } from "../../utils/utils";
-import SvgIcon from "@mui/material/SvgIcon";
 import BlankProfileImage from "../../static/profile_blank.png";
 import VideoPlayer from "../../component/VideoPlayer";
 import {
@@ -17,6 +16,7 @@ import {
     ArrowForwardIos,
     ArrowBackIos,
     RepeatRounded,
+    SendRounded,
 } from "@mui/icons-material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
@@ -31,11 +31,6 @@ import { ACCENT_COLOR } from "../../theme";
 
 const ACCENT = ACCENT_COLOR;
 
-const PaperPlaneIcon = ({ size = 20 }: { size?: number }) => (
-    <SvgIcon sx={{ fontSize: size, transform: "rotate(-45deg)" }}>
-        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-    </SvgIcon>
-);
 
 interface Post {
     username: string;
@@ -593,19 +588,6 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                             {post.comment_count}
                         </Typography>
 
-                        {/* Share */}
-                        <IconButton
-                            disableRipple
-                            onClick={handlePaperPlaneClick}
-                            sx={{
-                                p: 0.75,
-                                color: (t) => t.palette.text.disabled,
-                                "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
-                            }}
-                        >
-                            <PaperPlaneIcon size={20} />
-                        </IconButton>
-
                         {/* Repost */}
                         <IconButton
                             disableRipple
@@ -630,6 +612,19 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         >
                             {repostCount}
                         </Typography>
+
+                        {/* Share */}
+                        <IconButton
+                            disableRipple
+                            onClick={handlePaperPlaneClick}
+                            sx={{
+                                p: 0.75,
+                                color: (t) => t.palette.text.disabled,
+                                "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
+                            }}
+                        >
+                            <SendRounded sx={{ fontSize: 20 }} />
+                        </IconButton>
                     </Box>
 
                     {/* Save */}
@@ -960,26 +955,31 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                             {user.username}
                                         </Typography>
                                     </Box>
-                                    <Button
-                                        size="small"
+                                    <button
                                         onClick={() => handleUserClick(user)}
-                                        sx={{
-                                            minWidth: 0,
-                                            px: 1.75,
-                                            py: 0.5,
-                                            borderRadius: "20px",
-                                            backgroundColor: ACCENT_COLOR,
-                                            color: "#fff",
-                                            fontSize: "0.78rem",
-                                            fontWeight: 600,
-                                            fontFamily: "'Inter', sans-serif",
-                                            textTransform: "none",
-                                            "&:hover": { backgroundColor: `${ACCENT_COLOR}cc` },
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            padding: "0 14px",
+                                            height: "32px",
+                                            borderRadius: "12px",
+                                            border: "none",
+                                            background: "var(--nav-bg)",
+                                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                            color: "inherit",
+                                            fontSize: "13px",
+                                            fontWeight: 500,
+                                            cursor: "pointer",
+                                            whiteSpace: "nowrap",
+                                            userSelect: "none",
+                                            outline: "none",
                                             flexShrink: 0,
+                                            transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
                                         }}
                                     >
                                         Send
-                                    </Button>
+                                    </button>
                                 </Box>
                             ))}
                         </Box>

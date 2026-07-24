@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Box, Typography, Avatar, Button, useMediaQuery, useTheme, Tooltip, IconButton, Dialog } from "@mui/material";
+import { Box, Typography, Avatar, Button, Tooltip, IconButton, Dialog } from "@mui/material";
 import { PollOutlined, MoreHoriz, DeleteOutlineRounded, CloseRounded } from "@mui/icons-material";
 import { formatDateInUserTz } from "../../utils/utils";
 import { votePoll, deletePoll } from "../../services/api";
 import BlankProfileImage from "../../static/profile_blank.png";
+import { useNavigate } from "react-router-dom";
 
 interface PollOption {
     id: number;
@@ -26,6 +27,7 @@ interface Poll {
 interface PollCardProps {
     poll: Poll;
     onDeleted?: (pollId: number) => void;
+    borderRadius?: string;
 }
 
 function timeAgo(dateStr: string): string {
@@ -40,14 +42,13 @@ function timeAgo(dateStr: string): string {
     return `${d}d ago`;
 }
 
-export default function PollCard({ poll, onDeleted }: PollCardProps) {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+export default function PollCard({ poll, onDeleted, borderRadius = "14px" }: PollCardProps) {
+    const navigate = useNavigate();
     const [options, setOptions] = useState<PollOption[]>(poll.options);
     const [votedOption, setVotedOption] = useState<number | null>(poll.user_voted_option);
     const [totalVotes, setTotalVotes] = useState<number>(poll.total_votes);
     const [voting, setVoting] = useState(false);
-const [confirmDelete, setConfirmDelete] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;
@@ -89,160 +90,177 @@ const [confirmDelete, setConfirmDelete] = useState(false);
             sx={{
                 width: "100%",
                 backgroundColor: "background.paper",
-                borderRadius: isMobile ? "0px" : "14px",
+                borderRadius,
                 overflow: "hidden",
                 border: "1px solid",
                 borderColor: "divider",
-                mb: 2,
             }}
         >
-            <Box sx={{ p: 2.5 }}>
-            {/* Author row */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-                <Avatar
-                    src={poll.profile_picture || BlankProfileImage}
-                    sx={{ width: 38, height: 38, border: "2px solid", borderColor: "divider" }}
-                />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap" }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: "0.88rem", color: "text.primary", lineHeight: 1.2 }}>
+            {/* ── Header ── */}
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 1.75, py: 1.25 }}>
+                <Box
+                    sx={{ display: "flex", alignItems: "center", gap: 1.125, cursor: "pointer" }}
+                    onClick={() => navigate(`/profile/${poll.user_id}`)}
+                >
+                    <Avatar
+                        src={poll.profile_picture || BlankProfileImage}
+                        sx={{ width: 34, height: 34, border: "1px solid", borderColor: "divider" }}
+                    />
+                    <Box>
+                        <Typography
+                            sx={{
+                                fontFamily: "'Inter', -apple-system, sans-serif",
+                                fontWeight: 500,
+                                fontSize: "0.85rem",
+                                color: "text.primary",
+                                lineHeight: 1.25,
+                            }}
+                        >
                             {poll.username}
                         </Typography>
-                        <Typography sx={{ fontSize: "0.8rem", color: "text.disabled", lineHeight: 1.2 }}>
-                            created a poll
-                        </Typography>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: "1px" }}>
+                            <PollOutlined sx={{ fontSize: "0.72rem", color: "#6366f1" }} />
+                            <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.68rem", color: "text.disabled" }}>
+                                created a poll
+                            </Typography>
+                        </Box>
                     </Box>
-                    <Tooltip title={formatDateInUserTz(poll.created_at)} placement="bottom-start">
-                        <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mt: 0.2, cursor: "default" }}>
-                            {timeAgo(poll.created_at)}
-                        </Typography>
-                    </Tooltip>
                 </Box>
-                {isOwner ? (
-                    <IconButton size="small" onClick={() => setConfirmDelete(true)} sx={{ color: "text.disabled", p: 0.5 }}>
-                        <MoreHoriz sx={{ fontSize: "1.2rem" }} />
+                {isOwner && (
+                    <IconButton
+                        onClick={() => setConfirmDelete(true)}
+                        size="small"
+                        sx={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: "8px",
+                            color: "text.disabled",
+                            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
+                        }}
+                    >
+                        <MoreHoriz sx={{ fontSize: 18 }} />
                     </IconButton>
-                ) : (
-                    <PollOutlined sx={{ color: "#6366f1", fontSize: "1.25rem", flexShrink: 0 }} />
                 )}
             </Box>
 
-            {/* Question */}
-            <Typography
-                sx={{
-                    fontWeight: 700,
-                    fontSize: "1rem",
-                    color: "text.primary",
-                    mb: 2,
-                    lineHeight: 1.4,
-                }}
-            >
-                {poll.question}
-            </Typography>
+            {/* ── Content ── */}
+            <Box sx={{ px: 1.75, pb: 1.75, pt: 0.25 }}>
+                {/* Question */}
+                <Typography
+                    sx={{
+                        fontWeight: 600,
+                        fontSize: "0.88rem",
+                        color: "text.primary",
+                        mb: 1.5,
+                        lineHeight: 1.4,
+                    }}
+                >
+                    {poll.question}
+                </Typography>
 
-            {/* Options */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
-                {options.map((opt) => {
-                    const pct = totalVotes > 0 ? Math.round((opt.vote_count / totalVotes) * 100) : 0;
-                    const isVoted = votedOption === opt.id;
+                {/* Options */}
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    {options.map((opt) => {
+                        const pct = totalVotes > 0 ? Math.round((opt.vote_count / totalVotes) * 100) : 0;
+                        const isVoted = votedOption === opt.id;
 
-                    if (!hasVoted) {
-                        // Pre-vote: plain clickable button
-                        return (
-                            <Button
-                                key={opt.id}
-                                fullWidth
-                                onClick={() => handleVote(opt.id)}
-                                disabled={voting}
-                                sx={{
-                                    textTransform: "none",
-                                    borderRadius: "12px",
-                                    border: "none",
-                                    backgroundColor: (t: any) => t.palette.action.hover,
-                                    boxShadow: "none",
-                                    color: "text.primary",
-                                    fontWeight: 500,
-                                    fontSize: "0.88rem",
-                                    py: 1,
-                                    justifyContent: "flex-start",
-                                    px: 2,
-                                    transition: "all 0.2s ease",
-                                    "&:hover": {
-                                        backgroundColor: "rgba(99,102,241,0.08)",
-                                        color: "#6366f1",
-                                    },
-                                    "&:disabled": { opacity: 0.6 },
-                                }}
-                            >
-                                {opt.option_text}
-                            </Button>
-                        );
-                    }
-
-                    // Post-vote: bar with percentage
-                    return (
-                        <Box
-                            key={opt.id}
-                            sx={{
-                                borderRadius: "12px",
-                                border: isVoted ? "1px solid #6366f1" : "none",
-                                backgroundColor: (t: any) => t.palette.action.hover,
-                                overflow: "hidden",
-                                position: "relative",
-                                px: 2,
-                                py: 1,
-                                minHeight: 40,
-                                display: "flex",
-                                alignItems: "center",
-                            }}
-                        >
-                            {/* Fill bar */}
-                            <Box
-                                sx={{
-                                    position: "absolute",
-                                    left: 0,
-                                    top: 0,
-                                    bottom: 0,
-                                    width: `${pct}%`,
-                                    backgroundColor: isVoted ? "rgba(99,102,241,0.18)" : "rgba(100,116,139,0.1)",
-                                    borderRadius: "12px",
-                                    transition: "width 0.5s ease",
-                                }}
-                            />
-                            {/* Label row */}
-                            <Box sx={{ position: "relative", display: "flex", alignItems: "center", width: "100%", gap: 1 }}>
-                                <Typography
+                        if (!hasVoted) {
+                            return (
+                                <Button
+                                    key={opt.id}
+                                    fullWidth
+                                    onClick={() => handleVote(opt.id)}
+                                    disabled={voting}
                                     sx={{
-                                        flex: 1,
-                                        fontWeight: isVoted ? 700 : 500,
-                                        fontSize: "0.88rem",
-                                        color: isVoted ? "#6366f1" : "text.primary",
+                                        textTransform: "none",
+                                        borderRadius: "10px",
+                                        border: "none",
+                                        backgroundColor: "action.hover",
+                                        boxShadow: "none",
+                                        color: "text.primary",
+                                        fontWeight: 500,
+                                        fontSize: "0.84rem",
+                                        py: 0.875,
+                                        justifyContent: "flex-start",
+                                        px: 1.75,
+                                        transition: "all 0.2s ease",
+                                        "&:hover": {
+                                            backgroundColor: "rgba(99,102,241,0.08)",
+                                            color: "#6366f1",
+                                        },
+                                        "&:disabled": { opacity: 0.6 },
                                     }}
                                 >
                                     {opt.option_text}
-                                </Typography>
-                                <Typography sx={{ fontSize: "0.78rem", color: "text.secondary", fontWeight: 600, flexShrink: 0 }}>
-                                    {pct}%
-                                </Typography>
-                                <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", flexShrink: 0 }}>
-                                    ({opt.vote_count})
-                                </Typography>
-                            </Box>
-                        </Box>
-                    );
-                })}
-            </Box>
+                                </Button>
+                            );
+                        }
 
-            {/* Footer */}
-            <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mt: 1.5 }}>
-                {totalVotes} {totalVotes === 1 ? "vote" : "votes"}
-                {hasVoted && (
-                    <Box component="span" sx={{ ml: 1, color: "#6366f1", fontWeight: 600 }}>
-                        · You voted
-                    </Box>
-                )}
-            </Typography>
-            </Box>{/* end padding box */}
+                        return (
+                            <Box
+                                key={opt.id}
+                                sx={{
+                                    borderRadius: "10px",
+                                    border: isVoted ? "1px solid #6366f1" : "1px solid transparent",
+                                    backgroundColor: "action.hover",
+                                    overflow: "hidden",
+                                    position: "relative",
+                                    px: 1.75,
+                                    py: 0.875,
+                                    minHeight: 38,
+                                    display: "flex",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        position: "absolute",
+                                        left: 0,
+                                        top: 0,
+                                        bottom: 0,
+                                        width: `${pct}%`,
+                                        backgroundColor: isVoted ? "rgba(99,102,241,0.15)" : "rgba(100,116,139,0.08)",
+                                        borderRadius: "10px",
+                                        transition: "width 0.5s ease",
+                                    }}
+                                />
+                                <Box sx={{ position: "relative", display: "flex", alignItems: "center", width: "100%", gap: 1 }}>
+                                    <Typography
+                                        sx={{
+                                            flex: 1,
+                                            fontWeight: isVoted ? 600 : 500,
+                                            fontSize: "0.84rem",
+                                            color: isVoted ? "#6366f1" : "text.primary",
+                                        }}
+                                    >
+                                        {opt.option_text}
+                                    </Typography>
+                                    <Typography sx={{ fontSize: "0.75rem", color: "text.secondary", fontWeight: 600, flexShrink: 0 }}>
+                                        {pct}%
+                                    </Typography>
+                                    <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", flexShrink: 0 }}>
+                                        ({opt.vote_count})
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        );
+                    })}
+                </Box>
+
+                {/* Footer */}
+                <Tooltip title={formatDateInUserTz(poll.created_at)} placement="bottom-start">
+                    <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mt: 1.25, cursor: "default" }}>
+                        {totalVotes} {totalVotes === 1 ? "vote" : "votes"}
+                        {hasVoted && (
+                            <Box component="span" sx={{ ml: 1, color: "#6366f1", fontWeight: 600 }}>
+                                · You voted
+                            </Box>
+                        )}
+                        {" · "}
+                        {timeAgo(poll.created_at)}
+                    </Typography>
+                </Tooltip>
+            </Box>
         </Box>
 
         {/* Delete confirm dialog */}

@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import {
   Box,
-  Container,
   Typography,
   Avatar,
   Stack,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
   IconButton,
   Skeleton as MuiSkeleton,
   Fade,
@@ -20,8 +23,6 @@ import {
   cancelFollowRequest,
   unfollowUser,
 } from "../services/api";
-
-const ACCENT = "#64748B";
 
 interface FollowingUser {
   id: number;
@@ -101,55 +102,57 @@ const FollowingRow = ({
 
   return (
     <Fade in timeout={250}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
+      <ListItem
+        component="div"
         sx={{
-          py: 1,
-          px: 1,
-          borderRadius: "10px",
+          borderRadius: "28px",
+          px: 1.5,
+          py: 1.25,
+          mx: 1,
+          mb: 0.5,
           transition: "background-color 0.15s",
-          "&:hover": { backgroundColor: (t) => t.palette.action.hover },
+          "&:hover": { bgcolor: "action.hover" },
+          cursor: "default",
         }}
       >
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1.25}
-          sx={{ cursor: "pointer", flex: 1, minWidth: 0 }}
+        <ListItemAvatar
+          sx={{ minWidth: 54, cursor: "pointer" }}
           onClick={() => navigate(`/profile/${user.id}`)}
         >
           <Avatar
             src={user.profile_picture || BlankProfileImage}
             sx={{
-              width: 40,
-              height: 40,
-              flexShrink: 0,
+              width: 42,
+              height: 42,
               border: "1px solid",
-              borderColor: (t) => t.palette.divider,
+              borderColor: "divider",
             }}
           />
-          <Typography
-            sx={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 500,
-              fontSize: "0.875rem",
-              color: (t) => t.palette.text.primary,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {user.username}
-          </Typography>
-        </Stack>
-
+        </ListItemAvatar>
+        <ListItemText
+          onClick={() => navigate(`/profile/${user.id}`)}
+          sx={{ cursor: "pointer", minWidth: 0 }}
+          primary={
+            <Typography
+              sx={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 500,
+                fontSize: "0.845rem",
+                color: "text.primary",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {user.username}
+            </Typography>
+          }
+        />
         {!isOwnProfile && currentUserId && (
           <Box
             sx={{
               flexShrink: 0,
-              ml: 1.5,
+              ml: 1,
               "& button": { marginTop: "0 !important" },
             }}
           >
@@ -163,7 +166,7 @@ const FollowingRow = ({
             />
           </Box>
         )}
-      </Stack>
+      </ListItem>
     </Fade>
   );
 };
@@ -224,87 +227,92 @@ const FollowingPage = () => {
   return (
     <Box
       sx={{
-        backgroundColor: (t) => t.palette.background.default,
+        bgcolor: "background.default",
         minHeight: "100vh",
         fontFamily: "'Inter', -apple-system, sans-serif",
       }}
     >
-      <Container maxWidth="sm" sx={{ py: 2.5, px: { xs: 2, sm: 3 } }}>
-        {/* ── Header ── */}
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1.25}
-          sx={{ mb: 2.5 }}
+      {/* ── Sticky header ── */}
+      <Box
+        sx={{
+          position: "sticky",
+          top: { xs: "56px", sm: 0 },
+          zIndex: 10,
+          bgcolor: "background.default",
+          px: { xs: 2, sm: 3 },
+          py: 1.25,
+          display: "flex",
+          alignItems: "center",
+          gap: 1.25,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <IconButton
+          onClick={() => navigate(-1)}
+          size="small"
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: "12px",
+            bgcolor: "var(--nav-bg)",
+            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+            color: "text.secondary",
+            "&:hover": {
+              boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+              color: "text.primary",
+            },
+          }}
         >
-          <IconButton
-            onClick={() => navigate(-1)}
-            size="small"
+          <ArrowBack sx={{ fontSize: 17 }} />
+        </IconButton>
+        <Box>
+          <Typography
             sx={{
-              width: 34,
-              height: 34,
-              borderRadius: "9px",
-              border: "1px solid",
-              borderColor: (t) => t.palette.divider,
-              color: (t) => t.palette.text.secondary,
-              "&:hover": {
-                backgroundColor: (t) => t.palette.action.hover,
-                color: (t) => t.palette.text.primary,
-              },
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "1rem",
+              fontWeight: 500,
+              color: "text.primary",
+              lineHeight: 1.3,
             }}
           >
-            <ArrowBack sx={{ fontSize: 17 }} />
-          </IconButton>
-          <Box>
+            Following
+          </Typography>
+          {username && (
             <Typography
               sx={{
                 fontFamily: "'Inter', sans-serif",
-                fontSize: "1rem",
-                fontWeight: 500,
-                color: (t) => t.palette.text.primary,
-                lineHeight: 1.3,
+                fontSize: "0.75rem",
+                color: "text.disabled",
               }}
             >
-              Following
+              @{username}
             </Typography>
-            {username && (
-              <Typography
-                sx={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: "0.75rem",
-                  color: (t) => t.palette.text.disabled,
-                }}
-              >
-                @{username}
-              </Typography>
-            )}
-          </Box>
-        </Stack>
+          )}
+        </Box>
+      </Box>
 
+      <Box sx={{ px: { xs: 1, sm: 2 }, pt: 1.5, pb: 3, maxWidth: "sm", mx: "auto" }}>
         {/* ── Search bar ── */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             gap: 1,
-            px: 1.375,
-            py: 0.625,
-            backgroundColor: (t) => t.palette.action.hover,
-            borderRadius: "10px",
-            border: "1px solid",
-            borderColor: (t) => t.palette.divider,
-            mb: 2,
-            transition: "border-color 0.15s",
-            "&:focus-within": { borderColor: `${ACCENT}80` },
+            px: 1.25,
+            py: 0.6,
+            bgcolor: "var(--nav-bg)",
+            borderRadius: "14px",
+            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+            mb: 1.5,
+            transition: "box-shadow 0.15s",
+            "&:focus-within": {
+              boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+            },
+            mx: 1,
           }}
         >
-          <Search
-            sx={{
-              fontSize: 17,
-              color: (t) => t.palette.text.disabled,
-              flexShrink: 0,
-            }}
-          />
+          <Search sx={{ fontSize: 17, color: "text.disabled", flexShrink: 0 }} />
           <InputBase
             placeholder="Search following…"
             value={search}
@@ -313,68 +321,47 @@ const FollowingPage = () => {
               flex: 1,
               fontSize: "0.875rem",
               fontFamily: "'Inter', sans-serif",
-              color: (t) => t.palette.text.primary,
-              "& input::placeholder": { color: (t) => t.palette.text.disabled },
+              color: "text.primary",
+              "& input::placeholder": { color: "text.disabled" },
             }}
           />
         </Box>
 
-        {/* ── Count label ── */}
-        {!loading && (
-          <Typography
-            sx={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: "0.7rem",
-              fontWeight: 500,
-              letterSpacing: "0.07em",
-              textTransform: "uppercase",
-              color: (t) => t.palette.text.disabled,
-              mb: 1,
-            }}
-          >
-            {filtered.length} {filtered.length === 1 ? "person" : "people"}
-          </Typography>
-        )}
-
         {/* ── List ── */}
         {loading ? (
-          <Stack spacing={0.5}>
+          <List disablePadding>
             {[...Array(6)].map((_, i) => (
-              <Stack
+              <ListItem
                 key={i}
-                direction="row"
-                alignItems="center"
-                spacing={1.25}
-                sx={{ py: 1, px: 1 }}
+                component="div"
+                sx={{ borderRadius: "28px", px: 1.5, py: 1.25, mx: 1, mb: 0.5 }}
               >
-                <MuiSkeleton
-                  variant="circular"
-                  width={40}
-                  height={40}
-                  sx={{ flexShrink: 0, bgcolor: (t) => t.palette.action.hover }}
-                />
-                <Box sx={{ flex: 1 }}>
+                <ListItemAvatar sx={{ minWidth: 54 }}>
                   <MuiSkeleton
-                    width="40%"
-                    height={14}
-                    sx={{
-                      borderRadius: "5px",
-                      bgcolor: (t) => t.palette.action.hover,
-                    }}
+                    variant="circular"
+                    width={42}
+                    height={42}
+                    sx={{ bgcolor: "action.hover" }}
                   />
-                </Box>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <MuiSkeleton
+                      width="42%"
+                      height={14}
+                      sx={{ borderRadius: "5px", bgcolor: "action.hover" }}
+                    />
+                  }
+                />
                 <MuiSkeleton
                   variant="rounded"
                   width={68}
                   height={30}
-                  sx={{
-                    borderRadius: "9px",
-                    bgcolor: (t) => t.palette.action.hover,
-                  }}
+                  sx={{ borderRadius: "9px", bgcolor: "action.hover" }}
                 />
-              </Stack>
+              </ListItem>
             ))}
-          </Stack>
+          </List>
         ) : filtered.length === 0 ? (
           <Box
             sx={{
@@ -390,17 +377,14 @@ const FollowingPage = () => {
                 width: 56,
                 height: 56,
                 borderRadius: "16px",
-                backgroundColor: (t) => t.palette.action.hover,
-                border: "1px solid",
-                borderColor: (t) => t.palette.divider,
+                bgcolor: "var(--nav-bg)",
+                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <PersonOff
-                sx={{ fontSize: 26, color: (t) => t.palette.text.disabled }}
-              />
+              <PersonOff sx={{ fontSize: 26, color: "text.disabled" }} />
             </Box>
             <Box sx={{ textAlign: "center" }}>
               <Typography
@@ -408,7 +392,7 @@ const FollowingPage = () => {
                   fontFamily: "'Inter', sans-serif",
                   fontSize: "0.95rem",
                   fontWeight: 500,
-                  color: (t) => t.palette.text.primary,
+                  color: "text.primary",
                   mb: 0.375,
                 }}
               >
@@ -418,7 +402,7 @@ const FollowingPage = () => {
                 sx={{
                   fontFamily: "'Inter', sans-serif",
                   fontSize: "0.8rem",
-                  color: (t) => t.palette.text.disabled,
+                  color: "text.disabled",
                 }}
               >
                 {search
@@ -428,7 +412,7 @@ const FollowingPage = () => {
             </Box>
           </Box>
         ) : (
-          <Stack>
+          <List disablePadding>
             {filtered.map((user) => (
               <FollowingRow
                 key={user.id}
@@ -437,9 +421,9 @@ const FollowingPage = () => {
                 onFollowChange={handleFollowChange}
               />
             ))}
-          </Stack>
+          </List>
         )}
-      </Container>
+      </Box>
     </Box>
   );
 };

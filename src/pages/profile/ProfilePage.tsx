@@ -69,31 +69,17 @@ const StatCol = ({ value, label, onClick }: { value: number; label: string; onCl
         <Box
             onClick={onClick}
             sx={{
-                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
                 flex: 1,
-                py: 1.5,
                 cursor: onClick ? "pointer" : "default",
-                borderRadius: "14px",
-                backgroundColor: "var(--nav-bg)",
-                boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-                transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
-                "&:hover": onClick ? {
-                    boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
-                } : {},
+                gap: 0.25,
+                "&:hover .stat-value": onClick ? { color: (t: any) => t.palette.text.primary } : {},
             }}
         >
-            <Typography sx={{ fontWeight: 700, fontSize: "1.15rem", lineHeight: 1, color: (t: any) => t.palette.text.primary }}>{fmt}</Typography>
-            <Typography
-                sx={{
-                    fontSize: "0.75rem",
-                    fontWeight: 500,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.09em",
-                    color: (t: any) => t.palette.text.disabled,
-                    mt: 0.4,
-                    display: "block",
-                }}
-            >
+            <Typography className="stat-value" sx={{ fontWeight: 700, fontSize: "1.1rem", lineHeight: 1.2, color: (t: any) => t.palette.text.primary, transition: "color 0.15s" }}>{fmt}</Typography>
+            <Typography sx={{ fontSize: "0.72rem", fontWeight: 400, color: (t: any) => t.palette.text.disabled }}>
                 {label}
             </Typography>
         </Box>
@@ -876,20 +862,19 @@ const ProfilePage = () => {
                     </Stack>
                 )}
 
-                {/* Stats pill */}
+                {/* Stats */}
                 <Stack
                     direction="row"
-                    gap={1}
-                    sx={{
-                        mt: 2,
-                    }}
+                    sx={{ mt: 2 }}
                 >
                     <StatCol value={profileData?.posts_count || 0} label="Posts" />
+                    <Box sx={{ width: "1px", bgcolor: (t) => t.palette.divider, my: 0.5 }} />
                     <StatCol
                         value={profileData?.followers_count || 0}
                         label="Followers"
                         onClick={() => navigate(`/profile/${userId}/followers`)}
                     />
+                    <Box sx={{ width: "1px", bgcolor: (t) => t.palette.divider, my: 0.5 }} />
                     <StatCol
                         value={profileData?.following_count || 0}
                         label="Following"
