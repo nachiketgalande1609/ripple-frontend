@@ -22,6 +22,7 @@ export default function MobileTopBar({
     "/register",
     "/reset-password",
     "/verify-email",
+    "/reels",
   ].includes(location.pathname);
 
   if (!isMobile || hideBar) return null;

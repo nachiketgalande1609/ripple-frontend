@@ -9,7 +9,7 @@ import AppContent from "./AppContent";
 function ThemeTogglePill() {
     const { mode, setMode } = useColorScheme();
     const location = useLocation();
-    if (location.pathname.startsWith("/messages")) return null;
+    if (location.pathname.startsWith("/messages") || location.pathname === "/reels") return null;
     const [spinning, setSpinning] = React.useState(false);
 
     const handleToggle = () => {

@@ -13,6 +13,8 @@ import {
     ListItemAvatar,
     ListItemText,
     Divider,
+    useMediaQuery,
+    useTheme,
 } from "@mui/material";
 import {
     FavoriteRounded,
@@ -146,7 +148,7 @@ function ReelCard({ reel, videoRef, muted, onToggleMute }: ReelCardProps) {
             sx={{
                 position: "relative",
                 width: "100%",
-                height: "100vh",
+                height: "100%",
                 flexShrink: 0,
                 overflow: "hidden",
                 backgroundColor: "#000",
@@ -159,8 +161,8 @@ function ReelCard({ reel, videoRef, muted, onToggleMute }: ReelCardProps) {
             <Box
                 sx={{
                     position: "relative",
-                    height: "100vh",
-                    width: "calc(100vh * 9 / 16)",
+                    height: "100%",
+                    width: { xs: "100%", sm: "calc(100vh * 9 / 16)" },
                     maxWidth: "100%",
                     flexShrink: 0,
                     overflow: "hidden",
@@ -223,9 +225,9 @@ function ReelCard({ reel, videoRef, muted, onToggleMute }: ReelCardProps) {
                 <Box
                     sx={{
                         position: "absolute",
-                        bottom: 24,
+                        bottom: { xs: "70px", sm: 24 },
                         left: 14,
-                        right: 14,
+                        right: { xs: "70px", sm: 14 }, // leave space for action buttons on mobile
                         zIndex: 2,
                         display: "flex",
                         alignItems: "flex-end",
@@ -294,6 +296,8 @@ function SkeletonCard() {
 export default function ReelsPage() {
     const location = useLocation();
     const startPostId: number | undefined = (location.state as any)?.startPostId;
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const [reels, setReels] = useState<Reel[]>([]);
     const [reelStates, setReelStates] = useState<Record<number, ReelState>>({});
@@ -301,7 +305,7 @@ export default function ReelsPage() {
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-    const [muted, setMuted] = useState(true);
+    const [muted, setMuted] = useState(false);
     const [commentReel, setCommentReel] = useState<Reel | null>(null);
 
     // animation flags
@@ -492,10 +496,19 @@ export default function ReelsPage() {
 
     const renderActionButtons = (reel: Reel, state: ReelState) => (
         <Box
-            sx={{
+            sx={isMobile ? {
+                // Mobile: overlay on bottom-right of video
+                position: "absolute",
+                bottom: "70px", // above the bottom navbar
+                right: "14px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+                zIndex: 10,
+            } : {
+                // Desktop: fixed to the right of the video
                 position: "fixed",
-                /* navbar is 68px; content center = 68 + (100vw-68)/2 = 34+50vw
-                   video half-width = 100vh*9/32; add 20px gap */
                 left: "calc(34px + 50vw + calc(100vh * 9 / 32) + 10px)",
                 bottom: "20px",
                 display: "flex",
@@ -544,7 +557,8 @@ export default function ReelsPage() {
                 ref={containerRef}
                 sx={{
                     width: "100%",
-                    height: "100vh",
+                    height: { xs: "calc(100vh - 54px)", sm: "100vh" },
+                    mt: 0,
                     overflowY: "scroll",
                     scrollSnapType: "y mandatory",
                     background: "#000",
@@ -558,7 +572,7 @@ export default function ReelsPage() {
                     <Box
                         key={reel.id}
                         data-reel-index={idx}
-                        sx={{ position: "relative", width: "100%", height: "100vh", flexShrink: 0, scrollSnapAlign: "start", scrollSnapStop: "always" }}
+                        sx={{ position: "relative", width: "100%", height: { xs: "calc(100vh - 54px)", sm: "100vh" }, flexShrink: 0, scrollSnapAlign: "start", scrollSnapStop: "always" }}
                     >
                         <ReelCard
                             reel={reel}
