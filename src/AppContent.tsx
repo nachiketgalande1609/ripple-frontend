@@ -429,6 +429,8 @@ const AppContent = () => {
     };
   }, [pc, localStream]);
 
+  const isPublicRoute = ["/login", "/register", "/verify-account", "/reset-password"].includes(location.pathname);
+
   return (
     <Box
       sx={{
@@ -451,7 +453,7 @@ const AppContent = () => {
           padding: 0,
           margin: 0,
           width: "100%",
-          pt: { xs: "56px", sm: 0 },
+          pt: isPublicRoute ? 0 : { xs: "56px", sm: 0 },
         }}
       >
         <Routes>

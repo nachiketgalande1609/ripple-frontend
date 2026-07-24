@@ -14,6 +14,15 @@ import { usePageTitle } from "../hooks/usePageTitle";
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Figtree:wght@300;400;500;600&display=swap');
 
+  html.ig-active, html.ig-active body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: #0e0a08;
+    margin: 0;
+    padding: 0;
+  }
+
   .ig-root * { box-sizing: border-box; margin: 0; padding: 0; }
 
   .ig-root {
@@ -457,7 +466,11 @@ const LoginPage: React.FC = () => {
       el.textContent = styles;
       document.head.appendChild(el);
     }
+    document.documentElement.classList.add("ig-active");
     setMounted(true);
+    return () => {
+      document.documentElement.classList.remove("ig-active");
+    };
   }, []);
 
   useEffect(() => {
