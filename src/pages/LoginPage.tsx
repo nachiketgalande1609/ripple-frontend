@@ -500,6 +500,7 @@ const LoginPage: React.FC = () => {
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
         sessionStorage.setItem("_kp", password);
+        localStorage.setItem("_kp", password);
         socket.emit("registerUser", user.id);
         setUser(user);
         navigate("/");

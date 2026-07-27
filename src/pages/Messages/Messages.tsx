@@ -221,8 +221,8 @@ const Messages: React.FC<MessageProps> = ({
         setMyDeviceId(deviceId);
         myDeviceIdRef.current = deviceId;
 
-        // Password stored in sessionStorage at login time; clear it after use
-        const password = sessionStorage.getItem('_kp');
+        // Password: prefer sessionStorage (set at login), fall back to localStorage (persisted for cross-session restore)
+        const password = sessionStorage.getItem('_kp') || localStorage.getItem('_kp');
         sessionStorage.removeItem('_kp');
 
         let privateKey = await loadPrivateKey(deviceId);
@@ -242,6 +242,7 @@ const Messages: React.FC<MessageProps> = ({
               const restoredKey = await importPrivateKey(pkcs8);
               const restoredDeviceId = backupRes.data.device_id;
               localStorage.setItem('ripple_device_id', restoredDeviceId);
+              localStorage.removeItem('_kp');
               setMyDeviceId(restoredDeviceId);
               myDeviceIdRef.current = restoredDeviceId;
               await storePrivateKey(restoredDeviceId, restoredKey);
@@ -254,6 +255,7 @@ const Messages: React.FC<MessageProps> = ({
             } catch {
               // Wrong password or corrupt backup — fall through to fresh keypair
               console.warn('Key restore failed, generating fresh keypair');
+              localStorage.removeItem('_kp');
               const keyPair = await generateKeyPair();
               await storePrivateKey(deviceId, keyPair.privateKey);
               const pubKeyB64 = await exportPublicKey(keyPair.publicKey);
@@ -270,7 +272,7 @@ const Messages: React.FC<MessageProps> = ({
             myPrivateKeyRef.current = keyPair.privateKey;
             myPublicKeyRef.current = keyPair.publicKey;
 
-            // Silently back up if password is available
+            // Back up with password if available, and keep password in localStorage for future cross-session restores
             if (password) {
               try {
                 const pkcs8 = await exportPrivateKey(keyPair.privateKey);

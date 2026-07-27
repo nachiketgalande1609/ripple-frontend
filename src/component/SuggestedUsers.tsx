@@ -13,7 +13,11 @@ interface SuggestedUser {
     mutual_count: number;
 }
 
-export default function SuggestedUsers() {
+interface SuggestedUsersProps {
+    bare?: boolean;
+}
+
+export default function SuggestedUsers({ bare }: SuggestedUsersProps = {}) {
     const navigate = useNavigate();
     const [users, setUsers] = useState<SuggestedUser[]>([]);
     const [loading, setLoading] = useState(true);
@@ -52,6 +56,76 @@ export default function SuggestedUsers() {
     if (!loading && users.length === 0) return null;
 
     const bodyHeight = bodyRef.current?.scrollHeight ?? 0;
+
+    const userList = (
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+            {loading
+                ? Array.from({ length: 4 }).map((_, i) => (
+                      <Box key={i}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, py: 1.25 }}>
+                              <Skeleton variant="circular" width={36} height={36} />
+                              <Box sx={{ flex: 1 }}>
+                                  <Skeleton width="65%" height={12} sx={{ borderRadius: "6px" }} />
+                                  <Skeleton width="40%" height={9} sx={{ borderRadius: "6px", mt: "4px" }} />
+                              </Box>
+                              <Skeleton width={52} height={26} sx={{ borderRadius: "20px" }} />
+                          </Box>
+                          {i < 3 && <Box sx={{ borderTop: "1px solid", borderColor: "divider" }} />}
+                      </Box>
+                  ))
+                : users.map((user, i) => {
+                      const isRequested = requested.has(user.id);
+                      return (
+                          <Box key={user.id}>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, py: 1.25 }}>
+                                  <Avatar
+                                      src={user.profile_picture || BlankProfileImage}
+                                      sx={{ width: 36, height: 36, cursor: "pointer", flexShrink: 0 }}
+                                      onClick={() => navigate(`/profile/${user.id}`)}
+                                      onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }}
+                                  />
+                                  <Box
+                                      sx={{ flex: 1, minWidth: 0, cursor: "pointer" }}
+                                      onClick={() => navigate(`/profile/${user.id}`)}
+                                  >
+                                      <Typography noWrap sx={{ fontWeight: 600, fontSize: "0.82rem", lineHeight: 1.3, color: "text.primary" }}>
+                                          {user.username}
+                                      </Typography>
+                                      <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3 }}>
+                                          {user.mutual_count > 0 ? `${user.mutual_count} mutual` : `${user.follower_count} followers`}
+                                      </Typography>
+                                  </Box>
+                                  {isRequested ? (
+                                      <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "text.disabled", flexShrink: 0 }}>
+                                          Requested
+                                      </Typography>
+                                  ) : (
+                                      <button
+                                          onClick={() => handleFollow(user.id)}
+                                          style={{
+                                              display: "inline-flex", alignItems: "center", justifyContent: "center",
+                                              padding: "0 12px", height: "28px", borderRadius: "12px", border: "none",
+                                              background: "var(--nav-bg)",
+                                              boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                              color: "inherit", fontSize: "0.72rem", fontWeight: 600, cursor: "pointer",
+                                              whiteSpace: "nowrap", userSelect: "none", outline: "none", flexShrink: 0,
+                                              transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
+                                          }}
+                                      >
+                                          Follow
+                                      </button>
+                                  )}
+                              </Box>
+                              {i < users.length - 1 && <Box sx={{ borderTop: "1px solid", borderColor: "divider" }} />}
+                          </Box>
+                      );
+                  })}
+        </Box>
+    );
+
+    if (bare) {
+        return <>{userList}</>;
+    }
 
     return (
         <Box sx={{
@@ -110,76 +184,7 @@ export default function SuggestedUsers() {
                     pb: collapsed ? 0 : 2.5,
                 }}
             >
-                <Box sx={{ display: "flex", flexDirection: "column" }}>
-                    {loading
-                        ? Array.from({ length: 4 }).map((_, i) => (
-                              <Box key={i}>
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, py: 1.25 }}>
-                                      <Skeleton variant="circular" width={36} height={36} />
-                                      <Box sx={{ flex: 1 }}>
-                                          <Skeleton width="65%" height={12} sx={{ borderRadius: "6px" }} />
-                                          <Skeleton width="40%" height={9} sx={{ borderRadius: "6px", mt: "4px" }} />
-                                      </Box>
-                                      <Skeleton width={52} height={26} sx={{ borderRadius: "20px" }} />
-                                  </Box>
-                                  {i < 3 && <Box sx={{ borderTop: "1px solid", borderColor: "divider" }} />}
-                              </Box>
-                          ))
-                        : users.map((user, i) => {
-                              const isRequested = requested.has(user.id);
-                              return (
-                                  <Box key={user.id}>
-                                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, py: 1.25 }}>
-                                          <Avatar
-                                              src={user.profile_picture || BlankProfileImage}
-                                              sx={{ width: 36, height: 36, cursor: "pointer", flexShrink: 0 }}
-                                              onClick={() => navigate(`/profile/${user.id}`)}
-                                              onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }}
-                                          />
-                                          <Box
-                                              sx={{ flex: 1, minWidth: 0, cursor: "pointer" }}
-                                              onClick={() => navigate(`/profile/${user.id}`)}
-                                          >
-                                              <Typography noWrap sx={{ fontWeight: 600, fontSize: "0.82rem", lineHeight: 1.3, color: "text.primary" }}>
-                                                  {user.username}
-                                              </Typography>
-                                              <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3 }}>
-                                                  {user.mutual_count > 0 ? `${user.mutual_count} mutual` : `${user.follower_count} followers`}
-                                              </Typography>
-                                          </Box>
-                                          {isRequested ? (
-                                              <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "text.disabled", flexShrink: 0 }}>
-                                                  Requested
-                                              </Typography>
-                                          ) : (
-                                              <Button
-                                                  size="small"
-                                                  onClick={() => handleFollow(user.id)}
-                                                  sx={{
-                                                      borderRadius: "20px",
-                                                      border: "1px solid #6366f1",
-                                                      color: "#6366f1",
-                                                      fontSize: "0.72rem",
-                                                      fontWeight: 600,
-                                                      px: 1.25,
-                                                      py: 0.25,
-                                                      textTransform: "none",
-                                                      backgroundColor: "transparent",
-                                                      flexShrink: 0,
-                                                      minWidth: 0,
-                                                      lineHeight: 1.6,
-                                                      "&:hover": { backgroundColor: "rgba(99,102,241,0.08)", border: "1px solid #6366f1" },
-                                                  }}
-                                              >
-                                                  Follow
-                                              </Button>
-                                          )}
-                                      </Box>
-                                      {i < users.length - 1 && <Box sx={{ borderTop: "1px solid", borderColor: "divider" }} />}
-                                  </Box>
-                              );
-                          })}
-                </Box>
+                {userList}
             </Box>
         </Box>
     );

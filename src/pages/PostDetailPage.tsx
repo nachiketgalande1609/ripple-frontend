@@ -980,6 +980,9 @@ const PostDetailPage = () => {
           bgcolor: (t) => t.palette.background.paper,
           borderTop: "1px solid",
           borderColor: (t) => t.palette.divider,
+          position: { xs: "sticky", sm: "static" },
+          bottom: { xs: "54px", sm: "auto" },
+          zIndex: { xs: 10, sm: "auto" },
         }}
       >
         {/* Actions row */}
@@ -1164,8 +1167,8 @@ const PostDetailPage = () => {
     <Fade in timeout={280}>
       <Box
         sx={{
-          height: "100vh",
-          overflow: "hidden",
+          height: { sm: "100vh" },
+          overflow: { sm: "hidden" },
           bgcolor: (t) => t.palette.background.default,
           display: "flex",
           flexDirection: "column",
@@ -1182,7 +1185,7 @@ const PostDetailPage = () => {
             flexDirection: "column",
             py: { xs: 2, md: 3 },
             px: { xs: 1, md: 3 },
-            overflow: "hidden",
+            overflow: { sm: "hidden" },
           }}
         >
           {/* Centered content wrapper */}

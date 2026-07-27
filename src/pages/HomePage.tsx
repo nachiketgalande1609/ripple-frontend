@@ -6,7 +6,7 @@ import StoryDialog from "../component/stories/StoryDialog";
 import UploadStoryDialog from "../component/stories/UploadStoryDialog";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getPosts, getStories, fetchPollsFeed } from "../services/api";
-import SuggestedUsers from "../component/SuggestedUsers";
+import SuggestionsDrawer from "../component/SuggestionsDrawer";
 import PollCard from "../component/post/PollCard";
 import BlankProfileImage from "../static/profile_blank.png";
 import { ACCENT_COLOR } from "../theme";
@@ -169,6 +169,7 @@ const HomePage = () => {
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const showSidebar = useMediaQuery(theme.breakpoints.up("lg"));
     const isDark = theme.palette.mode === "dark";
 
     const [openStoryDialog, setOpenStoryDialog] = useState(false);
@@ -473,22 +474,8 @@ const HomePage = () => {
                 </Box>
             </Container>
 
-            {/* ── Right sidebar (desktop only) ── */}
-            {!isMobile && (
-                <>
-                    <Box
-                        sx={{
-                            position: "fixed",
-                            top: 16,
-                            right: 16,
-                            width: 290,
-                            zIndex: 10,
-                        }}
-                    >
-                        <SuggestedUsers />
-                    </Box>
-                </>
-            )}
+            {/* ── Right suggestions drawer (desktop only) ── */}
+            {showSidebar && <SuggestionsDrawer />}
 
             <StoryDialog
                 open={openStoryDialog}
