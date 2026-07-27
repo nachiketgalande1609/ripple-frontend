@@ -1,16 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Box, Typography, TextField, Button, CircularProgress,
-    Dialog, InputAdornment, IconButton,
+    Dialog, InputAdornment, IconButton, Avatar,
 } from "@mui/material";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
 import PauseCircleOutlineRoundedIcon from "@mui/icons-material/PauseCircleOutlineRounded";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { deactivateAccount, deleteAccount } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
 import { useGlobalStore } from "../../store/store";
+import { getAccounts, switchAccount, StoredAccount } from "../../utils/accounts";
+import AddAccountDialog from "../AddAccountDialog";
+import BlankProfileImage from "../../static/profile_blank.png";
 
 const fieldSx = {
     "& .MuiOutlinedInput-root": {
@@ -167,6 +172,92 @@ const ActionCard = ({ icon, title, description, buttonLabel, buttonColor, onClic
     </Box>
 );
 
+const AccountsSection = () => {
+    const currentUser = useGlobalStore((s) => s.user);
+    const [accounts, setAccounts] = useState<StoredAccount[]>([]);
+    const [switching, setSwitching] = useState<string | null>(null);
+    const [addOpen, setAddOpen] = useState(false);
+
+    useEffect(() => { setAccounts(getAccounts()); }, []);
+
+    const handleSwitch = (id: string) => {
+        if (String(id) === String(currentUser?.id)) return;
+        setSwitching(id);
+        switchAccount(id);
+        window.location.href = "/";
+    };
+
+    const otherAccounts = accounts.filter((a) => String(a.id) !== String(currentUser?.id));
+
+    return (
+        <Box sx={{ mb: 4 }}>
+            <Box sx={{ mb: 2 }}>
+                <Typography sx={{ fontSize: "0.95rem", fontWeight: 600, color: "text.primary" }}>
+                    Linked Accounts
+                </Typography>
+                <Typography sx={{ fontSize: "0.78rem", color: "text.disabled", mt: 0.25 }}>
+                    Switch between accounts or add a new one
+                </Typography>
+            </Box>
+
+            {/* Current account */}
+            {currentUser && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2, p: 2, mb: 1.5, borderRadius: "16px", border: "1px solid", borderColor: "divider", backgroundColor: "var(--nav-bg)", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)" }}>
+                    <Avatar src={currentUser.profile_picture_url || BlankProfileImage} sx={{ width: 42, height: 42, flexShrink: 0 }} onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }} />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography noWrap sx={{ fontWeight: 600, fontSize: "0.9rem", color: "text.primary" }}>{currentUser.username}</Typography>
+                        <Typography noWrap sx={{ fontSize: "0.75rem", color: "text.disabled" }}>{currentUser.email}</Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexShrink: 0 }}>
+                        <CheckRoundedIcon sx={{ fontSize: 15, color: "#10b981" }} />
+                        <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "#10b981" }}>Active</Typography>
+                    </Box>
+                </Box>
+            )}
+
+            {/* Other accounts */}
+            {otherAccounts.map((acc) => (
+                <Box
+                    key={acc.id}
+                    sx={{ display: "flex", alignItems: "center", gap: 2, p: 2, mb: 1.5, borderRadius: "16px", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper", opacity: switching === acc.id ? 0.6 : 1, transition: "opacity 0.2s" }}
+                >
+                    <Avatar src={acc.profile_picture_url || BlankProfileImage} sx={{ width: 42, height: 42, flexShrink: 0 }} onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }} />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography noWrap sx={{ fontWeight: 600, fontSize: "0.9rem", color: "text.primary" }}>{acc.username}</Typography>
+                        <Typography noWrap sx={{ fontSize: "0.75rem", color: "text.disabled" }}>{acc.email}</Typography>
+                    </Box>
+                    <Button
+                        size="small"
+                        onClick={() => handleSwitch(acc.id)}
+                        sx={{
+                            borderRadius: "10px", textTransform: "none", fontWeight: 600, fontSize: "0.78rem",
+                            border: "none", backgroundColor: "var(--nav-bg)",
+                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                            color: "text.secondary", px: 2, flexShrink: 0,
+                            "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)" },
+                        }}
+                    >
+                        Switch
+                    </Button>
+                </Box>
+            ))}
+
+            {/* Add account */}
+            <Box
+                onClick={() => setAddOpen(true)}
+                sx={{ display: "flex", alignItems: "center", gap: 2, p: 2, borderRadius: "16px", border: "1.5px dashed", borderColor: "divider", cursor: "pointer", transition: "border-color 0.2s, background 0.2s", "&:hover": { borderColor: "text.disabled", backgroundColor: "action.hover" } }}
+            >
+                <Box sx={{ width: 42, height: 42, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px dashed", borderColor: "divider", flexShrink: 0 }}>
+                    <AddRoundedIcon sx={{ fontSize: 20, color: "text.disabled" }} />
+                </Box>
+                <Typography sx={{ fontSize: "0.9rem", fontWeight: 500, color: "text.secondary" }}>Add account</Typography>
+            </Box>
+
+            <AddAccountDialog open={addOpen} onClose={() => setAddOpen(false)} />
+        </Box>
+    );
+};
+
 const AccountManagement = () => {
     const [dialogMode, setDialogMode] = useState<Mode | null>(null);
     const [loading, setLoading] = useState(false);
@@ -203,6 +294,10 @@ const AccountManagement = () => {
 
     return (
         <Box sx={{ width: "100%", maxWidth: 620 }}>
+            <AccountsSection />
+
+            <Box sx={{ borderTop: "1px solid", borderColor: "divider", mb: 3 }} />
+
             <Box sx={{ mb: 3 }}>
                 <Typography sx={{ fontSize: "0.95rem", fontWeight: 600, color: "text.primary" }}>
                     Account Management

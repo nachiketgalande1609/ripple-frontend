@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { Drawer, Box, Typography, IconButton, Avatar, Skeleton, useTheme, Tooltip } from "@mui/material";
-import { Close as CloseIcon, PeopleAltOutlined, NotificationsNoneRounded, ChevronRight } from "@mui/icons-material";
+import { Close as CloseIcon, DashboardCustomizeOutlined, ChevronRight, AddRounded, CheckRounded } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import SuggestedUsers from "./SuggestedUsers";
+import AddAccountDialog from "./AddAccountDialog";
 import { getNotifications } from "../services/api";
 import { timeAgo } from "../utils/utils";
 import BlankProfileImage from "../static/profile_blank.png";
+import { getAccounts, switchAccount, StoredAccount } from "../utils/accounts";
+import { useGlobalStore } from "../store/store";
 
 const DRAWER_WIDTH = 300;
 
@@ -98,6 +101,129 @@ function NotificationsSection() {
     );
 }
 
+
+function AccountSwitcher() {
+    const currentUser = useGlobalStore((s) => s.user);
+    const [accounts, setAccounts] = useState<StoredAccount[]>([]);
+    const [switching, setSwitching] = useState<string | null>(null);
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+
+    useEffect(() => {
+        setAccounts(getAccounts());
+    }, []);
+
+    const handleSwitch = (id: string) => {
+        if (id === String(currentUser?.id)) return;
+        setSwitching(id);
+        switchAccount(id);
+        window.location.href = "/";
+    };
+
+    const otherAccounts = accounts.filter((a) => String(a.id) !== String(currentUser?.id));
+
+    return (
+        <Box sx={{ mb: 2 }}>
+            {/* Section header */}
+            <Box sx={{ mb: 1.25 }}>
+                <Box sx={{ borderLeft: "2.5px solid #10b981", pl: 1.25 }}>
+                    <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
+                        Accounts
+                    </Typography>
+                </Box>
+            </Box>
+
+            {/* Current account */}
+            {currentUser && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, py: 0.875, px: 0.75, borderRadius: "10px", mb: 0.5, bgcolor: "action.selected" }}>
+                    <Avatar
+                        src={currentUser.profile_picture_url || BlankProfileImage}
+                        sx={{ width: 34, height: 34, flexShrink: 0 }}
+                        onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }}
+                    />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography noWrap sx={{ fontSize: "0.8rem", fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
+                            {currentUser.username}
+                        </Typography>
+                        <Typography noWrap sx={{ fontSize: "0.67rem", color: "text.disabled", lineHeight: 1.3 }}>
+                            {currentUser.email}
+                        </Typography>
+                    </Box>
+                    <CheckRounded sx={{ fontSize: 16, color: "#10b981", flexShrink: 0 }} />
+                </Box>
+            )}
+
+            {/* Other accounts */}
+            {otherAccounts.map((acc) => (
+                <Box
+                    key={acc.id}
+                    onClick={() => handleSwitch(acc.id)}
+                    sx={{
+                        display: "flex", alignItems: "center", gap: 1.25,
+                        py: 0.875, px: 0.75, borderRadius: "10px", cursor: "pointer",
+                        transition: "background 0.2s",
+                        "&:hover": { backgroundColor: "action.hover" },
+                        opacity: switching === acc.id ? 0.6 : 1,
+                    }}
+                >
+                    <Avatar
+                        src={acc.profile_picture_url || BlankProfileImage}
+                        sx={{ width: 34, height: 34, flexShrink: 0 }}
+                        onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }}
+                    />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography noWrap sx={{ fontSize: "0.8rem", fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
+                            {acc.username}
+                        </Typography>
+                        <Typography noWrap sx={{ fontSize: "0.67rem", color: "text.disabled", lineHeight: 1.3 }}>
+                            {acc.email}
+                        </Typography>
+                    </Box>
+                    <button
+                        style={{
+                            display: "inline-flex", alignItems: "center", justifyContent: "center",
+                            padding: "0 10px", height: "26px", borderRadius: "10px", border: "none",
+                            background: "var(--nav-bg)",
+                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                            color: "inherit", fontSize: "0.7rem", fontWeight: 600, cursor: "pointer",
+                            whiteSpace: "nowrap", userSelect: "none", outline: "none", flexShrink: 0,
+                            transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
+                        }}
+                    >
+                        Switch
+                    </button>
+                </Box>
+            ))}
+
+            <AddAccountDialog
+                open={addDialogOpen}
+                onClose={() => setAddDialogOpen(false)}
+            />
+
+            {/* Add account */}
+            <Box
+                onClick={() => setAddDialogOpen(true)}
+                sx={{
+                    display: "flex", alignItems: "center", gap: 1.25,
+                    py: 0.875, px: 0.75, mt: 0.5, borderRadius: "10px", cursor: "pointer",
+                    transition: "background 0.2s",
+                    "&:hover": { backgroundColor: "action.hover" },
+                }}
+            >
+                <Box sx={{
+                    width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    border: "1.5px dashed", borderColor: "divider",
+                }}>
+                    <AddRounded sx={{ fontSize: 18, color: "text.disabled" }} />
+                </Box>
+                <Typography sx={{ fontSize: "0.8rem", fontWeight: 500, color: "text.secondary" }}>
+                    Add account
+                </Typography>
+            </Box>
+        </Box>
+    );
+}
+
 export default function SuggestionsDrawer() {
     const theme = useTheme();
     const [open, setOpen] = useState(true);
@@ -106,7 +232,7 @@ export default function SuggestionsDrawer() {
         <>
             {/* ── Collapsed tab button (visible when drawer is closed) ── */}
             {!open && (
-                <Tooltip title="Activity & suggestions" placement="left">
+                <Tooltip title="Quick panel" placement="left">
                     <Box
                         onClick={() => setOpen(true)}
                         sx={{
@@ -131,7 +257,7 @@ export default function SuggestionsDrawer() {
                             "&:hover": { boxShadow: "-6px 0 20px rgba(0,0,0,0.13)" },
                         }}
                     >
-                        <NotificationsNoneRounded sx={{ fontSize: 18, color: "text.secondary" }} />
+                        <DashboardCustomizeOutlined sx={{ fontSize: 18, color: "text.secondary" }} />
                     </Box>
                 </Tooltip>
             )}
@@ -175,7 +301,7 @@ export default function SuggestionsDrawer() {
                     >
                         <Box sx={{ borderLeft: "2.5px solid #6366f1", pl: 1.25, flex: 1 }}>
                             <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
-                                For you
+                                Quick panel
                             </Typography>
                         </Box>
                         <IconButton
@@ -195,6 +321,12 @@ export default function SuggestionsDrawer() {
 
                     {/* Scrollable content */}
                     <Box sx={{ flex: 1, overflowY: "auto", px: "11px", pb: 2 }}>
+                        {/* Account switcher */}
+                        <AccountSwitcher />
+
+                        {/* Divider */}
+                        <Box sx={{ borderTop: "1px solid", borderColor: "divider", mb: 2 }} />
+
                         {/* Notifications */}
                         <NotificationsSection />
 

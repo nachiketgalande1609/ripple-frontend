@@ -5,6 +5,7 @@ import { loginUser, trackTraffic } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { useGlobalStore } from "../store/store";
 import socket from "../services/socket";
+import { saveAccount } from "../utils/accounts";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../static/logo-transparent.png";
@@ -501,6 +502,7 @@ const LoginPage: React.FC = () => {
         localStorage.setItem("user", JSON.stringify(user));
         sessionStorage.setItem("_kp", password);
         localStorage.setItem("_kp", password);
+        saveAccount(user, token);
         socket.emit("registerUser", user.id);
         setUser(user);
         navigate("/");

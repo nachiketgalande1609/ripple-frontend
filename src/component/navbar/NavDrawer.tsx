@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import socket from "../../services/socket";
+import { removeAccount, switchAccount } from "../../utils/accounts";
 import CreatePostModal from "../../component/post/CreatePostModal";
 import UploadStoryDialog from "../../component/stories/UploadStoryDialog";
 import CreatePollModal from "../../component/post/CreatePollModal";
@@ -673,11 +674,17 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
 
     const handleLogout = () => {
         if (currentUser) socket.disconnect();
+        const next = removeAccount(String(currentUser?.id));
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         localStorage.removeItem("privateKey");
         setMoreOpen(false);
-        navigate("/login");
+        if (next) {
+            switchAccount(next.id);
+            window.location.href = "/";
+        } else {
+            navigate("/login");
+        }
     };
 
     const badgeProps = {
