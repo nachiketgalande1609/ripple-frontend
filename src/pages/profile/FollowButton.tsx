@@ -4,6 +4,7 @@ import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 
 interface Profile {
     username: string;
@@ -36,39 +37,6 @@ function getState(isFollowing: boolean, profileData: Pick<Profile, "is_request_a
     return "follow";
 }
 
-const stateConfig: Record<
-    ButtonState,
-    {
-        label: string;
-        hoverLabel: string;
-        icon: React.ReactNode;
-        hoverIcon: React.ReactNode;
-        hoverColor: string;
-    }
-> = {
-    follow: {
-        label: "Follow",
-        hoverLabel: "Follow",
-        icon: <PersonAddIcon sx={{ fontSize: 14 }} />,
-        hoverIcon: <PersonAddIcon sx={{ fontSize: 14 }} />,
-        hoverColor: "inherit",
-    },
-    pending: {
-        label: "Requested",
-        hoverLabel: "Cancel",
-        icon: <HourglassTopIcon sx={{ fontSize: 14 }} />,
-        hoverIcon: <CloseIcon sx={{ fontSize: 14 }} />,
-        hoverColor: "#ff5050",
-    },
-    following: {
-        label: "Following",
-        hoverLabel: "Unfollow",
-        icon: <CheckIcon sx={{ fontSize: 14 }} />,
-        hoverIcon: <CloseIcon sx={{ fontSize: 14 }} />,
-        hoverColor: "#ff5050",
-    },
-};
-
 const FollowButton: React.FC<FollowButtonProps> = ({
     isFollowing,
     profileData,
@@ -78,6 +46,40 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     handleUnfollow,
 }) => {
     const [hovered, setHovered] = useState(false);
+    const { t } = useTranslation();
+
+    const stateConfig: Record<
+        ButtonState,
+        {
+            label: string;
+            hoverLabel: string;
+            icon: React.ReactNode;
+            hoverIcon: React.ReactNode;
+            hoverColor: string;
+        }
+    > = {
+        follow: {
+            label: t("common.follow"),
+            hoverLabel: t("common.follow"),
+            icon: <PersonAddIcon sx={{ fontSize: 14 }} />,
+            hoverIcon: <PersonAddIcon sx={{ fontSize: 14 }} />,
+            hoverColor: "inherit",
+        },
+        pending: {
+            label: t("common.requested"),
+            hoverLabel: t("common.cancel"),
+            icon: <HourglassTopIcon sx={{ fontSize: 14 }} />,
+            hoverIcon: <CloseIcon sx={{ fontSize: 14 }} />,
+            hoverColor: "#ff5050",
+        },
+        following: {
+            label: t("common.following"),
+            hoverLabel: t("common.unfollow"),
+            icon: <CheckIcon sx={{ fontSize: 14 }} />,
+            hoverIcon: <CloseIcon sx={{ fontSize: 14 }} />,
+            hoverColor: "#ff5050",
+        },
+    };
     const state = getState(isFollowing, profileData);
     const config = stateConfig[state];
     const isInteractive = state === "pending" || state === "following";

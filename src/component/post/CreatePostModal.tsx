@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Box, Button, Modal, TextField, Typography, Backdrop, Fade,
   IconButton, CircularProgress, useTheme, useMediaQuery,
@@ -29,6 +30,7 @@ const ACCENT = "#64748B";
 const CAPTION_LIMIT = 2200;
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const currentUser = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user") || "null") : {};
@@ -126,18 +128,18 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
           setPosted(true);
           setTimeout(() => {
             handleModalClose();
-            notifications.show("Post shared!", { severity: "success", autoHideDuration: 3000 });
+            notifications.show(t("create.postShared"), { severity: "success", autoHideDuration: 3000 });
           }, 800);
         }
       }
     } catch {
-      notifications.show("Error uploading post. Please try again.", { severity: "error", autoHideDuration: 3000 });
+      notifications.show(t("create.shareError"), { severity: "error", autoHideDuration: 3000 });
     } finally {
       setLoading(false); setPostUploading(false);
     }
   };
 
-  const bc = (t: any) => t.palette.divider;
+  const bc = (th: any) => th.palette.divider;
 
   return (
     <Modal
@@ -171,7 +173,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
               color: (t) => t.palette.text.primary,
               letterSpacing: "-0.2px",
             }}>
-              Create post
+              {t("create.createPost")}
             </Typography>
             <IconButton onClick={handleModalClose} size="small" sx={{
               width: 32, height: 32, borderRadius: "10px",
@@ -297,10 +299,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                       fontWeight: 600, color: (t) => t.palette.text.primary, mb: 0.4,
                       letterSpacing: "-0.1px",
                     }}>
-                      {isDragging ? "Drop to upload" : "Drop photo or video"}
+                      {isDragging ? t("create.dropToUpload") : t("create.dropPhotoOrVideo")}
                     </Typography>
                     <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.disabled, mb: 1.5 }}>
-                      or click to browse
+                      {t("create.orClickToBrowse")}
                     </Typography>
                     <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center", flexWrap: "wrap" }}>
                       {["JPG", "PNG", "GIF", "MP4", "MOV"].map((ext) => (
@@ -368,7 +370,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                     {currentUser?.username || "You"}
                   </Typography>
                   <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.72rem", color: (t) => t.palette.text.disabled }}>
-                    Posting now
+                    {t("create.postingNow")}
                   </Typography>
                 </Box>
               </Box>
@@ -379,7 +381,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                   <TextField
                     fullWidth multiline rows={isMobile ? 3 : 6}
                     variant="standard"
-                    placeholder="Write a caption… use #hashtags"
+                    placeholder={t("create.writeCaptionHashtags")}
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
                     inputProps={{ maxLength: CAPTION_LIMIT, spellCheck: false }}
@@ -438,7 +440,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
               <Box sx={{ px: 2.25, pb: 1.75, borderTop: "1px solid", borderColor: bc, pt: 1.5 }}>
                 <TextField
                   fullWidth variant="standard"
-                  placeholder="Add a location…"
+                  placeholder={t("create.addLocation")}
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   InputProps={{
@@ -458,7 +460,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
               <Box sx={{ px: 2.25, pb: 1.75, borderTop: "1px solid", borderColor: bc, pt: 1.5 }}>
                 <TextField
                   fullWidth variant="standard"
-                  placeholder="Tag people…"
+                  placeholder={t("create.tagPeoplePlaceholder")}
                   value={tagSearch}
                   onChange={(e) => setTagSearch(e.target.value)}
                   InputProps={{
@@ -541,7 +543,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                 fontFamily: "'Inter', sans-serif", fontSize: "0.78rem",
                 color: (t) => t.palette.text.disabled, mr: "auto",
               }}>
-                {!hasFile && !hasCaption ? "Add a photo and caption" : !hasFile ? "Add a photo to continue" : "Write a caption to continue"}
+                {!hasFile && !hasCaption ? t("create.addPhotoAndCaption") : !hasFile ? t("create.addPhotoToContinue") : t("create.writeCaptionToContinue")}
               </Typography>
             )}
 
@@ -557,7 +559,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                 "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
               }}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
 
             <Button
@@ -586,7 +588,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                 "&.Mui-disabled": { backgroundColor: `${ACCENT}35`, color: "rgba(255,255,255,0.5)" },
               }}
             >
-              {posted ? "Shared!" : loading ? "Sharing…" : "Share"}
+              {posted ? t("create.shared") : loading ? t("create.sharing") : t("create.share")}
             </Button>
           </Box>
 

@@ -4,6 +4,7 @@ import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { updateTimezone } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
 import { getUserTimezone } from "../../utils/utils";
+import { useTranslation } from "react-i18next";
 
 const labelSx = {
     fontFamily: "'Inter', -apple-system, sans-serif",
@@ -76,6 +77,7 @@ function buildTimezoneList() {
 }
 
 export default function Timezone() {
+    const { t } = useTranslation();
     const notifications = useAppNotifications();
     const [selected, setSelected] = useState<string>(getUserTimezone);
     const [loading, setLoading] = useState(false);
@@ -93,10 +95,10 @@ export default function Timezone() {
                 localStorage.setItem("user", JSON.stringify(user));
             }
             setSaved(true);
-            notifications.show("Timezone updated successfully.", { severity: "success", autoHideDuration: 3000 });
+            notifications.show(t("settings.timezoneUpdated"), { severity: "success", autoHideDuration: 3000 });
             setTimeout(() => setSaved(false), 3000);
         } catch {
-            notifications.show("Failed to update timezone.", { severity: "error", autoHideDuration: 3500 });
+            notifications.show(t("settings.timezoneFailed"), { severity: "error", autoHideDuration: 3500 });
         } finally {
             setLoading(false);
         }
@@ -107,10 +109,10 @@ export default function Timezone() {
             {/* Header */}
             <Box sx={{ mb: 2.5 }}>
                 <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: "1rem", color: "text.primary", letterSpacing: "-0.3px" }}>
-                    Timezone
+                    {t("settings.timezoneTitle")}
                 </Typography>
                 <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", color: "text.disabled", mt: 0.3 }}>
-                    All timestamps across Ripple will be shown in your selected timezone
+                    {t("settings.timezoneSubtitle")}
                 </Typography>
             </Box>
 
@@ -118,7 +120,7 @@ export default function Timezone() {
             <Box sx={{ borderRadius: "14px", border: "1px solid", borderColor: "divider", backgroundColor: "background.paper", overflow: "hidden" }}>
                 <Box sx={{ px: 2.5, pt: 2.5, pb: 2.5, display: "flex", flexDirection: "column", gap: 2.5 }}>
                     <Box>
-                        <Typography component="label" sx={labelSx}>Your timezone</Typography>
+                        <Typography component="label" sx={labelSx}>{t("settings.yourTimezone")}</Typography>
                         <Select
                             fullWidth
                             value={selected}
@@ -148,7 +150,7 @@ export default function Timezone() {
                     {/* Preview */}
                     <Box sx={{ borderRadius: "10px", backgroundColor: (t) => t.palette.action.hover, px: 2, py: 1.5 }}>
                         <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", textTransform: "uppercase", letterSpacing: "0.06em", mb: 0.5 }}>
-                            Current time in selected timezone
+                            {t("settings.currentTime")}
                         </Typography>
                         <Typography sx={{ fontSize: "0.9rem", fontWeight: 600, color: "text.primary", fontVariantNumeric: "tabular-nums" }}>
                             {new Intl.DateTimeFormat("en-US", {
@@ -196,7 +198,7 @@ export default function Timezone() {
                             <>
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                                     <CheckRoundedIcon sx={{ fontSize: "1.1rem" }} />
-                                    Saved!
+                                    {t("settings.timezoneSaved")}
                                 </Box>
                                 <Box
                                     sx={{
@@ -215,7 +217,7 @@ export default function Timezone() {
                                 />
                             </>
                         ) : (
-                            "Save timezone"
+                            t("settings.saveTimezone")
                         )}
                     </Button>
                 </Box>

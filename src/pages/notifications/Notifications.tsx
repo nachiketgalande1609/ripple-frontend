@@ -18,6 +18,7 @@ import {
 } from "../../services/api";
 import { useGlobalStore } from "../../store/store";
 import NotificationCard from "./NotificationCard";
+import { useTranslation } from "react-i18next";
 
 interface Notification {
   id: number;
@@ -83,6 +84,7 @@ const NotificationSkeleton = () => (
 
 const NotificationsPage = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { unreadNotificationsCount, resetNotificationsCount } =
     useGlobalStore();
 
@@ -193,7 +195,7 @@ const NotificationsPage = () => {
           px: 0.5,
         }}
       >
-        Notifications
+        {t("notifications.title")}
       </Typography>
 
       {/* Tabs */}
@@ -223,11 +225,11 @@ const NotificationsPage = () => {
           },
         }}
       >
-        <Tab label="All" value={0} disableRipple />
+        <Tab label={t("notifications.all")} value={0} disableRipple />
         <Tab
           label={
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              Follow Requests
+              {t("notifications.followRequests")}
               {pendingRequestCount > 0 && (
                 <Badge
                   badgeContent={pendingRequestCount}
@@ -273,7 +275,7 @@ const NotificationsPage = () => {
             <Typography
               sx={{ color: (t) => t.palette.text.disabled, fontSize: "0.9rem" }}
             >
-              {activeTab === 1 ? "No follow requests" : "You're all caught up"}
+              {activeTab === 1 ? t("notifications.noFollowRequests") : t("notifications.allCaughtUp")}
             </Typography>
           </Box>
         ) : (

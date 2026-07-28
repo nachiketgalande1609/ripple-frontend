@@ -13,6 +13,7 @@ import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import RepeatRoundedIcon from "@mui/icons-material/RepeatRounded";
 import { getInsights } from "../services/api";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useTranslation } from "react-i18next";
 
 interface PostMonth { month: string; posts: number; likes: number; year?: number; }
 interface TopPost { id: number; content: string; file_url: string; first_media_url: string; like_count: number; comment_count: number; save_count: number; }
@@ -42,6 +43,7 @@ const InsightsPage = () => {
     const [activityPeriod, setActivityPeriod] = useState<number>(6);
     const theme = useTheme();
     const isDark = theme.palette.mode === "dark";
+    const { t } = useTranslation();
 
     useEffect(() => {
         getInsights().then(setData).catch(console.error).finally(() => setLoading(false));
@@ -75,7 +77,7 @@ const InsightsPage = () => {
     );
     if (!data) return (
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
-            <Typography color="text.disabled">Failed to load insights.</Typography>
+            <Typography color="text.disabled">{t("insights.failedToLoad")}</Typography>
         </Box>
     );
 
@@ -89,10 +91,10 @@ const InsightsPage = () => {
         : 0;
 
     const engagementBreakdown = [
-        { name: "Likes", value: data.total_likes_received, color: "#ef4444" },
-        { name: "Comments", value: data.total_comments_received, color: "#3b82f6" },
-        { name: "Saves", value: data.total_saves, color: "#f97316" },
-        { name: "Story Views", value: data.story_total_views, color: "#14b8a6" },
+        { name: t("insights.likes"), value: data.total_likes_received, color: "#ef4444" },
+        { name: t("insights.comments"), value: data.total_comments_received, color: "#3b82f6" },
+        { name: t("insights.saves"), value: data.total_saves, color: "#f97316" },
+        { name: t("insights.storyViews"), value: data.story_total_views, color: "#14b8a6" },
     ];
 
     const CustomTooltip = ({ active, payload, label }: any) => {
@@ -114,19 +116,19 @@ const InsightsPage = () => {
             {/* Header */}
             <Box sx={{ mb: 3.5 }}>
                 <Typography sx={{ fontWeight: 700, fontSize: "1.3rem", letterSpacing: "-0.4px", color: "text.primary" }}>
-                    Account Insights
+                    {t("insights.title")}
                 </Typography>
                 <Typography sx={{ fontSize: "0.78rem", color: "text.disabled", mt: 0.3 }}>
-                    Performance overview for your account
+                    {t("insights.subtitle")}
                 </Typography>
             </Box>
 
             {/* Top KPI row */}
             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1.5, mb: 1.5 }}>
                 {[
-                    { label: "Followers", value: data.followers_count, icon: <GroupRoundedIcon sx={{ fontSize: 16 }} />, color: "#6366f1" },
-                    { label: "Profile Views", value: data.profile_views, icon: <VisibilityRoundedIcon sx={{ fontSize: 16 }} />, color: "#10b981" },
-                    { label: "Total Posts", value: data.total_posts, icon: <GridOnRoundedIcon sx={{ fontSize: 16 }} />, color: "#0ea5e9" },
+                    { label: t("insights.followers"), value: data.followers_count, icon: <GroupRoundedIcon sx={{ fontSize: 16 }} />, color: "#6366f1" },
+                    { label: t("insights.profileViews"), value: data.profile_views, icon: <VisibilityRoundedIcon sx={{ fontSize: 16 }} />, color: "#10b981" },
+                    { label: t("insights.totalPosts"), value: data.total_posts, icon: <GridOnRoundedIcon sx={{ fontSize: 16 }} />, color: "#0ea5e9" },
                 ].map((kpi) => (
                     <Box key={kpi.label} sx={{ borderRadius: "18px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2 }}>
                         <Box sx={{ color: kpi.color, mb: 1 }}>{kpi.icon}</Box>
@@ -137,9 +139,9 @@ const InsightsPage = () => {
             </Box>
             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1.5, mb: 3 }}>
                 {[
-                    { label: "Likes", value: data.total_likes_received, icon: <FavoriteRoundedIcon sx={{ fontSize: 16 }} />, color: "#ef4444" },
-                    { label: "Saves", value: data.total_saves, icon: <BookmarkRoundedIcon sx={{ fontSize: 16 }} />, color: "#f97316" },
-                    { label: "Reposts", value: data.total_reposts ?? 0, icon: <RepeatRoundedIcon sx={{ fontSize: 16 }} />, color: "#6366f1" },
+                    { label: t("insights.likes"), value: data.total_likes_received, icon: <FavoriteRoundedIcon sx={{ fontSize: 16 }} />, color: "#ef4444" },
+                    { label: t("insights.saves"), value: data.total_saves, icon: <BookmarkRoundedIcon sx={{ fontSize: 16 }} />, color: "#f97316" },
+                    { label: t("insights.reposts"), value: data.total_reposts ?? 0, icon: <RepeatRoundedIcon sx={{ fontSize: 16 }} />, color: "#6366f1" },
                 ].map((kpi) => (
                     <Box key={kpi.label} sx={{ borderRadius: "18px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2 }}>
                         <Box sx={{ color: kpi.color, mb: 1 }}>{kpi.icon}</Box>
@@ -153,7 +155,7 @@ const InsightsPage = () => {
             {data.posts_by_month.length > 0 && (
                 <Box sx={{ borderRadius: "20px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2.5, mb: 3 }}>
                     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.4 }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary" }}>Activity</Typography>
+                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary" }}>{t("insights.activity")}</Typography>
                         <Select
                             value={activityPeriod}
                             onChange={(e) => setActivityPeriod(Number(e.target.value))}
@@ -169,12 +171,12 @@ const InsightsPage = () => {
                                 "& .MuiSelect-select": { py: "4px", px: "10px" },
                             }}
                         >
-                            <MenuItem value={3} sx={{ fontSize: "0.78rem" }}>Last 3 months</MenuItem>
-                            <MenuItem value={6} sx={{ fontSize: "0.78rem" }}>Last 6 months</MenuItem>
-                            <MenuItem value={12} sx={{ fontSize: "0.78rem" }}>Last 12 months</MenuItem>
+                            <MenuItem value={3} sx={{ fontSize: "0.78rem" }}>{t("insights.last3Months")}</MenuItem>
+                            <MenuItem value={6} sx={{ fontSize: "0.78rem" }}>{t("insights.last6Months")}</MenuItem>
+                            <MenuItem value={12} sx={{ fontSize: "0.78rem" }}>{t("insights.last12Months")}</MenuItem>
                         </Select>
                     </Box>
-                    <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mb: 2 }}>Posts published & likes received</Typography>
+                    <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mb: 2 }}>{t("insights.postsAndLikes")}</Typography>
                     <ResponsiveContainer width="100%" height={200}>
                         <AreaChart data={filteredActivity} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                             <defs>
@@ -195,14 +197,14 @@ const InsightsPage = () => {
                             <XAxis dataKey="month" tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} />
                             <YAxis tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} allowDecimals={false} />
                             <Tooltip content={<CustomTooltip />} />
-                            <Area type="monotone" dataKey="views" name="Profile Views" stroke="#10b981" strokeWidth={2} fill="url(#gViews)" dot={{ r: 3, fill: "#10b981", strokeWidth: 0 }} activeDot={{ r: 5 }} />
-                            <Area type="monotone" dataKey="likes" name="Likes" stroke="#6366f1" strokeWidth={2} fill="url(#gLikes)" dot={{ r: 3, fill: "#6366f1", strokeWidth: 0 }} activeDot={{ r: 5 }} />
-                            <Area type="monotone" dataKey="posts" name="Posts" stroke="#0ea5e9" strokeWidth={2} fill="url(#gPosts)" dot={{ r: 3, fill: "#0ea5e9", strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                            <Area type="monotone" dataKey="views" name={t("insights.profileViewsLegend")} stroke="#10b981" strokeWidth={2} fill="url(#gViews)" dot={{ r: 3, fill: "#10b981", strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                            <Area type="monotone" dataKey="likes" name={t("insights.likesReceivedLegend")} stroke="#6366f1" strokeWidth={2} fill="url(#gLikes)" dot={{ r: 3, fill: "#6366f1", strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                            <Area type="monotone" dataKey="posts" name={t("insights.postsPublishedLegend")} stroke="#0ea5e9" strokeWidth={2} fill="url(#gPosts)" dot={{ r: 3, fill: "#0ea5e9", strokeWidth: 0 }} activeDot={{ r: 5 }} />
                         </AreaChart>
                     </ResponsiveContainer>
                     {/* Legend */}
                     <Box sx={{ display: "flex", gap: 2.5, mt: 1.5, justifyContent: "center" }}>
-                        {[{ color: "#10b981", label: "Profile views" }, { color: "#6366f1", label: "Likes received" }, { color: "#0ea5e9", label: "Posts published" }].map((l) => (
+                        {[{ color: "#10b981", label: t("insights.profileViewsLegend") }, { color: "#6366f1", label: t("insights.likesReceivedLegend") }, { color: "#0ea5e9", label: t("insights.postsPublishedLegend") }].map((l) => (
                             <Box key={l.label} sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                                 <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: l.color }} />
                                 <Typography sx={{ fontSize: "0.72rem", color: "text.secondary" }}>{l.label}</Typography>
@@ -215,16 +217,16 @@ const InsightsPage = () => {
             {/* Profile Views chart */}
             <Box sx={{ borderRadius: "20px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2.5, mb: 3 }}>
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.4 }}>
-                    <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary" }}>Profile Views</Typography>
+                    <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary" }}>{t("insights.profileViews")}</Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#10b981" }} />
                         <Typography sx={{ fontSize: "0.72rem", color: "text.secondary", fontWeight: 600 }}>
-                            {data.profile_views.toLocaleString()} total
+                            {data.profile_views.toLocaleString()} {t("insights.total")}
                         </Typography>
                     </Box>
                 </Box>
                 <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mb: 2 }}>
-                    Unique visits to your profile each month
+                    {t("insights.uniqueVisits")}
                 </Typography>
                 <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={filteredActivity} margin={{ top: 4, right: 4, left: -20, bottom: 0 }} barSize={20}>
@@ -238,7 +240,7 @@ const InsightsPage = () => {
                         <XAxis dataKey="month" tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} allowDecimals={false} />
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)", radius: 8 }} />
-                        <Bar dataKey="views" name="Profile Views" fill="url(#gViewsBar)" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="views" name={t("insights.profileViews")} fill="url(#gViewsBar)" radius={[6, 6, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </Box>
@@ -247,8 +249,8 @@ const InsightsPage = () => {
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2.5, mb: 3 }}>
                 {/* Engagement breakdown bar chart */}
                 <Box sx={{ borderRadius: "20px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2.5 }}>
-                    <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary", mb: 0.4 }}>Engagement</Typography>
-                    <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mb: 2 }}>Total interactions received</Typography>
+                    <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary", mb: 0.4 }}>{t("insights.engagement")}</Typography>
+                    <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mb: 2 }}>{t("insights.totalInteractions")}</Typography>
                     <ResponsiveContainer width="100%" height={180}>
                         <BarChart data={engagementBreakdown} margin={{ top: 0, right: 4, left: -24, bottom: 0 }} barSize={28}>
                             <CartesianGrid stroke={gridColor} strokeDasharray="3 3" vertical={false} />
@@ -266,8 +268,8 @@ const InsightsPage = () => {
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {/* Engagement rate radial */}
                     <Box sx={{ borderRadius: "20px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2.5, flex: 1 }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary", mb: 0.3 }}>Engagement rate</Typography>
-                        <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mb: 1 }}>(Likes + Comments) ÷ Followers</Typography>
+                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary", mb: 0.3 }}>{t("insights.engagementRate")}</Typography>
+                        <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mb: 1 }}>{t("insights.engagementFormula")}</Typography>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                             <Box sx={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
                                 <ResponsiveContainer width="100%" height="100%">
@@ -287,10 +289,10 @@ const InsightsPage = () => {
                             </Box>
                             <Box>
                                 <Typography sx={{ fontSize: "0.75rem", color: "text.secondary", lineHeight: 1.6 }}>
-                                    Avg <strong style={{ color: theme.palette.text.primary }}>{data.avg_likes_per_post}</strong> likes per post
+                                    {t("insights.avgLikesPerPost", { count: data.avg_likes_per_post })}
                                 </Typography>
                                 <Typography sx={{ fontSize: "0.75rem", color: "text.secondary" }}>
-                                    <strong style={{ color: theme.palette.text.primary }}>{data.total_comments_received}</strong> comments received
+                                    {t("insights.commentsReceived", { count: data.total_comments_received })}
                                 </Typography>
                             </Box>
                         </Box>
@@ -298,15 +300,15 @@ const InsightsPage = () => {
 
                     {/* Stories */}
                     <Box sx={{ borderRadius: "20px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2.5 }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary", mb: 1.5 }}>Stories</Typography>
+                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary", mb: 1.5 }}>{t("insights.stories")}</Typography>
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                             <Box>
                                 <Typography sx={{ fontWeight: 700, fontSize: "1.5rem", color: "text.primary", lineHeight: 1 }}>{data.story_count}</Typography>
-                                <Typography sx={{ fontSize: "0.67rem", color: "text.disabled", textTransform: "uppercase", letterSpacing: "0.05em", mt: 0.4 }}>Posted</Typography>
+                                <Typography sx={{ fontSize: "0.67rem", color: "text.disabled", textTransform: "uppercase", letterSpacing: "0.05em", mt: 0.4 }}>{t("insights.posted")}</Typography>
                             </Box>
                             <Box sx={{ textAlign: "right" }}>
                                 <Typography sx={{ fontWeight: 700, fontSize: "1.5rem", color: "#14b8a6", lineHeight: 1 }}>{data.story_total_views}</Typography>
-                                <Typography sx={{ fontSize: "0.67rem", color: "text.disabled", textTransform: "uppercase", letterSpacing: "0.05em", mt: 0.4 }}>Views</Typography>
+                                <Typography sx={{ fontSize: "0.67rem", color: "text.disabled", textTransform: "uppercase", letterSpacing: "0.05em", mt: 0.4 }}>{t("insights.views")}</Typography>
                             </Box>
                         </Box>
                     </Box>
@@ -317,7 +319,7 @@ const InsightsPage = () => {
             {data.top_posts.length > 0 && (
                 <Box sx={{ borderRadius: "20px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", p: 2.5 }}>
                     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.4 }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary" }}>Top posts</Typography>
+                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "text.primary" }}>{t("insights.topPosts")}</Typography>
                         <Select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as any)}
@@ -333,13 +335,13 @@ const InsightsPage = () => {
                                 "& .MuiSelect-select": { py: "4px", px: "10px" },
                             }}
                         >
-                            <MenuItem value="like_count" sx={{ fontSize: "0.78rem" }}>By likes</MenuItem>
-                            <MenuItem value="comment_count" sx={{ fontSize: "0.78rem" }}>By comments</MenuItem>
-                            <MenuItem value="save_count" sx={{ fontSize: "0.78rem" }}>By saves</MenuItem>
+                            <MenuItem value="like_count" sx={{ fontSize: "0.78rem" }}>{t("insights.byLikes")}</MenuItem>
+                            <MenuItem value="comment_count" sx={{ fontSize: "0.78rem" }}>{t("insights.byComments")}</MenuItem>
+                            <MenuItem value="save_count" sx={{ fontSize: "0.78rem" }}>{t("insights.bySaves")}</MenuItem>
                         </Select>
                     </Box>
                     <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mb: 2 }}>
-                        {sortBy === "like_count" ? "Ranked by likes" : sortBy === "comment_count" ? "Ranked by comments" : "Ranked by saves"}
+                        {sortBy === "like_count" ? t("insights.rankedByLikes") : sortBy === "comment_count" ? t("insights.rankedByComments") : t("insights.rankedBySaves")}
                     </Typography>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                         {sortedPosts.map((post, idx) => {
@@ -353,7 +355,7 @@ const InsightsPage = () => {
                                         : <Box sx={{ width: 40, height: 40, borderRadius: "10px", bgcolor: "action.hover", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><GridOnRoundedIcon sx={{ fontSize: 18, color: "text.disabled" }} /></Box>
                                     }
                                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        <Typography noWrap sx={{ fontSize: "0.8rem", color: "text.primary", fontWeight: 500 }}>{post.content || "No caption"}</Typography>
+                                        <Typography noWrap sx={{ fontSize: "0.8rem", color: "text.primary", fontWeight: 500 }}>{post.content || t("insights.noCaption")}</Typography>
                                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
                                             <Box sx={{ flex: 1, height: 4, borderRadius: 99, bgcolor: "action.hover", overflow: "hidden" }}>
                                                 <Box sx={{ height: "100%", width: `${(post[sortBy] / max) * 100}%`, bgcolor: "#6366f1", borderRadius: 99, transition: "width 0.4s ease" }} />

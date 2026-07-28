@@ -19,7 +19,9 @@ import BlockedUsers from "../component/settings/BlockedUsers";
 import ChangePassword from "../component/settings/ChangePassword";
 import AccountManagement from "../component/settings/AccountManagement";
 import Timezone from "../component/settings/Timezone";
+import LanguageSettings from "../component/settings/LanguageSettings";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useTranslation } from "react-i18next";
 
 const menuItems = [
   { label: "Profile Details" },
@@ -28,6 +30,7 @@ const menuItems = [
   { label: "Notifications" },
   { label: "Change Password" },
   { label: "Timezone" },
+  { label: "Language" },
   { label: "Linked Devices" },
   { label: "Blocked" },
   { label: "Account" },
@@ -67,6 +70,7 @@ const ChevronRight = () => {
 
 const SettingsPage = () => {
   usePageTitle("Settings");
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -96,6 +100,7 @@ const SettingsPage = () => {
     if (currentSetting === "blocked") return <BlockedUsers />;
     if (currentSetting === "changepassword") return <ChangePassword />;
     if (currentSetting === "timezone") return <Timezone />;
+    if (currentSetting === "language") return <LanguageSettings />;
     if (currentSetting === "account") return <AccountManagement />;
     return (
       <Box sx={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
@@ -195,7 +200,7 @@ const SettingsPage = () => {
                 letterSpacing: "-0.3px",
               }}
             >
-              {activeLabel}
+              {currentSetting ? t(`settings.${currentSetting}`, activeLabel ?? "") : ""}
             </Typography>
           </Box>
 
@@ -248,7 +253,7 @@ const SettingsPage = () => {
               letterSpacing: "-0.5px",
             }}
           >
-            Settings
+            {t("settings.title")}
           </Typography>
           <Typography
             sx={{
@@ -259,7 +264,7 @@ const SettingsPage = () => {
               letterSpacing: "0.3px",
             }}
           >
-            Manage your account
+            {t("settings.manageAccount")}
           </Typography>
         </Box>
 
@@ -291,7 +296,7 @@ const SettingsPage = () => {
                 }}
               >
                 <ListItemText
-                  primary={label}
+                  primary={t(`settings.${label.toLowerCase().replace(/\s+/g, "")}`, label)}
                   primaryTypographyProps={{
                     sx: {
                       fontFamily: "'DM Sans', sans-serif",
@@ -373,7 +378,7 @@ const SettingsPage = () => {
               letterSpacing: "-0.5px",
             }}
           >
-            Settings
+            {t("settings.title")}
           </Typography>
           <Typography
             sx={{
@@ -384,7 +389,7 @@ const SettingsPage = () => {
               letterSpacing: "0.3px",
             }}
           >
-            Manage your account
+            {t("settings.manageAccount")}
           </Typography>
         </Box>
 
@@ -421,7 +426,7 @@ const SettingsPage = () => {
                 }}
               >
                 <ListItemText
-                  primary={label}
+                  primary={t(`settings.${label.toLowerCase().replace(/\s+/g, "")}`, label)}
                   primaryTypographyProps={{
                     sx: {
                       fontFamily: "'DM Sans', sans-serif",
@@ -496,7 +501,7 @@ const SettingsPage = () => {
                 letterSpacing: "0.3px",
               }}
             >
-              Settings
+              {t("settings.title")}
             </Typography>
             <Typography sx={{ fontSize: "12px", color: (t) => t.palette.text.disabled }}>
               /
@@ -511,7 +516,7 @@ const SettingsPage = () => {
                 textTransform: "capitalize",
               }}
             >
-              {activeLabel}
+              {currentSetting ? t(`settings.${currentSetting}`, activeLabel ?? "") : ""}
             </Typography>
           </Box>
         )}

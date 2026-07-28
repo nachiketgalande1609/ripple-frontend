@@ -4,6 +4,7 @@ import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import { getBlockedUsers, unblockUser } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
 import BlankProfileImage from "../../static/profile_blank.png";
+import { useTranslation } from "react-i18next";
 
 type BlockedUser = {
     id: number;
@@ -43,7 +44,9 @@ const BlockedUserCard = ({
     user: BlockedUser;
     onUnblock: (id: number) => void;
     unblocking: boolean;
-}) => (
+}) => {
+    const { t } = useTranslation();
+    return (
     <Box
         sx={{
             display: "flex",
@@ -107,12 +110,14 @@ const BlockedUserCard = ({
                 },
             }}
         >
-            Unblock
+            {t("common.unblock")}
         </Button>
     </Box>
-);
+    );
+};
 
 const BlockedUsers = () => {
+    const { t } = useTranslation();
     const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [unblockingId, setUnblockingId] = useState<number | null>(null);
@@ -123,7 +128,7 @@ const BlockedUsers = () => {
             const data = await getBlockedUsers();
             setBlockedUsers(data);
         } catch {
-            notifications.show("Failed to load blocked users", { severity: "error", autoHideDuration: 3000 });
+            notifications.show(t("settings.blockedLoadFailed"), { severity: "error", autoHideDuration: 3000 });
         } finally {
             setLoading(false);
         }
@@ -138,9 +143,9 @@ const BlockedUsers = () => {
         try {
             await unblockUser(id);
             setBlockedUsers((prev) => prev.filter((u) => u.id !== id));
-            notifications.show("User unblocked", { severity: "success", autoHideDuration: 2500 });
+            notifications.show(t("settings.userUnblocked"), { severity: "success", autoHideDuration: 2500 });
         } catch {
-            notifications.show("Failed to unblock user", { severity: "error", autoHideDuration: 3000 });
+            notifications.show(t("settings.unblockFailed"), { severity: "error", autoHideDuration: 3000 });
         } finally {
             setUnblockingId(null);
         }
@@ -151,10 +156,10 @@ const BlockedUsers = () => {
             {/* Header */}
             <Box sx={{ mb: 2.5 }}>
                 <Typography sx={{ fontSize: "0.95rem", fontWeight: 600, color: (t) => t.palette.text.primary }}>
-                    Blocked Accounts
+                    {t("settings.blockedTitle")}
                 </Typography>
                 <Typography sx={{ fontSize: "0.78rem", color: (t) => t.palette.text.disabled, mt: 0.25 }}>
-                    People you have blocked cannot see your profile or posts
+                    {t("settings.blockedSubtitle")}
                 </Typography>
             </Box>
 
@@ -165,7 +170,7 @@ const BlockedUsers = () => {
                 <Box sx={{ py: 8, display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
                     <BlockOutlinedIcon sx={{ fontSize: 40, color: (t) => t.palette.action.disabled }} />
                     <Typography sx={{ color: (t) => t.palette.text.disabled, fontSize: "0.88rem" }}>
-                        You haven't blocked anyone
+                        {t("settings.noBlocked")}
                     </Typography>
                 </Box>
             ) : (
@@ -181,7 +186,7 @@ const BlockedUsers = () => {
 
             {!loading && blockedUsers.length > 0 && (
                 <Typography sx={{ fontSize: "0.72rem", color: (t) => t.palette.text.disabled, mt: 2, lineHeight: 1.6 }}>
-                    Blocked users will not be notified. You can unblock them at any time.
+                    {t("settings.blockedNote")}
                 </Typography>
             )}
         </Box>

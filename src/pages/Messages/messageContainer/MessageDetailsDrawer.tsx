@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Typography,
   Box,
@@ -152,13 +153,14 @@ export default function MessageDetailsDrawer({
   setDrawerOpen,
   selectedMessage,
 }: MessageDetailsDrawerProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const statuses = [
     selectedMessage?.timestamp
       ? {
-          label: "Sent",
+          label: t("messages.sent"),
           iconColor: theme.palette.text.disabled,
           timestamp: selectedMessage.timestamp,
           icon: (
@@ -170,7 +172,7 @@ export default function MessageDetailsDrawer({
       : null,
     selectedMessage?.delivered_timestamp
       ? {
-          label: "Delivered",
+          label: t("messages.delivered"),
           iconColor: theme.palette.text.secondary,
           timestamp: selectedMessage.delivered_timestamp,
           icon: (
@@ -182,7 +184,7 @@ export default function MessageDetailsDrawer({
       : null,
     selectedMessage?.read_timestamp
       ? {
-          label: "Read",
+          label: t("messages.read"),
           iconColor: "#38acff",
           timestamp: selectedMessage.read_timestamp,
           icon: <DoneAllIcon sx={{ color: "#38acff", fontSize: 15 }} />,
@@ -233,7 +235,7 @@ export default function MessageDetailsDrawer({
             color: (t) => t.palette.text.secondary,
           }}
         >
-          Message Info
+          {t("messages.messageInfo")}
         </Typography>
         <IconButton
           onClick={() => setDrawerOpen(false)}
@@ -293,7 +295,7 @@ export default function MessageDetailsDrawer({
             color: (t) => t.palette.text.disabled,
           }}
         >
-          Delivery Status
+          {t("messages.deliveryStatus")}
         </Typography>
       </Box>
 
@@ -315,7 +317,7 @@ export default function MessageDetailsDrawer({
               py: 1,
             }}
           >
-            No status available.
+            {t("messages.noStatusAvailable")}
           </Typography>
         )}
       </Box>
@@ -337,7 +339,7 @@ export default function MessageDetailsDrawer({
                 mb: 1.5,
               }}
             >
-              Reactions
+              {t("messages.reactions")}
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
               {selectedMessage.reactions.map((r) => (

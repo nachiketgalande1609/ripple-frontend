@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   Avatar,
@@ -85,12 +86,12 @@ interface MessagesTopBarProps {
 }
 
 // ── constants ────────────────────────────────────────────────────
-const themeBackgrounds = [
-  { value: "black", label: "Default" },
-  { value: `url(${bg1})`, label: "" },
-  { value: `url(${bg2})`, label: "" },
-  { value: `url(${bg3})`, label: "" },
-  { value: `url(${bg4})`, label: "" },
+const themeBackgroundValues = [
+  { value: "black", defaultKey: true },
+  { value: `url(${bg1})` },
+  { value: `url(${bg2})` },
+  { value: `url(${bg3})` },
+  { value: `url(${bg4})` },
 ];
 
 const dialogBackdrop = {
@@ -180,9 +181,15 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
   setMessages,
   onMuteToggle,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const themeBackgrounds = themeBackgroundValues.map((bg) => ({
+    value: bg.value,
+    label: bg.defaultKey ? t("messages.defaultBackground") : "",
+  }));
 
   const [openThemeDialog, setOpenThemeDialog] = useState(false);
   const [openColorDialog, setOpenColorDialog] = useState(false);
@@ -236,13 +243,13 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
       onMuteToggle();
       notifications.show(
         result.muted
-          ? `${selectedUser.username} has been muted`
-          : `${selectedUser.username} has been unmuted`,
+          ? t("messages.muted", { username: selectedUser.username })
+          : t("messages.unmuted", { username: selectedUser.username }),
         { severity: "success", autoHideDuration: 3000 },
       );
     } catch (err) {
       console.error("Failed to toggle mute:", err);
-      notifications.show("Failed to update notification settings.", {
+      notifications.show(t("messages.muteFailed"), {
         severity: "error",
         autoHideDuration: 3000,
       });
@@ -362,10 +369,10 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
             }
             label={
               muteLoading
-                ? "Updating…"
+                ? t("messages.updating")
                 : isMuted
-                  ? `Unmute ${selectedUser?.username}`
-                  : `Mute ${selectedUser?.username}`
+                  ? t("messages.unmute", { username: selectedUser?.username })
+                  : t("messages.mute", { username: selectedUser?.username })
             }
             onClick={handleToggleMute}
           />
@@ -373,7 +380,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
           {/* Background */}
           <DialogButton
             icon={<WallpaperRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-            label="Set Chat Background"
+            label={t("messages.setChatBackground")}
             onClick={() => {
               setOpenColorDialog(true);
               setOpenThemeDialog(false);
@@ -383,7 +390,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
           {/* Cancel */}
           <DialogButton
             icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-            label="Cancel"
+            label={t("common.cancel")}
             onClick={() => setOpenThemeDialog(false)}
             muted
           />
@@ -414,7 +421,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
               color: (t) => t.palette.text.primary,
             }}
           >
-            Chat Background
+            {t("messages.chatBackground")}
           </Typography>
           <Typography
             sx={{
@@ -424,7 +431,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
               mt: 0.25,
             }}
           >
-            Choose a background for this conversation
+            {t("messages.chatBackgroundSubtitle")}
           </Typography>
         </Box>
 
@@ -516,7 +523,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
         >
           <DialogButton
             icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-            label="Cancel"
+            label={t("common.cancel")}
             onClick={() => setOpenColorDialog(false)}
             muted
           />

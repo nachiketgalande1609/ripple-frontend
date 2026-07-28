@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -169,6 +170,7 @@ function CommentItem({
 }) {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const [repliesOpen, setRepliesOpen] = useState(false);
   const [liked, setLiked] = useState<boolean>(!!comment.liked_by_user);
@@ -241,7 +243,7 @@ function CommentItem({
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, flexShrink: 0, alignSelf: "center" }}>
             {/* Delete — slides in on hover */}
             {isOwner && (
-              <Tooltip title="Delete">
+              <Tooltip title={t("common.delete")}>
                 <IconButton
                   onClick={() => onDelete(comment.id)}
                   size="small"
@@ -262,7 +264,7 @@ function CommentItem({
 
             {/* Like */}
             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.1 }}>
-              <Tooltip title={liked ? "Unlike" : "Like"}>
+              <Tooltip title={liked ? t("post.unlike") : t("post.like")}>
               <IconButton
                 size="small"
                 onClick={handleLike}
@@ -291,7 +293,7 @@ function CommentItem({
           <Box onClick={() => setRepliesOpen((v) => !v)} sx={{ display: "flex", alignItems: "center", gap: 0.75, pl: 4, pb: 0.5, cursor: "pointer", width: "fit-content" }}>
             <Box sx={{ width: 20, height: "1px", backgroundColor: (t) => t.palette.divider }} />
             <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.7rem", fontWeight: 600, color: "#64748B" }}>
-              {repliesOpen ? "Hide replies" : `${replies.length} ${replies.length === 1 ? "reply" : "replies"}`}
+              {`${replies.length} ${repliesOpen ? t("post.hideReplies") : (replies.length === 1 ? t("post.reply") : t("post.replies"))}`}
             </Typography>
           </Box>
         )}
@@ -326,6 +328,7 @@ const heartAnimStyle = `
 
 /* ─── Main Component ─────────────────────────────────────────── */
 const PostDetailPage = () => {
+  const { t } = useTranslation();
   const tokens = useTokens();
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
@@ -452,7 +455,7 @@ const PostDetailPage = () => {
     try {
       const res = await savePost(post.id);
       if (res.success && !prev)
-        notifications.show("Saved!", {
+        notifications.show(t("post.postSaved"), {
           severity: "success",
           autoHideDuration: 2000,
         });
@@ -501,7 +504,7 @@ const PostDetailPage = () => {
     } catch {
       setComments((p) => p.filter((c) => c.id !== newComment.id));
       setCommentCount((c) => c - 1);
-      notifications.show("Error adding comment.", { severity: "error", autoHideDuration: 3000 });
+      notifications.show(t("post.errorAddingComment"), { severity: "error", autoHideDuration: 3000 });
     } finally {
       setSubmitting(false);
     }
@@ -520,7 +523,7 @@ const PostDetailPage = () => {
     } catch {
       setComments((p) => [toDelete!, ...p]);
       setCommentCount((c) => c + 1);
-      notifications.show("Error deleting comment.", {
+      notifications.show(t("post.errorDeletingComment"), {
         severity: "error",
         autoHideDuration: 3000,
       });
@@ -535,7 +538,7 @@ const PostDetailPage = () => {
         navigate(-1);
       }
     } catch {
-      notifications.show("Error deleting post.", {
+      notifications.show(t("post.errorDeletingPost"), {
         severity: "error",
         autoHideDuration: 3000,
       });
@@ -665,7 +668,7 @@ const PostDetailPage = () => {
               fontSize: "0.9rem",
             }}
           >
-            Post not found
+            {t("post.postNotFound")}
           </Typography>
           <IconButton
             onClick={() => navigate(-1)}
@@ -714,7 +717,7 @@ const PostDetailPage = () => {
 
           {/* Carousel arrows */}
           {allMedia.length > 1 && carouselIndex > 0 && (
-            <Tooltip title="Previous">
+            <Tooltip title={t("common.back")}>
             <IconButton onClick={() => { setIsImageLoaded(false); setCarouselIndex((i) => i - 1); }}
               sx={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 32, height: 32, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
               <ArrowBack sx={{ fontSize: 15 }} />
@@ -867,7 +870,7 @@ const PostDetailPage = () => {
           </Box>
         </Box>
         {isOwner && (
-          <Tooltip title="More options">
+          <Tooltip title={t("post.moreOptions")}>
           <IconButton onClick={() => setOptionsOpen(true)} size="small" sx={{ color: (t) => t.palette.text.disabled, ml: 1, flexShrink: 0, "&:hover": { bgcolor: (t) => t.palette.action.hover, color: (t) => t.palette.text.secondary }, borderRadius: "8px", p: 0.6 }}>
             <MoreHoriz sx={{ fontSize: 18 }} />
           </IconButton>
@@ -951,7 +954,7 @@ const PostDetailPage = () => {
                 fontWeight: 500,
               }}
             >
-              No comments yet
+              {t("post.noComments")}
             </Typography>
             <Typography
               sx={{
@@ -960,7 +963,7 @@ const PostDetailPage = () => {
                 color: (t) => t.palette.text.disabled,
               }}
             >
-              Start the conversation
+              {t("post.startConversation")}
             </Typography>
           </Box>
         ) : (
@@ -1006,7 +1009,7 @@ const PostDetailPage = () => {
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <Tooltip title={isLiked ? "Unlike" : "Like"} placement="top">
+              <Tooltip title={isLiked ? t("post.unlike") : t("post.like")} placement="top">
               <IconButton
                 onClick={handleLike}
                 disableRipple
@@ -1028,7 +1031,7 @@ const PostDetailPage = () => {
               )}
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <Tooltip title="Comment" placement="top">
+              <Tooltip title={t("post.comment")} placement="top">
               <IconButton
                 disableRipple
                 onClick={() => commentInputRef.current?.focus()}
@@ -1048,7 +1051,7 @@ const PostDetailPage = () => {
               )}
             </Box>
           </Box>
-          <Tooltip title={isSaved ? "Unsave" : "Save"} placement="top">
+          <Tooltip title={isSaved ? t("post.unsave") : t("post.saved")} placement="top">
           <IconButton
             disableRipple
             onClick={handleSave}
@@ -1083,10 +1086,10 @@ const PostDetailPage = () => {
             display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
             <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.73rem", color: (t) => t.palette.text.disabled }}>
-              Replying to{" "}
+              {t("post.replyingTo")}{" "}
               <Box component="span" sx={{ color: "#64748B", fontWeight: 600 }}>@{replyingTo.username}</Box>
             </Typography>
-            <Tooltip title="Cancel reply" placement="top">
+            <Tooltip title={t("post.cancelReply")} placement="top">
             <IconButton size="small" onClick={() => setReplyingTo(null)} sx={{ p: 0.3, color: (t) => t.palette.text.disabled, "&:hover": { color: (t) => t.palette.text.secondary } }}>
               <CloseRoundedIcon sx={{ fontSize: 12 }} />
             </IconButton>
@@ -1126,7 +1129,7 @@ const PostDetailPage = () => {
               inputRef={commentInputRef}
               fullWidth
               variant="standard"
-              placeholder={replyingTo ? `Reply to @${replyingTo.username}…` : "Add a comment…"}
+              placeholder={replyingTo ? `${t("post.replyingTo")} @${replyingTo.username}…` : t("post.addComment")}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               onKeyDown={(e) => {
@@ -1149,7 +1152,7 @@ const PostDetailPage = () => {
               }}
             />
           </Box>
-          <Tooltip title="Send" placement="top">
+          <Tooltip title={t("common.send")} placement="top">
           <IconButton
             onClick={handleComment}
             disabled={!commentText.trim() || submitting}
@@ -1209,7 +1212,7 @@ const PostDetailPage = () => {
           {/* Centered content wrapper */}
           <Box sx={{ maxWidth: 1100, width: "100%", mx: "auto", position: "relative", display: "flex", flexDirection: "column", height: "100%" }}>
             {/* Floating back button */}
-            <Tooltip title="Back">
+            <Tooltip title={t("common.back")}>
             <IconButton
               onClick={() => navigate(-1)}
               size="small"
@@ -1271,7 +1274,7 @@ const PostDetailPage = () => {
             <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "32px 32px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 32px 32px !important", marginBottom: "0 !important" } }}>
               <SheetButton
                 icon={<EditRoundedIcon sx={{ fontSize: "1rem" }} />}
-                label="Edit caption"
+                label={t("post.editCaption")}
                 onClick={() => {
                   setIsEditing(true);
                   setEditedContent(post.content);
@@ -1281,7 +1284,7 @@ const PostDetailPage = () => {
               />
               <SheetButton
                 icon={<TagPeopleIcon sx={{ fontSize: "1rem" }} />}
-                label="Tag people"
+                label={t("post.tagPeople")}
                 onClick={() => {
                   setTagDialogOpen(true);
                   setOptionsOpen(false);
@@ -1298,13 +1301,13 @@ const PostDetailPage = () => {
                     <DeleteRoundedIcon sx={{ fontSize: "1rem" }} />
                   )
                 }
-                label={confirmDelete ? "Tap again to confirm delete" : "Delete post"}
+                label={confirmDelete ? t("post.tapToConfirmDelete") : t("post.deletePost")}
                 onClick={() => confirmDelete ? handleDeletePost() : setConfirmDelete(true)}
                 variant={confirmDelete ? "warning" : "danger"}
               />
               <SheetButton
                 icon={<CloseRoundedIcon sx={{ fontSize: "1rem" }} />}
-                label="Cancel"
+                label={t("common.cancel")}
                 onClick={() => {
                   setOptionsOpen(false);
                   setConfirmDelete(false);
@@ -1367,7 +1370,7 @@ const PostDetailPage = () => {
                     "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)",
                 }}
               />
-              <Tooltip title="Close">
+              <Tooltip title={t("common.close")}>
               <IconButton
                 onClick={() => setIsEditing(false)}
                 size="small"
@@ -1409,7 +1412,7 @@ const PostDetailPage = () => {
                 letterSpacing: "0.08em",
               }}
             >
-              Edit caption
+              {t("post.editCaption")}
             </Typography>
             <Box
               sx={{
@@ -1430,7 +1433,7 @@ const PostDetailPage = () => {
                 variant="standard"
                 value={editedContent}
                 onChange={(e) => setEditedContent(e.target.value)}
-                placeholder="Write a caption…"
+                placeholder={t("post.writeCaption")}
                 InputProps={{
                   disableUnderline: true,
                   sx: {
@@ -1460,7 +1463,7 @@ const PostDetailPage = () => {
                   "&:hover": { bgcolor: (t) => t.palette.action.hover },
                 }}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 onClick={handleSaveEdit}
@@ -1483,7 +1486,7 @@ const PostDetailPage = () => {
                   transition: "background 0.18s",
                 }}
               >
-                Save
+                {t("common.save")}
               </Button>
             </Box>
           </Box>
@@ -1505,10 +1508,10 @@ const PostDetailPage = () => {
           }}>
             <Box>
               <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: "1rem", lineHeight: 1.2 }}>
-                Tag people
+                {t("post.tagPeople")}
               </Typography>
               <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.73rem", color: (t) => t.palette.text.disabled, mt: 0.3 }}>
-                {taggedUsers.length > 0 ? `${taggedUsers.length} tagged` : "Search to tag someone"}
+                {taggedUsers.length > 0 ? `${taggedUsers.length} ${t("post.tagged")}` : t("post.searchToTag")}
               </Typography>
             </Box>
             <IconButton size="small" onClick={() => setTagDialogOpen(false)}
@@ -1530,7 +1533,7 @@ const PostDetailPage = () => {
               <Box
                 component="input"
                 autoFocus
-                placeholder="Search users…"
+                placeholder={t("post.searchUsers")}
                 value={tagSearch}
                 onChange={(e: any) => setTagSearch(e.target.value)}
                 sx={{
@@ -1579,7 +1582,7 @@ const PostDetailPage = () => {
                   border: `1px solid ${tokens.accent}28`,
                   borderRadius: "20px", px: 1.25, py: 0.35,
                 }}>
-                  Tag
+                  {t("post.tagged")}
                 </Box>
               </Box>
             ))}
@@ -1625,7 +1628,7 @@ const PostDetailPage = () => {
                   <TagPeopleIcon sx={{ fontSize: 20, color: tokens.accent }} />
                 </Box>
                 <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.8rem", color: (t) => t.palette.text.disabled }}>
-                  No one tagged yet
+                  {t("post.noOneTagged")}
                 </Typography>
               </Box>
             )}
@@ -1639,7 +1642,7 @@ const PostDetailPage = () => {
           }}>
             <Button variant="text" onClick={() => setTagDialogOpen(false)}
               sx={{ textTransform: "none", fontFamily: "'DM Sans', sans-serif", fontSize: "0.84rem", borderRadius: "10px", color: (t) => t.palette.text.secondary, px: 2 }}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               variant="contained"
@@ -1660,7 +1663,7 @@ const PostDetailPage = () => {
                 "&.Mui-disabled": { bgcolor: `${tokens.accent}35`, color: "rgba(255,255,255,0.5)" },
               }}
             >
-              {savingTags ? <CircularProgress size={14} sx={{ color: "#fff" }} /> : "Save tags"}
+              {savingTags ? t("post.savingTags") : t("post.saveTags")}
             </Button>
           </Box>
         </Dialog>

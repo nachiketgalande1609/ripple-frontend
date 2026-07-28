@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Dialog, Box, Typography, IconButton, CircularProgress } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
+import { useTranslation } from 'react-i18next';
 import { loginUser } from "../services/api";
 import { getAccounts, saveAccount, switchAccount } from "../utils/accounts";
 
@@ -10,6 +11,7 @@ interface AddAccountDialogProps {
 }
 
 export default function AddAccountDialog({ open, onClose }: AddAccountDialogProps) {
+    const { t } = useTranslation();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function AddAccountDialog({ open, onClose }: AddAccountDialogProp
             if (res.success) {
                 const existing = getAccounts().find((a) => String(a.id) === String(res.data.user.id));
                 if (existing) {
-                    setError("This account is already added.");
+                    setError(t("auth.alreadyAdded"));
                     setLoading(false);
                     return;
                 }
@@ -84,10 +86,10 @@ export default function AddAccountDialog({ open, onClose }: AddAccountDialogProp
                             fontFamily: "'Fraunces', serif", fontWeight: 300, fontSize: "1.7rem",
                             color: "#fff", lineHeight: 1.15, letterSpacing: "-0.5px", mb: 0.5,
                         }}>
-                            Sign <em style={{ fontStyle: "italic", color: "#f5b88a" }}>in</em>
+                            {t("auth.signIn")}
                         </Typography>
                         <Typography sx={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>
-                            Add another account to Ripple
+                            {t("auth.addAnotherAccount")}
                         </Typography>
                     </Box>
                     <IconButton
@@ -112,7 +114,7 @@ export default function AddAccountDialog({ open, onClose }: AddAccountDialogProp
                 <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <Box>
                         <Typography sx={{ fontSize: "11px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", mb: 1, fontFamily: "'Figtree', sans-serif" }}>
-                            Email
+                            {t("auth.email")}
                         </Typography>
                         <input
                             type="email"
@@ -129,7 +131,7 @@ export default function AddAccountDialog({ open, onClose }: AddAccountDialogProp
 
                     <Box>
                         <Typography sx={{ fontSize: "11px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", mb: 1, fontFamily: "'Figtree', sans-serif" }}>
-                            Password
+                            {t("auth.password")}
                         </Typography>
                         <input
                             type="password"
@@ -162,7 +164,7 @@ export default function AddAccountDialog({ open, onClose }: AddAccountDialogProp
                         >
                             {loading
                                 ? <CircularProgress size={16} thickness={4} sx={{ color: "#fff" }} />
-                                : <>Sign in <span style={{ fontSize: 16, opacity: 0.75 }}>→</span></>
+                                : <>{t("auth.signIn")} <span style={{ fontSize: 16, opacity: 0.75 }}>→</span></>
                             }
                         </button>
                     </Box>

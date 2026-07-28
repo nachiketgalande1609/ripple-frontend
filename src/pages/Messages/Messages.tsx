@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Box, Typography, useMediaQuery, useTheme, Button } from "@mui/material";
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import BlockIcon from '@mui/icons-material/Block';
@@ -104,6 +105,7 @@ const Messages: React.FC<MessageProps> = ({
   setSelectedUser,
   handleVideoCall,
 }) => {
+  const { t } = useTranslation();
   const { userId } = useParams();
   const notifications = useAppNotifications();
 
@@ -178,7 +180,7 @@ const Messages: React.FC<MessageProps> = ({
           const myEntry = user.latest_message_encrypted_keys.keys?.find(
             (k: { deviceId: string }) => k.deviceId === myDeviceIdRef.current,
           );
-          if (!myEntry) return { ...user, latest_message: "Encrypted message", latest_message_encrypted_keys: null };
+          if (!myEntry) return { ...user, latest_message: t("messages.encryptedMessage"), latest_message_encrypted_keys: null };
           try {
             const plaintext = await decryptMessage(
               user.latest_message,
@@ -188,7 +190,7 @@ const Messages: React.FC<MessageProps> = ({
             );
             return { ...user, latest_message: plaintext, latest_message_encrypted_keys: null };
           } catch {
-            return { ...user, latest_message: "Encrypted message", latest_message_encrypted_keys: null };
+            return { ...user, latest_message: t("messages.encryptedMessage"), latest_message_encrypted_keys: null };
           }
         }),
       );
@@ -328,7 +330,7 @@ const Messages: React.FC<MessageProps> = ({
           const myEntry = msg.encrypted_keys.keys.find(
             (k) => k.deviceId === myDeviceIdRef.current,
           );
-          if (!myEntry) return { ...msg, message_text: "[Encrypted on another device]" };
+          if (!myEntry) return { ...msg, message_text: t("messages.encryptedOtherDevice") };
           try {
             const plaintext = await decryptMessage(
               msg.message_text,        // ciphertext is in message_text
@@ -338,7 +340,7 @@ const Messages: React.FC<MessageProps> = ({
             );
             return { ...msg, message_text: plaintext };
           } catch {
-            return { ...msg, message_text: "[Failed to decrypt]" };
+            return { ...msg, message_text: t("messages.failedToDecrypt") };
           }
         }),
       );
@@ -436,10 +438,10 @@ const Messages: React.FC<MessageProps> = ({
               myPrivateKeyRef.current,
             );
           } catch {
-            messageText = "[Failed to decrypt]";
+            messageText = t("messages.failedToDecrypt");
           }
         } else {
-          messageText = "[Encrypted on another device]";
+          messageText = t("messages.encryptedOtherDevice");
         }
       }
 
@@ -704,7 +706,7 @@ const Messages: React.FC<MessageProps> = ({
             prevMessages.filter((msg) => msg.message_id !== message.message_id), // Remove message from array
         );
 
-        notifications.show(`Message deleted successfully!`, {
+        notifications.show(t("messages.messageDeleted"), {
           severity: "success",
           autoHideDuration: 3000,
         });
@@ -948,11 +950,11 @@ const Messages: React.FC<MessageProps> = ({
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <BlockIcon sx={{ fontSize: 15, color: "error.main", flexShrink: 0 }} />
                   <Typography sx={{ fontSize: "0.78rem", color: "error.main", fontWeight: 500 }}>
-                    You have blocked {selectedUser?.username}
+                    {t("messages.blockedBanner", { username: selectedUser?.username })}
                   </Typography>
                 </Box>
                 <Button size="small" onClick={handleUnblockFromChat} sx={{ fontSize: "0.72rem", fontWeight: 600, textTransform: "none", color: "error.main", minWidth: 0, px: 1.25, py: 0.4, borderRadius: "8px", "&:hover": { bgcolor: "rgba(211,47,47,0.12)" } }}>
-                  Unblock
+                  {t("messages.unblock")}
                 </Button>
               </Box>
             )}
@@ -974,7 +976,7 @@ const Messages: React.FC<MessageProps> = ({
             {isBlockedUser ? (
               <Box sx={{ px: 2, py: 1.5, borderTop: "1px solid", borderColor: (t) => t.palette.divider, bgcolor: (t) => t.palette.background.paper }}>
                 <Typography sx={{ fontSize: "0.78rem", color: (t) => t.palette.text.disabled, textAlign: "center" }}>
-                  Unblock {selectedUser?.username} to send messages
+                  {t("messages.unblockToSend", { username: selectedUser?.username })}
                 </Typography>
               </Box>
             ) : (
@@ -1024,7 +1026,7 @@ const Messages: React.FC<MessageProps> = ({
             {!selectedUser ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 2, color: 'text.secondary' }}>
                 <ChatBubbleOutlineIcon sx={{ fontSize: 48, opacity: 0.5 }} />
-                <Typography variant="body2" sx={{ opacity: 0.6 }}>Select a conversation to start chatting</Typography>
+                <Typography variant="body2" sx={{ opacity: 0.6 }}>{t("messages.selectConversation")}</Typography>
               </Box>
             ) : (
               <>
@@ -1043,7 +1045,7 @@ const Messages: React.FC<MessageProps> = ({
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <BlockIcon sx={{ fontSize: 15, color: "error.main", flexShrink: 0 }} />
                       <Typography sx={{ fontSize: "0.78rem", color: "error.main", fontWeight: 500 }}>
-                        You have blocked {selectedUser?.username}
+                        {t("messages.blockedBanner", { username: selectedUser?.username })}
                       </Typography>
                     </Box>
                     <Button size="small" onClick={handleUnblockFromChat} sx={{ fontSize: "0.72rem", fontWeight: 600, textTransform: "none", color: "error.main", minWidth: 0, px: 1.25, py: 0.4, borderRadius: "8px", "&:hover": { bgcolor: "rgba(211,47,47,0.12)" } }}>
@@ -1071,7 +1073,7 @@ const Messages: React.FC<MessageProps> = ({
                 {isBlockedUser ? (
                   <Box sx={{ px: 2.5, py: 1.5, borderTop: "1px solid", borderColor: (t) => t.palette.divider, bgcolor: (t) => t.palette.background.paper }}>
                     <Typography sx={{ fontSize: "0.78rem", color: (t) => t.palette.text.disabled, textAlign: "center" }}>
-                      Unblock {selectedUser?.username} to send messages
+                      {t("messages.unblockToSend", { username: selectedUser?.username })}
                     </Typography>
                   </Box>
                 ) : (

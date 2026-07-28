@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from 'react-i18next';
 import {
     Typography,
     Avatar,
@@ -283,6 +284,7 @@ const EmptyState = ({ icon, title, subtitle, action }: { icon: React.ReactNode; 
 const ProfilePage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { postUploading, profileMenuOpen, setProfileMenuOpen, onlineUsers, hideActivity } = useGlobalStore();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -654,7 +656,7 @@ const ProfilePage = () => {
                     <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ pb: 0.5 }}>
                         {!isOwnProfile && currentUser?.id && (
                             <>
-                                <Tooltip title="Message" placement="top">
+                                <Tooltip title={t("profile.message")} placement="top">
                                     <IconButton
                                         size="small"
                                         onClick={() => navigate(`/messages/${userId}`, { state: profileData })}
@@ -681,7 +683,7 @@ const ProfilePage = () => {
                                     handleCancelRequest={handleCancelRequest}
                                     handleUnfollow={handleUnfollow}
                                 />
-                                <Tooltip title="More options" placement="top">
+                                <Tooltip title={t("profile.moreOptions")} placement="top">
                                     <IconButton
                                         size="small"
                                         onClick={() => setOpenDialog(true)}
@@ -729,9 +731,9 @@ const ProfilePage = () => {
                                         },
                                     }}
                                 >
-                                    Edit profile
+                                    {t("profile.editProfile")}
                                 </Button>
-                                <Tooltip title="More options" placement="top">
+                                <Tooltip title={t("profile.moreOptions")} placement="top">
                                     <IconButton
                                         size="small"
                                         onClick={() => setOpenDialog(true)}
@@ -803,7 +805,7 @@ const ProfilePage = () => {
                             ))}
                         </Box>
                         <Typography sx={{ fontSize: "0.75rem", color: (t) => t.palette.text.disabled, lineHeight: 1.3 }}>
-                            {"Followed by "}
+                            {t("profile.followedBy") + " "}
                             {mutualFollowers.slice(0, 2).map((u, i) => (
                                 <Box key={u.id} component="span"
                                     onClick={() => navigate(`/profile/${u.id}`)}
@@ -812,7 +814,7 @@ const ProfilePage = () => {
                                     {u.username}{i < Math.min(mutualFollowers.length, 2) - 1 ? ", " : ""}
                                 </Box>
                             ))}
-                            {mutualTotal > 2 && ` +${mutualTotal - 2} more`}
+                            {mutualTotal > 2 && t("profile.moreMutual", { count: mutualTotal - 2 })}
                         </Typography>
                     </Box>
                 )}
@@ -841,7 +843,7 @@ const ProfilePage = () => {
                             "&:hover": { color: (t) => t.palette.text.secondary },
                         }}
                     >
-                        + Add a bio
+                        {t("profile.addBio")}
                     </Typography>
                 ) : null}
 
@@ -878,7 +880,7 @@ const ProfilePage = () => {
                             <Stack direction="row" alignItems="center" spacing={0.5}>
                                 <CalendarToday sx={{ fontSize: 11, color: (t) => t.palette.text.disabled }} />
                                 <Typography sx={{ color: (t) => t.palette.text.disabled, fontSize: "0.77rem" }}>
-                                    Joined {formatDate(profileData.created_at)}
+                                    {t("profile.joined", { date: formatDate(profileData.created_at) })}
                                 </Typography>
                             </Stack>
                         )}
@@ -890,17 +892,17 @@ const ProfilePage = () => {
                     direction="row"
                     sx={{ mt: 2 }}
                 >
-                    <StatCol value={profileData?.posts_count || 0} label="Posts" />
+                    <StatCol value={profileData?.posts_count || 0} label={t("profile.posts")} />
                     <Box sx={{ width: "1px", bgcolor: (t) => t.palette.divider, my: 0.5 }} />
                     <StatCol
                         value={profileData?.followers_count || 0}
-                        label="Followers"
+                        label={t("profile.followers")}
                         onClick={() => navigate(`/profile/${userId}/followers`)}
                     />
                     <Box sx={{ width: "1px", bgcolor: (t) => t.palette.divider, my: 0.5 }} />
                     <StatCol
                         value={profileData?.following_count || 0}
-                        label="Following"
+                        label={t("profile.following")}
                         onClick={() => navigate(`/profile/${userId}/following`)}
                     />
                 </Stack>
@@ -919,11 +921,11 @@ const ProfilePage = () => {
             >
                 <Box sx={{ display: "flex", gap: 1 }}>
                     {[
-                        { label: "Posts", icon: <GridOn sx={{ fontSize: 15 }} /> },
-                        ...(showSavedTab ? [{ label: "Saved", icon: <BookmarkBorder sx={{ fontSize: 15 }} /> }] : []),
-                        { label: "Reposts", icon: <RepeatRounded sx={{ fontSize: 15 }} /> },
-                        { label: "Reels", icon: <SlowMotionVideoRounded sx={{ fontSize: 15 }} /> },
-                        { label: "Tagged", icon: <PersonPin sx={{ fontSize: 15 }} /> },
+                        { label: t("profile.posts"), icon: <GridOn sx={{ fontSize: 15 }} /> },
+                        ...(showSavedTab ? [{ label: t("profile.saved"), icon: <BookmarkBorder sx={{ fontSize: 15 }} /> }] : []),
+                        { label: t("profile.reposts"), icon: <RepeatRounded sx={{ fontSize: 15 }} /> },
+                        { label: t("profile.reels"), icon: <SlowMotionVideoRounded sx={{ fontSize: 15 }} /> },
+                        { label: t("profile.tagged"), icon: <PersonPin sx={{ fontSize: 15 }} /> },
                     ].map((tab, i) => (
                         <Box
                             key={tab.label}
@@ -977,20 +979,20 @@ const ProfilePage = () => {
                             ) : isBlocked ? (
                                 <EmptyState
                                     icon={<Lock sx={{ fontSize: 22, color: ACCENT }} />}
-                                    title="This account is blocked"
-                                    subtitle="You have blocked this user. Unblock to see their content."
+                                    title={t("profile.blockedAccount")}
+                                    subtitle={t("profile.blockedSubtitle")}
                                 />
                             ) : !canViewPosts ? (
                                 <EmptyState
                                     icon={<Lock sx={{ fontSize: 22, color: ACCENT }} />}
-                                    title="This account is private"
-                                    subtitle="Follow to see their photos and videos"
+                                    title={t("profile.privateAccount")}
+                                    subtitle={t("profile.followToSee")}
                                 />
                             ) : posts.length === 0 ? (
                                 <EmptyState
                                     icon={<PhotoCamera sx={{ fontSize: 22, color: ACCENT }} />}
-                                    title="No posts yet"
-                                    subtitle={isOwnProfile ? "Share your first photo or video" : "Nothing here yet"}
+                                    title={t("profile.noPostsYet")}
+                                    subtitle={isOwnProfile ? t("profile.shareFirstPost") : t("profile.nothingHereYet")}
                                     action={
                                         isOwnProfile ? (
                                             <Button
@@ -1008,7 +1010,7 @@ const ProfilePage = () => {
                                                     "&:hover": { opacity: 0.88, bgcolor: ACCENT },
                                                 }}
                                             >
-                                                Create your first post
+                                                {t("profile.createFirstPost")}
                                             </Button>
                                         ) : undefined
                                     }
@@ -1030,7 +1032,7 @@ const ProfilePage = () => {
                                 </Box>
                             )}
 
-                            {!hasMore && posts.length > 0 && <EndOfFeed message="You've seen all posts" />}
+                            {!hasMore && posts.length > 0 && <EndOfFeed message={t("profile.seenAllPosts")} />}
                         </div>
                     </Fade>
                 )}
@@ -1047,8 +1049,8 @@ const ProfilePage = () => {
                                 ) : savedPosts.length === 0 ? (
                                     <EmptyState
                                         icon={<BookmarkBorder sx={{ fontSize: 22, color: ACCENT }} />}
-                                        title="Nothing saved yet"
-                                        subtitle="Posts you save will appear here"
+                                        title={t("profile.nothingSaved")}
+                                        subtitle={t("profile.savedAppearHere")}
                                     />
                                 ) : (
                                     <PostGrid
@@ -1074,8 +1076,8 @@ const ProfilePage = () => {
                             ) : repostedPosts.length === 0 ? (
                                 <EmptyState
                                     icon={<RepeatRounded sx={{ fontSize: 22, color: ACCENT }} />}
-                                    title="No reposts yet"
-                                    subtitle="Posts that are reposted will appear here"
+                                    title={t("profile.noReposts")}
+                                    subtitle={t("profile.repostsAppearHere")}
                                 />
                             ) : (
                                 <RepostGrid
@@ -1100,8 +1102,8 @@ const ProfilePage = () => {
                             ) : userReels.length === 0 ? (
                                 <EmptyState
                                     icon={<SlowMotionVideoRounded sx={{ fontSize: 22, color: ACCENT }} />}
-                                    title="No reels yet"
-                                    subtitle={isOwnProfile ? "Upload a video to create your first reel" : "No reels posted yet"}
+                                    title={t("profile.noReels")}
+                                    subtitle={isOwnProfile ? t("profile.uploadFirstReel") : t("profile.noReelsPosted")}
                                 />
                             ) : (
                                 <Box sx={{
@@ -1181,8 +1183,8 @@ const ProfilePage = () => {
                             ) : taggedPosts.length === 0 ? (
                                 <EmptyState
                                     icon={<PersonPin sx={{ fontSize: 22, color: ACCENT }} />}
-                                    title="No tagged posts"
-                                    subtitle="Posts where this user is tagged will appear here"
+                                    title={t("profile.noTaggedPosts")}
+                                    subtitle={t("profile.taggedAppearHere")}
                                 />
                             ) : (
                                 <PostGrid

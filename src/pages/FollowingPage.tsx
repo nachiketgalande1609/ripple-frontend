@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -175,6 +176,7 @@ const FollowingRow = ({
 const FollowingPage = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const currentUser = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user") || "null")
@@ -276,7 +278,7 @@ const FollowingPage = () => {
               lineHeight: 1.3,
             }}
           >
-            Following
+            {t("following.title")}
           </Typography>
           {username && (
             <Typography
@@ -314,7 +316,7 @@ const FollowingPage = () => {
         >
           <Search sx={{ fontSize: 17, color: "text.disabled", flexShrink: 0 }} />
           <InputBase
-            placeholder="Search following…"
+            placeholder={t("following.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             sx={{
@@ -396,7 +398,7 @@ const FollowingPage = () => {
                   mb: 0.375,
                 }}
               >
-                {search ? "No results found" : "Not following anyone yet"}
+                {search ? t("following.noResults") : t("following.notFollowing")}
               </Typography>
               <Typography
                 sx={{
@@ -406,8 +408,8 @@ const FollowingPage = () => {
                 }}
               >
                 {search
-                  ? "Try a different search"
-                  : "Accounts this user follows will appear here"}
+                  ? t("following.tryDifferentSearch")
+                  : t("following.notFollowingDesc")}
               </Typography>
             </Box>
           </Box>

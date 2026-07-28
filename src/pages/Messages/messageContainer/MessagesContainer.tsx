@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Typography,
   Box,
@@ -203,6 +204,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   typingUser,
   initialMessageLoading,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -676,7 +678,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                         }}
                       >
                         {originalMessage.sender_id === currentUser.id
-                          ? "You"
+                          ? t("messages.you")
                           : selectedUser.username}
                       </Typography>
                       <Typography
@@ -1019,7 +1021,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                 color: (t) => t.palette.text.primary,
                               }}
                             >
-                              {r.username || "Unknown"}
+                              {r.username || t("messages.unknown")}
                             </Typography>
                           </Box>
                           <Box
@@ -1135,7 +1137,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                   py: 0.5,
                 }}
               >
-                Beginning of conversation
+                {t("messages.beginningOfConversation")}
               </Box>
             </Box>
           )}
@@ -1192,7 +1194,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                 mb: 0.5,
               }}
             >
-              No conversation selected
+              {t("messages.noConversationSelected")}
             </Typography>
             <Typography
               sx={{
@@ -1200,7 +1202,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                 color: (t) => t.palette.text.disabled,
               }}
             >
-              Pick someone to message or start a new one
+              {t("messages.pickSomeone")}
             </Typography>
           </Box>
           <Button
@@ -1222,7 +1224,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
             }}
             onClick={(e) => setAnchorEl(e.currentTarget)}
           >
-            New message
+            {t("messages.newMessage")}
           </Button>
         </Box>
       )}

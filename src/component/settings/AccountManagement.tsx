@@ -12,6 +12,7 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { deactivateAccount, deleteAccount } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
+import { useTranslation } from "react-i18next";
 import { useGlobalStore } from "../../store/store";
 import { getAccounts, switchAccount, StoredAccount } from "../../utils/accounts";
 import AddAccountDialog from "../AddAccountDialog";
@@ -51,6 +52,7 @@ interface ConfirmDialogProps {
 }
 
 const ConfirmDialog = ({ open, mode, onClose, onConfirm, loading }: ConfirmDialogProps) => {
+    const { t } = useTranslation();
     const [password, setPassword] = useState("");
     const [show, setShow] = useState(false);
 
@@ -76,18 +78,18 @@ const ConfirmDialog = ({ open, mode, onClose, onConfirm, loading }: ConfirmDialo
                     </Box>
                     <Box>
                         <Typography sx={{ fontWeight: 700, fontSize: "0.95rem", color: "text.primary" }}>
-                            {isDelete ? "Delete account?" : "Deactivate account?"}
+                            {isDelete ? t("settings.deleteConfirmTitle") : t("settings.deactivateConfirmTitle")}
                         </Typography>
                         <Typography sx={{ fontSize: "0.75rem", color: "text.disabled", mt: 0.2 }}>
                             {isDelete
-                                ? "This is permanent and cannot be undone."
-                                : "You can reactivate by logging in again."}
+                                ? t("settings.deleteConfirmDesc")
+                                : t("settings.deactivateConfirmDesc")}
                         </Typography>
                     </Box>
                 </Box>
 
                 <TextField
-                    label="Enter your password to confirm"
+                    label={t("settings.enterPasswordConfirm")}
                     type={show ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -118,7 +120,7 @@ const ConfirmDialog = ({ open, mode, onClose, onConfirm, loading }: ConfirmDialo
                             "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)" },
                         }}
                     >
-                        Cancel
+                        {t("common.cancel")}
                     </Button>
                     <Button
                         onClick={handleSubmit}
@@ -133,7 +135,7 @@ const ConfirmDialog = ({ open, mode, onClose, onConfirm, loading }: ConfirmDialo
                         }}
                         startIcon={loading ? <CircularProgress size={13} color="inherit" /> : null}
                     >
-                        {loading ? "Please wait…" : isDelete ? "Delete" : "Deactivate"}
+                        {loading ? t("settings.pleaseWait") : isDelete ? t("common.delete") : t("common.confirm")}
                     </Button>
                 </Box>
             </Box>
@@ -173,6 +175,7 @@ const ActionCard = ({ icon, title, description, buttonLabel, buttonColor, onClic
 );
 
 const AccountsSection = () => {
+    const { t } = useTranslation();
     const currentUser = useGlobalStore((s) => s.user);
     const [accounts, setAccounts] = useState<StoredAccount[]>([]);
     const [switching, setSwitching] = useState<string | null>(null);
@@ -193,10 +196,10 @@ const AccountsSection = () => {
         <Box sx={{ mb: 4 }}>
             <Box sx={{ mb: 2 }}>
                 <Typography sx={{ fontSize: "0.95rem", fontWeight: 600, color: "text.primary" }}>
-                    Linked Accounts
+                    {t("settings.linkedAccountsTitle")}
                 </Typography>
                 <Typography sx={{ fontSize: "0.78rem", color: "text.disabled", mt: 0.25 }}>
-                    Switch between accounts or add a new one
+                    {t("settings.linkedAccountsSubtitle")}
                 </Typography>
             </Box>
 
@@ -210,7 +213,7 @@ const AccountsSection = () => {
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexShrink: 0 }}>
                         <CheckRoundedIcon sx={{ fontSize: 15, color: "#10b981" }} />
-                        <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "#10b981" }}>Active</Typography>
+                        <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "#10b981" }}>{t("settings.active")}</Typography>
                     </Box>
                 </Box>
             )}
@@ -237,7 +240,7 @@ const AccountsSection = () => {
                             "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)" },
                         }}
                     >
-                        Switch
+                        {t("quickPanel.switchAccount")}
                     </Button>
                 </Box>
             ))}
@@ -250,7 +253,7 @@ const AccountsSection = () => {
                 <Box sx={{ width: 42, height: 42, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px dashed", borderColor: "divider", flexShrink: 0 }}>
                     <AddRoundedIcon sx={{ fontSize: 20, color: "text.disabled" }} />
                 </Box>
-                <Typography sx={{ fontSize: "0.9rem", fontWeight: 500, color: "text.secondary" }}>Add account</Typography>
+                <Typography sx={{ fontSize: "0.9rem", fontWeight: 500, color: "text.secondary" }}>{t("quickPanel.addAccount")}</Typography>
             </Box>
 
             <AddAccountDialog open={addOpen} onClose={() => setAddOpen(false)} />
@@ -259,6 +262,7 @@ const AccountsSection = () => {
 };
 
 const AccountManagement = () => {
+    const { t } = useTranslation();
     const [dialogMode, setDialogMode] = useState<Mode | null>(null);
     const [loading, setLoading] = useState(false);
     const notifications = useAppNotifications();
@@ -276,11 +280,11 @@ const AccountManagement = () => {
         try {
             if (dialogMode === "deactivate") {
                 await deactivateAccount(password);
-                notifications.show("Account deactivated. Log in anytime to reactivate.", { severity: "success", autoHideDuration: 4000 });
+                notifications.show(t("settings.deactivated"), { severity: "success", autoHideDuration: 4000 });
                 setTimeout(logout, 1500);
             } else {
                 await deleteAccount(password);
-                notifications.show("Account permanently deleted.", { severity: "success", autoHideDuration: 3000 });
+                notifications.show(t("settings.deleted"), { severity: "success", autoHideDuration: 3000 });
                 setTimeout(logout, 1500);
             }
             setDialogMode(null);
@@ -300,27 +304,27 @@ const AccountManagement = () => {
 
             <Box sx={{ mb: 3 }}>
                 <Typography sx={{ fontSize: "0.95rem", fontWeight: 600, color: "text.primary" }}>
-                    Account Management
+                    {t("settings.accountTitle")}
                 </Typography>
                 <Typography sx={{ fontSize: "0.78rem", color: "text.disabled", mt: 0.25 }}>
-                    Manage your account status
+                    {t("settings.accountSubtitle")}
                 </Typography>
             </Box>
 
             <ActionCard
                 icon={<PauseCircleOutlineRoundedIcon sx={{ fontSize: 22, color: "warning.main" }} />}
-                title="Deactivate Account"
-                description="Temporarily hide your profile, posts, and activity. Your data is preserved and you can reactivate by logging in again."
-                buttonLabel="Deactivate account"
+                title={t("settings.deactivateTitle")}
+                description={t("settings.deactivateDesc")}
+                buttonLabel={t("settings.deactivateBtn")}
                 buttonColor="warning"
                 onClick={() => setDialogMode("deactivate")}
             />
 
             <ActionCard
                 icon={<DeleteForeverRoundedIcon sx={{ fontSize: 22, color: "error.main" }} />}
-                title="Delete Account"
-                description="Permanently delete your account and all associated data including posts, messages, and followers. This cannot be undone."
-                buttonLabel="Delete account"
+                title={t("settings.deleteTitle")}
+                description={t("settings.deleteDesc")}
+                buttonLabel={t("settings.deleteBtn")}
                 buttonColor="error"
                 onClick={() => setDialogMode("delete")}
             />

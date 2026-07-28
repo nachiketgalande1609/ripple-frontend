@@ -30,6 +30,7 @@ import LogoImage from "../../static/logo-transparent.png";
 import { faSignIn, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { useGlobalStore } from "../../store/store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useTranslation } from "react-i18next";
 
 /* ─── Static CSS ────────────────────────────────────────────────── */
 const staticStyles = `
@@ -598,6 +599,7 @@ function DesktopToastStack({
 export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCount, setUnreadMessagesCount }: NavDrawerProps) {
     const theme = useTheme();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     useNavCssVars();
     const location = useLocation();
     const pathnameRef = useRef(location.pathname);
@@ -703,28 +705,28 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
             {
                 kind: "item",
                 segment: "",
-                title: "Home",
+                title: t("nav.home"),
                 icon: <HomeOutlined sx={{ fontSize: "1.5rem" }} />,
                 activeIcon: <HomeFilled sx={{ fontSize: "1.5rem" }} />,
             },
             {
                 kind: "item",
                 segment: "search",
-                title: "Search",
+                title: t("nav.search"),
                 icon: <SearchRounded sx={{ fontSize: "1.5rem" }} />,
                 activeIcon: <SearchRounded sx={{ fontSize: "1.5rem" }} />,
             },
             {
                 kind: "item",
                 segment: "reels",
-                title: "Reels",
+                title: t("nav.reels"),
                 icon: <SlowMotionVideoRounded sx={{ fontSize: "1.5rem" }} />,
                 activeIcon: <SlowMotionVideoRounded sx={{ fontSize: "1.5rem" }} />,
             },
             {
                 kind: "item",
                 segment: "messages",
-                title: "Messages",
+                title: t("nav.messages"),
                 icon: (
                     <Badge badgeContent={unreadMessagesCount} {...badgeProps}>
                         <ChatBubbleOutlineRounded sx={{ fontSize: "1.5rem" }} />
@@ -739,14 +741,14 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
             {
                 kind: "item",
                 segment: "insights",
-                title: "Insights",
+                title: t("nav.insights"),
                 icon: <BarChartRounded sx={{ fontSize: "1.5rem" }} />,
                 activeIcon: <BarChartRounded sx={{ fontSize: "1.5rem" }} />,
             },
             {
                 kind: "item",
                 segment: "notifications",
-                title: "Notifications",
+                title: t("nav.notifications"),
                 icon: (
                     <Badge badgeContent={unreadNotificationsCount} {...badgeProps}>
                         <FavoriteBorder sx={{ fontSize: "1.5rem" }} />
@@ -763,14 +765,14 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
             {
                 kind: "item",
                 segment: "login",
-                title: "Log in",
+                title: t("auth.signIn"),
                 icon: <FontAwesomeIcon icon={faSignIn} style={{ fontSize: "1rem" }} />,
                 activeIcon: <FontAwesomeIcon icon={faSignIn} style={{ fontSize: "1rem" }} />,
             },
             {
                 kind: "item",
                 segment: "register",
-                title: "Register",
+                title: t("auth.signUp"),
                 icon: <FontAwesomeIcon icon={faUserPlus} style={{ fontSize: "1rem" }} />,
                 activeIcon: <FontAwesomeIcon icon={faUserPlus} style={{ fontSize: "1rem" }} />,
             },
@@ -942,10 +944,10 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                     </Typography>
                     <Box sx={{ display: "flex", justifyContent: "space-around" }}>
                         {[
-                            { label: "Post", icon: <CameraAltIcon sx={{ fontSize: "1.4rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setMobileCreateDialogOpen(false); setModalOpen(true); } },
-                            { label: "Story", icon: <AutoStoriesIcon sx={{ fontSize: "1.4rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setMobileCreateDialogOpen(false); setStoryOpen(true); } },
-                            { label: "Poll", icon: <PollIcon sx={{ fontSize: "1.4rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setMobileCreateDialogOpen(false); setPollOpen(true); } },
-                            { label: "Reel", icon: <SlowMotionVideoRounded sx={{ fontSize: "1.4rem" }} />, color: "#ec4899", bg: "rgba(236,72,153,0.12)", action: () => { setMobileCreateDialogOpen(false); setModalOpen(true); } },
+                            { label: t("nav.post"), icon: <CameraAltIcon sx={{ fontSize: "1.4rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setMobileCreateDialogOpen(false); setModalOpen(true); } },
+                            { label: t("nav.story"), icon: <AutoStoriesIcon sx={{ fontSize: "1.4rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setMobileCreateDialogOpen(false); setStoryOpen(true); } },
+                            { label: t("nav.poll"), icon: <PollIcon sx={{ fontSize: "1.4rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setMobileCreateDialogOpen(false); setPollOpen(true); } },
+                            { label: t("nav.reel"), icon: <SlowMotionVideoRounded sx={{ fontSize: "1.4rem" }} />, color: "#ec4899", bg: "rgba(236,72,153,0.12)", action: () => { setMobileCreateDialogOpen(false); setModalOpen(true); } },
                         ].map(({ label, icon, color, bg, action }) => (
                             <Box
                                 key={label}
@@ -1015,10 +1017,10 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 {createOpen && (
                     <Box className="create-panel-open" sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
                         {[
-                            { label: "Post", icon: <CameraAltIcon sx={{ fontSize: "1.15rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setCreateOpen(false); setModalOpen(true); } },
-                            { label: "Story", icon: <AutoStoriesIcon sx={{ fontSize: "1.15rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setCreateOpen(false); setStoryOpen(true); } },
-                            { label: "Poll", icon: <PollIcon sx={{ fontSize: "1.15rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setCreateOpen(false); setPollOpen(true); } },
-                            { label: "Reel", icon: <SlowMotionVideoRounded sx={{ fontSize: "1.15rem" }} />, color: "#ec4899", bg: "rgba(236,72,153,0.12)", action: () => { setCreateOpen(false); setModalOpen(true); } },
+                            { label: t("nav.post"), icon: <CameraAltIcon sx={{ fontSize: "1.15rem" }} />, color: "#6366f1", bg: "rgba(99,102,241,0.12)", action: () => { setCreateOpen(false); setModalOpen(true); } },
+                            { label: t("nav.story"), icon: <AutoStoriesIcon sx={{ fontSize: "1.15rem" }} />, color: "#f59e0b", bg: "rgba(245,158,11,0.12)", action: () => { setCreateOpen(false); setStoryOpen(true); } },
+                            { label: t("nav.poll"), icon: <PollIcon sx={{ fontSize: "1.15rem" }} />, color: "#10b981", bg: "rgba(16,185,129,0.12)", action: () => { setCreateOpen(false); setPollOpen(true); } },
+                            { label: t("nav.reel"), icon: <SlowMotionVideoRounded sx={{ fontSize: "1.15rem" }} />, color: "#ec4899", bg: "rgba(236,72,153,0.12)", action: () => { setCreateOpen(false); setModalOpen(true); } },
                         ].map(({ label, icon, color, bg, action }) => (
                             <Box
                                 key={label}
@@ -1124,7 +1126,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                 <span className="nav-icon">
                                     <AddIcon sx={{ fontSize: "2rem", transition: "transform 0.25s", transform: createOpen ? "rotate(45deg)" : "rotate(0deg)" }} />
                                 </span>
-                                <span className="nav-label" style={labelStyle}>Create</span>
+                                <span className="nav-label" style={labelStyle}>{t("nav.create")}</span>
                             </Box>
                         )}
                     </Box>
@@ -1136,7 +1138,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                     <img src={currentUser?.profile_picture_url || BlankProfileImage} alt="Profile" className="profile-avatar" />
                                 </span>
                                 <span className="nav-label" style={labelStyle}>
-                                    Profile
+                                    {t("nav.profile")}
                                 </span>
                             </Box>
                             <Box className={`nav-item${location.pathname === "/settings" ? " active" : ""}`} onClick={() => navigate("/settings?setting=profiledetails")} sx={{ display: "flex" }}>
@@ -1144,7 +1146,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                     <SettingsOutlined sx={{ fontSize: "1.5rem" }} />
                                 </span>
                                 <span className="nav-label" style={labelStyle}>
-                                    Settings
+                                    {t("nav.settings")}
                                 </span>
                             </Box>
                             <Box className="nav-item danger" onClick={() => setMoreOpen(true)} sx={{ display: "flex" }}>
@@ -1152,7 +1154,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                     <LogoutOutlined sx={{ fontSize: "1.5rem" }} />
                                 </span>
                                 <span className="nav-label" style={labelStyle}>
-                                    Log out
+                                    {t("nav.logout")}
                                 </span>
                             </Box>
                         </>
@@ -1192,7 +1194,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                             {currentUser?.username}
                         </Box>
                         <Box sx={{ fontSize: "0.75rem", color: (t: any) => t.palette.text.disabled }}>
-                            Log out of Ripple?
+                            {t("nav.logoutOfRipple")}
                         </Box>
                     </Box>
                 </Box>
@@ -1201,13 +1203,13 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "rgba(211,47,47,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "error.main", flexShrink: 0 }}>
                             <LogoutOutlined sx={{ fontSize: "1.1rem" }} />
                         </Box>
-                        Log out
+                        {t("nav.logout")}
                     </Button>
                     <Button fullWidth onClick={() => setMoreOpen(false)} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, borderRadius: "18px", textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: "text.disabled", border: "none", backgroundColor: "var(--nav-bg)", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)", mb: 0.75, "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: "text.secondary" } }}>
                         <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "action.hover", display: "flex", alignItems: "center", justifyContent: "center", color: "text.disabled", flexShrink: 0 }}>
                             <CloseIcon sx={{ fontSize: "1.1rem" }} />
                         </Box>
-                        Cancel
+                        {t("common.cancel")}
                     </Button>
                 </Box>
             </Dialog>

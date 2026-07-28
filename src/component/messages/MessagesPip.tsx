@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Box, Typography, IconButton, InputBase, CircularProgress, Skeleton, Badge } from "@mui/material";
 import { ChatBubbleOutlineRounded, Close as CloseIcon, ArrowBack as ArrowBackIcon, Send as SendIcon } from "@mui/icons-material";
 import socket from "../../services/socket";
@@ -53,6 +54,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
     const privateKeyRef = useRef<CryptoKey | null>(null);
     const deviceIdRef = useRef<string>("");
 
+    const { t } = useTranslation();
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "{}") : null;
 
     // Load private key once on mount
@@ -85,11 +87,11 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                 const decrypted = await Promise.all(rawUsers.map(async (u) => {
                     if (!u.latest_message_encrypted_keys || !u.latest_message) return u;
                     const entry = u.latest_message_encrypted_keys.keys?.find((k: any) => k.deviceId === deviceIdRef.current);
-                    if (!entry) return { ...u, latest_message: "Encrypted message" };
+                    if (!entry) return { ...u, latest_message: t("messages.encryptedMessage") };
                     try {
                         const plain = await decryptMessage(u.latest_message, u.latest_message_encrypted_keys.iv, entry.encryptedKey, privateKeyRef.current!);
                         return { ...u, latest_message: plain };
-                    } catch { return { ...u, latest_message: "Encrypted message" }; }
+                    } catch { return { ...u, latest_message: t("messages.encryptedMessage") }; }
                 }));
                 setUsers(decrypted);
             } catch (e) {
@@ -117,11 +119,11 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                 const batch: Message[] = await Promise.all(raw.map(async (msg) => {
                     if (!(msg as any).encrypted_keys || !privateKeyRef.current) return msg;
                     const entry = (msg as any).encrypted_keys.keys?.find((k: any) => k.deviceId === deviceIdRef.current);
-                    if (!entry) return { ...msg, message_text: "[Encrypted on another device]" };
+                    if (!entry) return { ...msg, message_text: t("messages.encryptedOtherDevice") };
                     try {
                         const plain = await decryptMessage(msg.message_text, (msg as any).encrypted_keys.iv, entry.encryptedKey, privateKeyRef.current!);
                         return { ...msg, message_text: plain };
-                    } catch { return { ...msg, message_text: "[Failed to decrypt]" }; }
+                    } catch { return { ...msg, message_text: t("messages.failedToDecrypt") }; }
                 }));
                 hasMoreRef.current = res.data?.length === MSG_PAGE;
 
@@ -175,8 +177,8 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                 const entry = data.encrypted_keys.keys?.find((k: any) => k.deviceId === deviceIdRef.current);
                 if (entry) {
                     try { messageText = await decryptMessage(data.message_text, data.encrypted_keys.iv, entry.encryptedKey, privateKeyRef.current!); }
-                    catch { messageText = "[Failed to decrypt]"; }
-                } else { messageText = "[Encrypted on another device]"; }
+                    catch { messageText = t("messages.failedToDecrypt"); }
+                } else { messageText = t("messages.encryptedOtherDevice"); }
             }
 
             const active = selectedUserRef.current;
@@ -302,7 +304,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                     <ChatBubbleOutlineRounded sx={{ fontSize: "1.05rem", color: "#fff", transition: "transform 0.28s cubic-bezier(0.34,1.56,0.64,1)", transform: open ? "rotate(180deg) scale(1.1)" : "rotate(0deg) scale(1)" }} />
                 </Badge>
                 <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "0.82rem", color: "#fff", letterSpacing: "0.01em" }}>
-                    Messages
+                    {t("messages.title")}
                 </Typography>
             </Box>
 
@@ -368,7 +370,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                             <>
                                 <ChatBubbleOutlineRounded sx={{ fontSize: "1rem", color: ACCENT }} />
                                 <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "0.875rem", flex: 1 }}>
-                                    Messages
+                                    {t("messages.title")}
                                 </Typography>
                             </>
                         )}
@@ -418,7 +420,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                             fontFamily: "'Inter', sans-serif",
                                         }}
                                     >
-                                        No messages yet
+                                        {t("messages.noMessagesYet")}
                                     </Typography>
                                 ) : (
                                     messages.map((msg) => {
@@ -479,7 +481,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                 }}
                             >
                                 <InputBase
-                                    placeholder="Message…"
+                                    placeholder={t("messages.messagePlaceholder")}
                                     value={inputText}
                                     onChange={(e) => setInputText(e.target.value)}
                                     onKeyDown={(e) => {
@@ -557,7 +559,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
                                         fontFamily: "'Inter', sans-serif",
                                     }}
                                 >
-                                    No conversations yet
+                                    {t("messages.noConversations")}
                                 </Typography>
                             ) : (
                                 sortedUsers.map((user) => (

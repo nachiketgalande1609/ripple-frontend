@@ -5,6 +5,7 @@ import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { changePassword } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
+import { useTranslation } from "react-i18next";
 
 const labelSx = {
     fontFamily: "'Inter', -apple-system, sans-serif",
@@ -39,6 +40,7 @@ const inputSx = {
 };
 
 const ChangePassword = () => {
+    const { t } = useTranslation();
     const [current, setCurrent] = useState("");
     const [next, setNext] = useState("");
     const [confirm, setConfirm] = useState("");
@@ -50,24 +52,24 @@ const ChangePassword = () => {
 
     const handleSubmit = async () => {
         if (!current || !next || !confirm) {
-            notifications.show("All fields are required.", { severity: "error", autoHideDuration: 3000 });
+            notifications.show(t("settings.allFieldsRequired"), { severity: "error", autoHideDuration: 3000 });
             return;
         }
         if (next.length < 6) {
-            notifications.show("New password must be at least 6 characters.", { severity: "error", autoHideDuration: 3000 });
+            notifications.show(t("settings.passwordTooShort"), { severity: "error", autoHideDuration: 3000 });
             return;
         }
         if (next !== confirm) {
-            notifications.show("New passwords do not match.", { severity: "error", autoHideDuration: 3000 });
+            notifications.show(t("settings.passwordsDontMatch"), { severity: "error", autoHideDuration: 3000 });
             return;
         }
         setLoading(true);
         try {
             await changePassword(current, next);
-            notifications.show("Password updated successfully.", { severity: "success", autoHideDuration: 3000 });
+            notifications.show(t("settings.passwordUpdated"), { severity: "success", autoHideDuration: 3000 });
             setCurrent(""); setNext(""); setConfirm("");
         } catch (err: any) {
-            const msg = err?.response?.data?.error || "Failed to update password.";
+            const msg = err?.response?.data?.error || t("settings.passwordFailed");
             notifications.show(msg, { severity: "error", autoHideDuration: 3500 });
         } finally {
             setLoading(false);
@@ -91,10 +93,10 @@ const ChangePassword = () => {
             {/* Page header */}
             <Box sx={{ mb: 2.5 }}>
                 <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: "1rem", color: "text.primary", letterSpacing: "-0.3px" }}>
-                    Change Password
+                    {t("settings.changePasswordTitle")}
                 </Typography>
                 <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", color: "text.disabled", mt: 0.3 }}>
-                    Use a strong password you don't use elsewhere
+                    {t("settings.changePasswordSubtitle")}
                 </Typography>
             </Box>
 
@@ -104,7 +106,7 @@ const ChangePassword = () => {
 
                     {/* Current password */}
                     <Box>
-                        <Typography component="label" sx={labelSx}>Current password</Typography>
+                        <Typography component="label" sx={labelSx}>{t("settings.currentPassword")}</Typography>
                         <TextField
                             variant="outlined"
                             fullWidth
@@ -118,7 +120,7 @@ const ChangePassword = () => {
 
                     {/* New password */}
                     <Box>
-                        <Typography component="label" sx={labelSx}>New password</Typography>
+                        <Typography component="label" sx={labelSx}>{t("settings.newPassword")}</Typography>
                         <TextField
                             variant="outlined"
                             fullWidth
@@ -132,7 +134,7 @@ const ChangePassword = () => {
 
                     {/* Confirm password */}
                     <Box>
-                        <Typography component="label" sx={labelSx}>Confirm new password</Typography>
+                        <Typography component="label" sx={labelSx}>{t("settings.confirmPassword")}</Typography>
                         <TextField
                             variant="outlined"
                             fullWidth
@@ -145,7 +147,7 @@ const ChangePassword = () => {
                         />
                         {mismatch && (
                             <Typography sx={{ fontSize: "0.73rem", color: "error.main", mt: 0.75 }}>
-                                Passwords do not match
+                                {t("settings.passwordsNoMatch")}
                             </Typography>
                         )}
                     </Box>
@@ -178,7 +180,7 @@ const ChangePassword = () => {
                             ? <CircularProgress size={13} color="inherit" />
                             : <LockOutlinedIcon sx={{ fontSize: 15 }} />}
                     >
-                        {loading ? "Updating…" : "Update Password"}
+                        {loading ? t("settings.updating") : t("settings.updatePassword")}
                     </Button>
                 </Box>
             </Box>

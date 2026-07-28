@@ -1,10 +1,12 @@
 import { Box, Switch, Typography } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
 import { useAppNotifications } from "../../hooks/useNotification";
+import { useTranslation } from "react-i18next";
 
 const ACCENT = "#64748B";
 
 const General = () => {
+  const { t } = useTranslation();
   const notifications = useAppNotifications();
   const { mode, setMode } = useColorScheme();
 
@@ -18,7 +20,7 @@ const General = () => {
       "user",
       JSON.stringify({ ...currentUser, theme: newTheme }),
     );
-    notifications.show(`Switched to ${newTheme} mode`, {
+    notifications.show(t("settings.switchedTo", { theme: newTheme }), {
       severity: "success",
       autoHideDuration: 3000,
     });
@@ -46,7 +48,7 @@ const General = () => {
             lineHeight: 1.3,
           }}
         >
-          General
+          {t("settings.generalTitle")}
         </Typography>
         <Typography
           sx={{
@@ -56,7 +58,7 @@ const General = () => {
             mt: 0.375,
           }}
         >
-          Manage your app preferences
+          {t("settings.generalSubtitle")}
         </Typography>
       </Box>
 
@@ -107,7 +109,7 @@ const General = () => {
                   lineHeight: 1.3,
                 }}
               >
-                {isDark ? "Dark mode" : "Light mode"}
+                {isDark ? t("settings.darkMode") : t("settings.lightMode")}
               </Typography>
               <Typography
                 sx={{
@@ -118,8 +120,8 @@ const General = () => {
                 }}
               >
                 {isDark
-                  ? "Easy on the eyes in low light"
-                  : "Bright and clear for daytime use"}
+                  ? t("settings.darkModeDesc")
+                  : t("settings.lightModeDesc")}
               </Typography>
             </Box>
           </Box>
@@ -155,8 +157,7 @@ const General = () => {
               lineHeight: 1.6,
             }}
           >
-            Your theme preference is saved locally and applied across all
-            sessions on this device.
+            {t("settings.themeNote")}
           </Typography>
         </Box>
       </Box>

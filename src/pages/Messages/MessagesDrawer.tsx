@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { List, ListItem, ListItemAvatar, ListItemText, Typography, Box, IconButton, Skeleton, InputBase } from "@mui/material";
 import { PersonAdd as PersonAddIcon, Search as SearchIcon } from "@mui/icons-material";
 import NotificationsOffRoundedIcon from "@mui/icons-material/NotificationsOffRounded";
@@ -73,6 +74,7 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
     setAnchorEl,
     mutedUserIds,
 }) => {
+    const { t } = useTranslation();
     const { hideActivity } = useGlobalStore();
     const [usersList, setUsersList] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
@@ -138,7 +140,7 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                         color: (t) => t.palette.text.primary,
                     }}
                 >
-                    Messages
+                    {t("messages.title")}
                 </Typography>
                 <IconButton
                     onClick={(e) => setAnchorEl(e.currentTarget)}
@@ -195,7 +197,7 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                         }}
                     />
                     <InputBase
-                        placeholder="Search messages…"
+                        placeholder={t("messages.searchPlaceholder")}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         sx={{
@@ -225,7 +227,7 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                                 fontSize: "0.82rem",
                             }}
                         >
-                            {search ? "No results found" : "No conversations yet"}
+                            {search ? t("messages.noResults") : t("messages.noConversations")}
                         </Typography>
                     </Box>
                 ) : (

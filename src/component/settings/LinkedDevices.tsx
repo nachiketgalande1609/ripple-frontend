@@ -14,6 +14,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
 import { getActiveSessions, revokeSession, revokeAllSessions } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
+import { useTranslation } from "react-i18next";
 function formatIST(dateStr: string) {
   const date = new Date(dateStr);
   return date.toLocaleString("en-IN", {
@@ -40,14 +41,20 @@ type Session = {
   last_active: string;
 };
 
-function formatLocation(s: Session) {
+function formatLocation(s: Session, t: (k: string) => string) {
   const parts = [s.city, s.region, s.country].filter(Boolean);
-  return parts.length ? parts.join(", ") : s.ip || "Unknown location";
+  const joined = parts.join(", ");
+  if (joined && joined.toLowerCase() !== "local") return joined;
+  const ip = s.ip?.toLowerCase();
+  if (!ip || ip === "local" || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("192.168") || ip.startsWith("10.")) {
+    return t("settings.localNetwork");
+  }
+  return s.ip || t("settings.unknownLocation");
 }
 
-function formatBrowser(s: Session) {
+function formatBrowser(s: Session, t: (k: string) => string) {
   const parts = [s.browser, s.os].filter((v) => v && v !== "Other");
-  return parts.join(" · ") || "Unknown browser";
+  return parts.join(" · ") || t("settings.unknownBrowser");
 }
 
 const SessionCard = ({
@@ -59,6 +66,7 @@ const SessionCard = ({
   onRevoke: (id: number) => void;
   revoking: boolean;
 }) => {
+  const { t } = useTranslation();
   const isDesktop = session.device_type === "Desktop";
 
   return (
@@ -109,30 +117,30 @@ const SessionCard = ({
         <Typography
           sx={{ fontSize: "0.875rem", fontWeight: 600, color: (t) => t.palette.text.primary, mb: 0.25 }}
         >
-          {formatBrowser(session)}
+          {formatBrowser(session, t)}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.25 }}>
           <LocationOnOutlinedIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />
           <Typography sx={{ fontSize: "0.77rem", color: (t) => t.palette.text.disabled, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {formatLocation(session)}
+            {formatLocation(session, t)}
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <AccessTimeRoundedIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />
           <Typography sx={{ fontSize: "0.77rem", color: (t) => t.palette.text.disabled }}>
-            First login: {formatIST(session.logged_in_at)}
+            {t("settings.firstLogin", { date: formatIST(session.logged_in_at) })}
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
           <AccessTimeRoundedIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />
           <Typography sx={{ fontSize: "0.77rem", color: (t) => t.palette.text.disabled }}>
-            Last active: {formatIST(session.last_active)}
+            {t("settings.lastActive", { date: formatIST(session.last_active) })}
           </Typography>
         </Box>
       </Box>
 
       {/* Revoke */}
-      <Tooltip title="Remove session">
+      <Tooltip title={t("settings.removeSession")}>
         <IconButton
           size="small"
           disabled={revoking}
@@ -175,6 +183,7 @@ const SkeletonCard = () => (
 );
 
 const LinkedDevices = () => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [revokingId, setRevokingId] = useState<number | null>(null);
@@ -186,7 +195,7 @@ const LinkedDevices = () => {
       const data = await getActiveSessions();
       setSessions(data);
     } catch {
-      notifications.show("Failed to load sessions", { severity: "error", autoHideDuration: 3000 });
+      notifications.show(t("settings.sessionsFailed"), { severity: "error", autoHideDuration: 3000 });
     } finally {
       setLoading(false);
     }
@@ -199,9 +208,9 @@ const LinkedDevices = () => {
     try {
       await revokeSession(id);
       setSessions((prev) => prev.filter((s) => s.id !== id));
-      notifications.show("Session removed", { severity: "success", autoHideDuration: 2500 });
+      notifications.show(t("settings.sessionRemoved"), { severity: "success", autoHideDuration: 2500 });
     } catch {
-      notifications.show("Failed to remove session", { severity: "error", autoHideDuration: 3000 });
+      notifications.show(t("settings.sessionRemoveFailed"), { severity: "error", autoHideDuration: 3000 });
     } finally {
       setRevokingId(null);
     }
@@ -212,9 +221,9 @@ const LinkedDevices = () => {
     try {
       await revokeAllSessions();
       setSessions([]);
-      notifications.show("All sessions cleared", { severity: "success", autoHideDuration: 2500 });
+      notifications.show(t("settings.allSessionsCleared"), { severity: "success", autoHideDuration: 2500 });
     } catch {
-      notifications.show("Failed to clear sessions", { severity: "error", autoHideDuration: 3000 });
+      notifications.show(t("settings.sessionsClearFailed"), { severity: "error", autoHideDuration: 3000 });
     } finally {
       setRevokingAll(false);
     }
@@ -226,10 +235,10 @@ const LinkedDevices = () => {
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
         <Box>
           <Typography sx={{ fontSize: "0.95rem", fontWeight: 600, color: (t) => t.palette.text.primary }}>
-            Active Sessions
+            {t("settings.linkedDevicesTitle")}
           </Typography>
           <Typography sx={{ fontSize: "0.78rem", color: (t) => t.palette.text.disabled, mt: 0.25 }}>
-            Devices where your account is currently logged in
+            {t("settings.linkedDevicesSubtitle")}
           </Typography>
         </Box>
         {sessions.length > 1 && (
@@ -249,7 +258,7 @@ const LinkedDevices = () => {
               "&:hover": { bgcolor: "rgba(211,47,47,0.08)" },
             }}
           >
-            Clear all
+            {t("settings.clearAll")}
           </Button>
         )}
       </Box>
@@ -261,7 +270,7 @@ const LinkedDevices = () => {
         <Box sx={{ py: 8, display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
           <ComputerRoundedIcon sx={{ fontSize: 40, color: (t) => t.palette.action.disabled }} />
           <Typography sx={{ color: (t) => t.palette.text.disabled, fontSize: "0.88rem" }}>
-            No active sessions found
+            {t("settings.noSessions")}
           </Typography>
         </Box>
       ) : (
@@ -276,7 +285,7 @@ const LinkedDevices = () => {
       )}
 
       <Typography sx={{ fontSize: "0.72rem", color: (t) => t.palette.text.disabled, mt: 2, lineHeight: 1.6 }}>
-        Location is estimated from IP address and may not be exact. Removing a session does not invalidate the token on that device immediately — the user will be logged out on their next action.
+        {t("settings.linkedDevicesNote")}
       </Typography>
     </Box>
   );

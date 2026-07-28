@@ -22,6 +22,7 @@ import { uploadProfilePicture } from "../../services/api";
 import { useGlobalStore } from "../../store/store";
 import { updateProfileDetails, getProfile } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
+import { useTranslation } from "react-i18next";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import {
   SentimentSatisfiedAlt as EmojiIcon,
@@ -54,6 +55,7 @@ interface Profile {
 }
 
 const ProfileDetails = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { setUser } = useGlobalStore();
   const notifications = useAppNotifications();
@@ -151,7 +153,7 @@ const ProfileDetails = () => {
           };
           setUser(updatedUser);
           localStorage.setItem("user", JSON.stringify(updatedUser));
-          notifications.show("Profile picture updated!", {
+          notifications.show(t("settings.profilePictureUpdated"), {
             severity: "success",
             autoHideDuration: 3000,
           });
@@ -162,7 +164,7 @@ const ProfileDetails = () => {
           setUploadError(
             err?.response?.data?.message ||
               err?.message ||
-              "Failed to upload photo.",
+              t("settings.uploadFailed"),
           ),
         )
         .finally(() => setUploading(false));
@@ -199,7 +201,7 @@ const ProfileDetails = () => {
     } catch (error: any) {
       setSaveError(
         error?.response?.data?.error ||
-          "Something went wrong. Please try again.",
+          t("settings.updateFailed"),
       );
     } finally {
       setProfileUpdating(false);
@@ -318,7 +320,7 @@ const ProfileDetails = () => {
             lineHeight: 1.3,
           }}
         >
-          Profile details
+          {t("settings.profileDetailsTitle")}
         </Typography>
         <Typography
           sx={{
@@ -328,7 +330,7 @@ const ProfileDetails = () => {
             mt: 0.375,
           }}
         >
-          Manage your public-facing identity
+          {t("settings.profileDetailsSubtitle")}
         </Typography>
       </Box>
 
@@ -438,7 +440,7 @@ const ProfileDetails = () => {
                   mt: 0.25,
                 }}
               >
-                Click your photo to change it
+                {t("settings.clickToChange")}
               </Typography>
             </>
           )}
@@ -481,7 +483,7 @@ const ProfileDetails = () => {
               },
             }}
           >
-            Change photo
+            {t("settings.changePhoto")}
           </Button>
         )}
       </Box>
@@ -509,7 +511,7 @@ const ProfileDetails = () => {
           {/* Username */}
           <Box>
             <Typography component="label" sx={labelSx}>
-              Username
+              {t("settings.username")}
             </Typography>
             {profileLoading ? (
               <Skeleton
@@ -531,10 +533,10 @@ const ProfileDetails = () => {
                     setNewUsername(v);
                     setUsernameError(
                       !v
-                        ? "Username cannot be empty."
+                        ? t("settings.usernameEmpty")
                         : /^[a-zA-Z0-9_]+$/.test(v)
                           ? ""
-                          : "Only letters, numbers, and underscores.",
+                          : t("settings.usernameInvalid"),
                     );
                   }}
                   sx={inputSx}
@@ -563,7 +565,7 @@ const ProfileDetails = () => {
               }}
             >
               <Typography component="label" sx={{ ...labelSx, mb: 0 }}>
-                Bio
+                {t("settings.bio")}
               </Typography>
               {!profileLoading && (
                 <Typography
@@ -655,7 +657,7 @@ const ProfileDetails = () => {
                 icon={<SuccessIcon sx={{ fontSize: 15 }} />}
                 sx={successAlertSx}
               >
-                Your profile has been updated.
+                {t("settings.profileUpdated")}
               </Alert>
             )}
           </Box>
@@ -687,7 +689,7 @@ const ProfileDetails = () => {
                 whiteSpace: "nowrap",
               }}
             >
-              Unsaved changes
+              {t("settings.unsavedChanges")}
             </Typography>
           </Collapse>
           <Button
@@ -725,7 +727,7 @@ const ProfileDetails = () => {
             {profileUpdating ? (
               <CircularProgress size={14} sx={{ color: "#fff" }} />
             ) : (
-              "Save changes"
+              t("settings.saveChanges")
             )}
           </Button>
         </Box>
@@ -764,7 +766,7 @@ const ProfileDetails = () => {
                 lineHeight: 1.3,
               }}
             >
-              {newProfilePic ? "Crop your photo" : "Upload a photo"}
+              {newProfilePic ? t("settings.cropPhoto") : t("settings.uploadPhoto")}
             </Typography>
             <Typography
               sx={{
@@ -775,8 +777,8 @@ const ProfileDetails = () => {
               }}
             >
               {newProfilePic
-                ? "Drag to reposition · scroll to zoom"
-                : "Drop an image or click to browse"}
+                ? t("settings.dragReposition")
+                : t("settings.dropOrBrowse")}
             </Typography>
           </Box>
           <IconButton
@@ -832,7 +834,7 @@ const ProfileDetails = () => {
                   color: (t) => t.palette.text.disabled,
                 }}
               >
-                Uploading your photo…
+                {t("settings.uploadingPhoto")}
               </Typography>
             </Box>
           ) : newProfilePic ? (
@@ -919,7 +921,7 @@ const ProfileDetails = () => {
                       : (t) => t.palette.text.primary,
                   }}
                 >
-                  {isDragActive ? "Drop it here" : "Drop an image here"}
+                  {isDragActive ? t("settings.dropHere") : t("settings.dropImageHere")}
                 </Typography>
                 <Typography
                   sx={{
@@ -943,7 +945,7 @@ const ProfileDetails = () => {
                       textUnderlineOffset: 2,
                     }}
                   >
-                    browse your files
+                    {t("settings.browseFiles")}
                   </Box>
                 </Typography>
               </Box>
@@ -955,7 +957,7 @@ const ProfileDetails = () => {
                   letterSpacing: "0.04em",
                 }}
               >
-                JPEG · PNG · GIF
+                {t("settings.supportedFormats")}
               </Typography>
             </Box>
           )}
@@ -994,7 +996,7 @@ const ProfileDetails = () => {
                 },
               }}
             >
-              Choose different
+              {t("settings.chooseDifferent")}
             </Button>
           )}
           <Button
@@ -1046,7 +1048,7 @@ const ProfileDetails = () => {
             {uploading ? (
               <CircularProgress size={14} sx={{ color: "#fff" }} />
             ) : (
-              "Upload photo"
+              t("settings.uploadProfilePhoto")
             )}
           </Button>
         </Box>

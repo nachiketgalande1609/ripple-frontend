@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Box,
     List,
@@ -74,6 +75,7 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
     loading = false,
     mutedUserIds = new Set(),
 }) => {
+    const { t } = useTranslation();
     const theme = useTheme();
     const [search, setSearch] = useState("");
 
@@ -102,7 +104,7 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
             <Box sx={{ px: 1, pt: 1, pb: 1.5, flexShrink: 0 }}>
                 <TextField
                     fullWidth
-                    placeholder="Search messages…"
+                    placeholder={t("messages.searchPlaceholder")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     variant="outlined"
@@ -148,7 +150,7 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
                 ) : filteredUsers.length === 0 ? (
                     <Box sx={{ mt: 6, textAlign: "center", px: 2 }}>
                         <Typography sx={{ color: (t) => t.palette.text.disabled, fontSize: "0.82rem" }}>
-                            {search ? "No results found" : "No conversations yet"}
+                            {search ? t("messages.noResults") : t("messages.noConversations")}
                         </Typography>
                     </Box>
                 ) : (

@@ -1,9 +1,11 @@
 import { Box, Switch, Typography } from "@mui/material";
 import { useAppNotifications } from "../../hooks/useNotification";
+import { useTranslation } from "react-i18next";
 
 const ACCENT = "#64748B";
 
 const NotificationsSettings = () => {
+  const { t } = useTranslation();
   const { isMuted, setMuted } = useAppNotifications();
 
   const handleToggle = () => {
@@ -32,7 +34,7 @@ const NotificationsSettings = () => {
             lineHeight: 1.3,
           }}
         >
-          Notifications
+          {t("settings.notificationsTitle")}
         </Typography>
         <Typography
           sx={{
@@ -42,7 +44,7 @@ const NotificationsSettings = () => {
             mt: 0.375,
           }}
         >
-          Control how and when you receive alerts
+          {t("settings.notificationsSubtitle")}
         </Typography>
       </Box>
 
@@ -93,7 +95,7 @@ const NotificationsSettings = () => {
                   lineHeight: 1.3,
                 }}
               >
-                Mute all toasts
+                {t("settings.muteAll")}
               </Typography>
               <Typography
                 sx={{
@@ -104,8 +106,8 @@ const NotificationsSettings = () => {
                 }}
               >
                 {isMuted
-                  ? "Toast notifications are silenced"
-                  : "Show pop-up toasts from all users"}
+                  ? t("settings.toastsSilenced")
+                  : t("settings.toastsVisible")}
               </Typography>
             </Box>
           </Box>
@@ -141,8 +143,7 @@ const NotificationsSettings = () => {
               lineHeight: 1.6,
             }}
           >
-            When muted, no toast pop-ups will appear from any user's activity.
-            This preference is saved locally on this device.
+            {t("settings.muteNote")}
           </Typography>
         </Box>
       </Box>

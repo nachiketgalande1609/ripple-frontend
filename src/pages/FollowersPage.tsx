@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import {
     Box,
     Typography,
@@ -48,7 +49,9 @@ const RemoveConfirmDialog = ({
     loading: boolean;
     onConfirm: () => void;
     onCancel: () => void;
-}) => (
+}) => {
+    const { t } = useTranslation();
+    return (
     <Dialog
         open={open}
         onClose={onCancel}
@@ -90,7 +93,7 @@ const RemoveConfirmDialog = ({
                     color: "text.primary",
                 }}
             >
-                Remove follower?
+                {t("followers.removeFollower")}
             </Typography>
             <Typography
                 sx={{
@@ -101,8 +104,7 @@ const RemoveConfirmDialog = ({
                     lineHeight: 1.6,
                 }}
             >
-                <Box component="strong" sx={{ color: "text.primary" }}>@{username}</Box>{" "}
-                will be removed from your followers. They won't be notified.
+                {t("followers.removeConfirm", { username })}
             </Typography>
 
             <Stack spacing={0.875}>
@@ -129,7 +131,7 @@ const RemoveConfirmDialog = ({
                         "&:disabled": { opacity: 0.5 },
                     }}
                 >
-                    {loading ? "Removing…" : "Remove"}
+                    {loading ? t("followers.removing") : t("followers.remove")}
                 </Button>
                 <Button
                     fullWidth
@@ -153,12 +155,13 @@ const RemoveConfirmDialog = ({
                         },
                     }}
                 >
-                    Cancel
+                    {t("common.cancel")}
                 </Button>
             </Stack>
         </DialogContent>
     </Dialog>
-);
+    );
+};
 
 /* ── Follower row ─────────────────────────────────────────────── */
 const FollowerRow = ({
@@ -175,6 +178,7 @@ const FollowerRow = ({
     onRemove: (userId: number) => void;
 }) => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [removeLoading, setRemoveLoading] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -327,7 +331,7 @@ const FollowerRow = ({
                                 }}
                             >
                                 <PersonRemove style={{ fontSize: 14, display: "flex" }} />
-                                <span>Remove</span>
+                                <span>{t("common.remove")}</span>
                             </button>
                         )}
                     </Stack>
@@ -350,6 +354,7 @@ const FollowerRow = ({
 const FollowersPage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
     const isOwnFollowersList = currentUser?.id?.toString() === userId;
@@ -410,7 +415,7 @@ const FollowersPage = () => {
                     borderColor: "divider",
                 }}
             >
-                <Tooltip title="Back" placement="bottom">
+                <Tooltip title={t("common.back")} placement="bottom">
                     <IconButton
                         onClick={() => navigate(-1)}
                         size="small"
@@ -440,7 +445,7 @@ const FollowersPage = () => {
                             lineHeight: 1.3,
                         }}
                     >
-                        Followers
+                        {t("followers.title")}
                     </Typography>
                     {username && (
                         <Typography
@@ -478,7 +483,7 @@ const FollowersPage = () => {
                 >
                     <Search sx={{ fontSize: 17, color: "text.disabled", flexShrink: 0 }} />
                     <InputBase
-                        placeholder="Search followers…"
+                        placeholder={t("followers.searchPlaceholder")}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         sx={{
@@ -561,7 +566,7 @@ const FollowersPage = () => {
                                     mb: 0.375,
                                 }}
                             >
-                                {search ? "No results found" : "No followers yet"}
+                                {search ? t("followers.noResults") : t("followers.noFollowers")}
                             </Typography>
                             <Typography
                                 sx={{
@@ -570,7 +575,7 @@ const FollowersPage = () => {
                                     color: "text.disabled",
                                 }}
                             >
-                                {search ? "Try a different search" : "When someone follows this account, they'll appear here"}
+                                {search ? t("followers.tryDifferentSearch") : t("followers.noFollowersDesc")}
                             </Typography>
                         </Box>
                     </Box>

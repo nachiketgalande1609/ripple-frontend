@@ -9,6 +9,7 @@ import { timeAgo } from "../utils/utils";
 import BlankProfileImage from "../static/profile_blank.png";
 import { getAccounts, switchAccount, StoredAccount } from "../utils/accounts";
 import { useGlobalStore } from "../store/store";
+import { useTranslation } from "react-i18next";
 
 const DRAWER_WIDTH = 300;
 
@@ -24,6 +25,7 @@ interface Notification {
 }
 
 function NotificationsSection() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ function NotificationsSection() {
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.25 }}>
                 <Box sx={{ borderLeft: "2.5px solid #f59e0b", pl: 1.25 }}>
                     <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
-                        Recent activity
+                        {t("quickPanel.recentActivity")}
                     </Typography>
                 </Box>
                 <Typography
@@ -54,7 +56,7 @@ function NotificationsSection() {
                         "&:hover": { color: "text.secondary" },
                     }}
                 >
-                    See all <ChevronRight sx={{ fontSize: 13 }} />
+                    {t("quickPanel.seeAll")} <ChevronRight sx={{ fontSize: 13 }} />
                 </Typography>
             </Box>
 
@@ -103,6 +105,7 @@ function NotificationsSection() {
 
 
 function AccountSwitcher() {
+    const { t } = useTranslation();
     const currentUser = useGlobalStore((s) => s.user);
     const [accounts, setAccounts] = useState<StoredAccount[]>([]);
     const [switching, setSwitching] = useState<string | null>(null);
@@ -127,7 +130,7 @@ function AccountSwitcher() {
             <Box sx={{ mb: 1.25 }}>
                 <Box sx={{ borderLeft: "2.5px solid #10b981", pl: 1.25 }}>
                     <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
-                        Accounts
+                        {t("quickPanel.accounts")}
                     </Typography>
                 </Box>
             </Box>
@@ -189,7 +192,7 @@ function AccountSwitcher() {
                             transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
                         }}
                     >
-                        Switch
+                        {t("quickPanel.switchAccount")}
                     </button>
                 </Box>
             ))}
@@ -217,7 +220,7 @@ function AccountSwitcher() {
                     <AddRounded sx={{ fontSize: 18, color: "text.disabled" }} />
                 </Box>
                 <Typography sx={{ fontSize: "0.8rem", fontWeight: 500, color: "text.secondary" }}>
-                    Add account
+                    {t("quickPanel.addAccount")}
                 </Typography>
             </Box>
         </Box>
@@ -225,6 +228,7 @@ function AccountSwitcher() {
 }
 
 export default function SuggestionsDrawer() {
+    const { t } = useTranslation();
     const theme = useTheme();
     const [open, setOpen] = useState(true);
 
@@ -232,7 +236,7 @@ export default function SuggestionsDrawer() {
         <>
             {/* ── Collapsed tab button (visible when drawer is closed) ── */}
             {!open && (
-                <Tooltip title="Quick panel" placement="left">
+                <Tooltip title={t("quickPanel.title")} placement="left">
                     <Box
                         onClick={() => setOpen(true)}
                         sx={{
@@ -301,7 +305,7 @@ export default function SuggestionsDrawer() {
                     >
                         <Box sx={{ borderLeft: "2.5px solid #6366f1", pl: 1.25, flex: 1 }}>
                             <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
-                                Quick panel
+                                {t("quickPanel.title")}
                             </Typography>
                         </Box>
                         <IconButton
@@ -337,10 +341,10 @@ export default function SuggestionsDrawer() {
                         <Box sx={{ mb: 1.25 }}>
                             <Box sx={{ borderLeft: "2.5px solid #6366f1", pl: 1.25 }}>
                                 <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
-                                    People you may know
+                                    {t("quickPanel.peopleYouMayKnow")}
                                 </Typography>
                                 <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3 }}>
-                                    Based on your network
+                                    {t("quickPanel.basedOnNetwork")}
                                 </Typography>
                             </Box>
                         </Box>

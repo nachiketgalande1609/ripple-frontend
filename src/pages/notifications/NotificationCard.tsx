@@ -13,6 +13,7 @@ import {
   Chip,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { timeAgo } from "../../utils/utils";
 import BlankProfileImage from "../../static/profile_blank.png";
 
@@ -50,6 +51,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   followRequestRejectLoading,
 }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
 
@@ -129,7 +131,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                 mt: 0.4,
               }}
             >
-              {timeLabel === "Just Now" ? timeLabel : `${timeLabel} ago`}
+              {timeLabel === "Just Now" ? t("notifications.justNow") : t("notifications.timeAgo", { time: timeLabel })}
             </Typography>
           }
           sx={{ flexGrow: 1, my: 0 }}
@@ -172,7 +174,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
               },
             }}
           >
-            {isAccepted ? "Following" : "Follow Back"}
+            {isAccepted ? t("notifications.accepted") : t("notifications.followBack")}
           </Button>
         )}
 
@@ -218,7 +220,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                       sx={{ color: (t) => t.palette.background.default }}
                     />
                   ) : (
-                    "Accept"
+                    t("notifications.accept")
                   )}
                 </Button>
                 <Button
@@ -258,13 +260,13 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                       sx={{ color: (t) => t.palette.text.disabled }}
                     />
                   ) : (
-                    "Decline"
+                    t("notifications.decline")
                   )}
                 </Button>
               </>
             ) : (
               <Chip
-                label={isAccepted ? "Accepted" : isRejected ? "Declined" : null}
+                label={isAccepted ? t("notifications.accepted") : isRejected ? t("notifications.declined") : null}
                 size="small"
                 sx={{
                   backgroundColor: (t) => t.palette.action.hover,

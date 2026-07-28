@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   TextField,
   Container,
@@ -41,6 +42,7 @@ import BlankProfileImage from "../static/profile_blank.png";
 import VideoThumbnail from "../component/post/VideoThumbnail";
 
 export default function SearchPage() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const showSidebar = useMediaQuery(theme.breakpoints.up("lg"));
@@ -490,7 +492,7 @@ export default function SearchPage() {
               letterSpacing: "0.06em",
             }}
           >
-            {posts.length} post{posts.length !== 1 ? "s" : ""}
+            {posts.length} {t(posts.length !== 1 ? "search.posts" : "search.post")}
           </Typography>
         </Box>
         <Box
@@ -567,8 +569,8 @@ export default function SearchPage() {
                 }}
               />
             }
-            primary={`No results for "${debouncedUserQuery}"`}
-            secondary="Try a different username or email"
+            primary={t("search.noResultsFor", { query: debouncedUserQuery })}
+            secondary={t("search.tryDifferentUsernameOrEmail")}
           />
         )}
         {showHistory && (
@@ -583,7 +585,7 @@ export default function SearchPage() {
                     }}
                   />
                 }
-                label="Recent"
+                label={t("search.recent")}
               />
               <List disablePadding sx={{ mt: 0.5 }}>
                 {history.map((item) => (
@@ -601,7 +603,7 @@ export default function SearchPage() {
           <Box>
             <SectionHeader
               icon={<HistoryIcon sx={{ fontSize: 15, color: (t: any) => t.palette.text.disabled }} />}
-              label="Recent"
+              label={t("search.recent")}
             />
             {[1, 2, 3].map((i) => <SkeletonRow key={i} />)}
           </Box>
@@ -616,8 +618,8 @@ export default function SearchPage() {
                 }}
               />
             }
-            primary="Search for people"
-            secondary="Find users by username or email"
+            primary={t("search.searchForPeople")}
+            secondary={t("search.findUsersByUsernameOrEmail")}
           />
         )}
       </Box>
@@ -647,8 +649,8 @@ export default function SearchPage() {
                 }}
               />
             }
-            primary={`No posts for #${raw}`}
-            secondary="Try a different hashtag"
+            primary={t("search.noPostsForHashtag", { tag: raw })}
+            secondary={t("search.tryDifferentHashtag")}
           />
         )}
         {showHistory && (
@@ -663,7 +665,7 @@ export default function SearchPage() {
                     }}
                   />
                 }
-                label="Recent"
+                label={t("search.recent")}
               />
               <List disablePadding sx={{ mt: 0.5 }}>
                 {tagHistory.map((item) => (
@@ -681,7 +683,7 @@ export default function SearchPage() {
           <Box>
             <SectionHeader
               icon={<HistoryIcon sx={{ fontSize: 15, color: (t: any) => t.palette.text.disabled }} />}
-              label="Recent"
+              label={t("search.recent")}
             />
             {[1, 2, 3].map((i) => <SkeletonRow key={i} />)}
           </Box>
@@ -696,8 +698,8 @@ export default function SearchPage() {
                 }}
               />
             }
-            primary="Search by hashtag"
-            secondary="Find posts tagged with a specific topic"
+            primary={t("search.searchByHashtag")}
+            secondary={t("search.findPostsByTopic")}
           />
         )}
       </Box>
@@ -729,7 +731,7 @@ export default function SearchPage() {
           {activeTab === 0 ? (
             <TextField
               fullWidth
-              placeholder="Search people…"
+              placeholder={t("search.searchPeoplePlaceholder")}
               value={userQuery}
               onChange={(e) => setUserQuery(e.target.value)}
               inputRef={userInputRef}
@@ -763,7 +765,7 @@ export default function SearchPage() {
           ) : (
             <TextField
               fullWidth
-              placeholder="Search #hashtags…"
+              placeholder={t("search.searchHashtagsPlaceholder")}
               value={tagQuery}
               onChange={(e) => setTagQuery(e.target.value)}
               inputRef={tagInputRef}
@@ -823,7 +825,7 @@ export default function SearchPage() {
             label={
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <PersonOutlinedIcon sx={{ fontSize: 16 }} />
-                People
+                {t("search.people")}
               </Box>
             }
           />
@@ -832,7 +834,7 @@ export default function SearchPage() {
             label={
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <TagIcon sx={{ fontSize: 15 }} />
-                Hashtags
+                {t("search.hashtags")}
               </Box>
             }
           />

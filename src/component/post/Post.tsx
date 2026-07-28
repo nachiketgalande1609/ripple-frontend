@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import TranslateButton from "../TranslateButton";
 import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme, Popover, Tooltip } from "@mui/material";
 import { formatDateInUserTz } from "../../utils/utils";
 import BlankProfileImage from "../../static/profile_blank.png";
@@ -176,6 +177,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const [tagAnchorEl, setTagAnchorEl] = useState<HTMLElement | null>(null);
     const [carouselIndex, setCarouselIndex] = useState(0);
     const [usersModalOpen, setUsersModalOpen] = useState(false);
+    const [translatedCaption, setTranslatedCaption] = useState<string | null>(null);
     const [usersList, setUsersList] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [likeAnimating, setLikeAnimating] = useState(false);
@@ -663,6 +665,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                 {/* ── Caption ── */}
                 <Box sx={{ px: 1.75, pb: 1.75, pt: 0.25 }}>
                     {post.content && (
+                        <>
                         <Typography
                             sx={{
                                 fontFamily: "'Inter', -apple-system, sans-serif",
@@ -684,8 +687,14 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                             >
                                 {post.username}
                             </Box>
-                            {post.content}
+                            {translatedCaption ?? post.content}
                         </Typography>
+                        <TranslateButton
+                            text={post.content}
+                            isTranslated={!!translatedCaption}
+                            onTranslated={(t) => setTranslatedCaption(t)}
+                        />
+                        </>
                     )}
                     <Tooltip title={post.created_at ? formatDateInUserTz(post.created_at) : ""} placement="bottom-start">
                         <Typography

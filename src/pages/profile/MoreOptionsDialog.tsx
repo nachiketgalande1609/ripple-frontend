@@ -1,5 +1,6 @@
 import { Dialog, Button, Box, useMediaQuery, useTheme } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import { useAppNotifications } from "../../hooks/useNotification";
 import socket from "../../services/socket";
 import { unfollowUser, blockUser, unblockUser } from "../../services/api";
@@ -114,6 +115,7 @@ export default function MoreOptionsDialog({
     const navigate = useNavigate();
     const location = useLocation();
     const notifications = useAppNotifications();
+    const { t } = useTranslation();
 
     const profileUrl = `${window.location.origin}${location.pathname}`;
     const theme = useTheme();
@@ -131,14 +133,14 @@ export default function MoreOptionsDialog({
     const handleCopyLink = async () => {
         try {
             await navigator.clipboard.writeText(profileUrl);
-            notifications.show("Profile link copied to clipboard!", {
+            notifications.show(t("profile.profileLinkCopied"), {
                 severity: "success",
                 autoHideDuration: 3000,
             });
             handleCloseDialog();
         } catch (err) {
             console.error("Failed to copy:", err);
-            notifications.show("Failed to copy link. Please try again later.", {
+            notifications.show(t("profile.copyLinkFailed"), {
                 severity: "error",
                 autoHideDuration: 3000,
             });
@@ -159,7 +161,7 @@ export default function MoreOptionsDialog({
             const res = await unfollowUser(currentUser.id, userId || "");
             if (res.success) {
                 handleCloseDialog();
-                notifications.show("User Unfollowed", {
+                notifications.show(t("profile.userUnfollowed"), {
                     severity: "success",
                     autoHideDuration: 3000,
                 });
@@ -168,7 +170,7 @@ export default function MoreOptionsDialog({
             }
         } catch (err) {
             console.error("Unfollow request failed:", err);
-            notifications.show("Failed to unfollow user. Please try again later.", {
+            notifications.show(t("profile.unfollowFailed"), {
                 severity: "error",
                 autoHideDuration: 3000,
             });
@@ -179,16 +181,16 @@ export default function MoreOptionsDialog({
         try {
             if (isBlocked) {
                 await unblockUser(Number(userId));
-                notifications.show("User unblocked", { severity: "success", autoHideDuration: 3000 });
+                notifications.show(t("profile.userUnblocked"), { severity: "success", autoHideDuration: 3000 });
             } else {
                 await blockUser(Number(userId));
-                notifications.show("User blocked", { severity: "success", autoHideDuration: 3000 });
+                notifications.show(t("profile.userBlocked"), { severity: "success", autoHideDuration: 3000 });
             }
             handleCloseDialog();
             onBlockToggle();
         } catch (err) {
             console.error("Block/unblock failed:", err);
-            notifications.show("Action failed. Please try again.", { severity: "error", autoHideDuration: 3000 });
+            notifications.show(t("profile.blockFailed"), { severity: "error", autoHideDuration: 3000 });
         }
     };
 
@@ -257,7 +259,7 @@ export default function MoreOptionsDialog({
                             color: "text.disabled",
                         }}
                     >
-                        {isOwnProfile ? "Manage your profile" : "Profile options"}
+                        {isOwnProfile ? t("profile.manageProfile") : t("profile.profileOptions")}
                     </Box>
                 </Box>
             </Box>
@@ -272,7 +274,7 @@ export default function MoreOptionsDialog({
             >
                 {/* Unfollow — shown to non-owners who follow this user */}
                 {!isOwnProfile && isFollowing && (
-                    <DialogButton icon={<PersonRemoveRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Unfollow" onClick={handleUnfollow} danger />
+                    <DialogButton icon={<PersonRemoveRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("common.unfollow")} onClick={handleUnfollow} danger />
                 )}
 
                 {/* Block / Unblock — shown to non-owners */}
@@ -282,33 +284,33 @@ export default function MoreOptionsDialog({
                             ? <BlockOutlinedIcon sx={{ fontSize: "1.1rem" }} />
                             : <BlockRoundedIcon sx={{ fontSize: "1.1rem" }} />
                         }
-                        label={isBlocked ? "Unblock" : "Block"}
+                        label={isBlocked ? t("common.unblock") : t("common.block")}
                         onClick={handleBlockToggle}
                         danger={!isBlocked}
                     />
                 )}
 
                 {/* Edit Profile — own profile only */}
-                {isOwnProfile && <DialogButton icon={<EditRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Edit Profile" onClick={handleEditProfile} />}
+                {isOwnProfile && <DialogButton icon={<EditRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("profile.editProfile")} onClick={handleEditProfile} />}
 
                 {/* Saved — own profile, mobile only (desktop has it as a tab) */}
                 {isOwnProfile && isMobile && (
                     <DialogButton
                         icon={<BookmarkBorderIcon sx={{ fontSize: "1.1rem" }} />}
-                        label="Saved"
+                        label={t("profile.saved")}
                         onClick={() => { navigate("/saved"); handleCloseDialog(); }}
                     />
                 )}
 
 
                 {/* Copy Profile Link — always visible */}
-                <DialogButton icon={<LinkRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Copy Profile Link" onClick={handleCopyLink} />
+                <DialogButton icon={<LinkRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("profile.copyProfileLink")} onClick={handleCopyLink} />
 
                 {/* Settings — mobile + own profile only */}
                 {isMobile && isOwnProfile && (
                     <DialogButton
                         icon={<SettingsRoundedIcon sx={{ fontSize: "1.1rem" }} />}
-                        label="Settings"
+                        label={t("nav.settings")}
                         onClick={() => {
                             navigate("/settings");
                             handleCloseDialog();
@@ -317,10 +319,10 @@ export default function MoreOptionsDialog({
                 )}
 
                 {/* Logout — own profile only */}
-                {isOwnProfile && <DialogButton icon={<LogoutRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Log out" onClick={handleLogout} danger />}
+                {isOwnProfile && <DialogButton icon={<LogoutRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("nav.logout")} onClick={handleLogout} danger />}
 
                 {/* Cancel */}
-                <DialogButton icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Cancel" onClick={handleCloseDialog} muted />
+                <DialogButton icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("common.cancel")} onClick={handleCloseDialog} muted />
             </Box>
         </Dialog>
     );

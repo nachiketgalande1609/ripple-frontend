@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, Typography, TextField, Button, Dialog, DialogContent, CircularProgress, InputAdornment, IconButton } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function KeyBackupDialog({ mode, open, onSubmit, onSkip }: Props) {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,7 +26,7 @@ export default function KeyBackupDialog({ mode, open, onSubmit, onSkip }: Props)
     try {
       await onSubmit(password);
     } catch {
-      setError(mode === 'restore' ? 'Incorrect password. Please try again.' : 'Failed to back up keys. Please try again.');
+      setError(mode === 'restore' ? t("dialogs.incorrectPassword") : t("dialogs.backupFailed"));
     } finally {
       setLoading(false);
     }
@@ -39,19 +41,17 @@ export default function KeyBackupDialog({ mode, open, onSubmit, onSkip }: Props)
           </Box>
           <Box sx={{ textAlign: 'center' }}>
             <Typography sx={{ fontWeight: 700, fontSize: '1rem', mb: 0.5, color: (t) => t.palette.text.primary }}>
-              {mode === 'backup' ? 'Back up your messages' : 'Restore your messages'}
+              {mode === 'backup' ? t("dialogs.backupTitle") : t("dialogs.restoreTitle")}
             </Typography>
             <Typography sx={{ fontSize: '0.82rem', color: (t) => t.palette.text.secondary, lineHeight: 1.6 }}>
-              {mode === 'backup'
-                ? 'Enter your account password to securely back up your encryption keys. This lets you read messages on other devices.'
-                : 'Enter your account password to restore your encryption keys and read your messages on this device.'}
+              {mode === 'backup' ? t("dialogs.backupDesc") : t("dialogs.restoreDesc")}
             </Typography>
           </Box>
 
           <TextField
             fullWidth
             type={showPassword ? 'text' : 'password'}
-            placeholder="Account password"
+            placeholder={t("dialogs.accountPassword")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
@@ -74,7 +74,7 @@ export default function KeyBackupDialog({ mode, open, onSubmit, onSkip }: Props)
           <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
             {onSkip && (
               <Button fullWidth onClick={onSkip} sx={{ textTransform: 'none', borderRadius: '10px', color: (t) => t.palette.text.disabled, '&:hover': { bgcolor: (t) => t.palette.action.hover } }}>
-                {mode === 'restore' ? 'Start fresh' : 'Skip for now'}
+                {mode === 'restore' ? t("dialogs.startFresh") : t("dialogs.skipForNow")}
               </Button>
             )}
             <Button
@@ -84,7 +84,7 @@ export default function KeyBackupDialog({ mode, open, onSubmit, onSkip }: Props)
               disabled={!password.trim() || loading}
               sx={{ textTransform: 'none', borderRadius: '10px', bgcolor: '#64748B', '&:hover': { bgcolor: '#6b4de0' }, fontWeight: 600 }}
             >
-              {loading ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : mode === 'backup' ? 'Back up' : 'Restore'}
+              {loading ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : mode === 'backup' ? t("dialogs.backup") : t("dialogs.restore")}
             </Button>
           </Box>
         </Box>

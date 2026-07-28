@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Dialog,
     DialogTitle,
@@ -48,6 +49,7 @@ const inputSx = {
 };
 
 export default function CreatePollModal({ open, onClose }: CreatePollModalProps) {
+    const { t } = useTranslation();
     const [question, setQuestion] = useState("");
     const [options, setOptions] = useState(["", ""]);
     const [loading, setLoading] = useState(false);
@@ -76,16 +78,16 @@ export default function CreatePollModal({ open, onClose }: CreatePollModalProps)
 
     const handleSubmit = async () => {
         setError("");
-        if (!question.trim()) { setError("Poll question is required."); return; }
+        if (!question.trim()) { setError(t("create.pollQuestionRequired")); return; }
         const filled = options.filter((o) => o.trim());
-        if (filled.length < 2) { setError("At least 2 options must be filled."); return; }
+        if (filled.length < 2) { setError(t("create.atLeastTwoOptions")); return; }
         setLoading(true);
         try {
             await createPoll(question.trim(), filled);
             setSuccess(true);
             setTimeout(() => { handleClose(); }, 1200);
         } catch (err: any) {
-            setError(err?.response?.data?.error || "Failed to create poll. Please try again.");
+            setError(err?.response?.data?.error || t("create.pollFailed"));
         } finally {
             setLoading(false);
         }
@@ -116,7 +118,7 @@ export default function CreatePollModal({ open, onClose }: CreatePollModalProps)
                     <PollOutlined sx={{ color: "#fff", fontSize: "1.15rem" }} />
                 </Box>
                 <Typography sx={{ fontWeight: 700, fontSize: "1.05rem", color: "text.primary", flex: 1 }}>
-                    Create a Poll
+                    {t("create.createPoll")}
                 </Typography>
                 <IconButton size="small" onClick={handleClose} sx={{ color: "text.disabled" }}>
                     <CloseIcon fontSize="small" />
@@ -126,7 +128,7 @@ export default function CreatePollModal({ open, onClose }: CreatePollModalProps)
             <DialogContent sx={{ px: 3, pb: 1 }}>
                 {/* Question */}
                 <Box sx={{ mb: 2.5, mt: 0.5 }}>
-                    <Typography component="label" sx={labelSx}>Poll question</Typography>
+                    <Typography component="label" sx={labelSx}>{t("create.pollQuestion")}</Typography>
                     <TextField
                         fullWidth
                         value={question}
@@ -140,17 +142,17 @@ export default function CreatePollModal({ open, onClose }: CreatePollModalProps)
                 </Box>
 
                 {/* Options */}
-                <Typography component="label" sx={{ ...labelSx, mb: 1.25 }}>Options</Typography>
+                <Typography component="label" sx={{ ...labelSx, mb: 1.25 }}>{t("create.options")}</Typography>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
                     {options.map((opt, i) => (
                         <Box key={i} sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                             <Typography component="label" sx={{ ...labelSx, mb: 0.5 }}>
-                                Option {i + 1}
+                                {t("create.optionLabel", { number: i + 1 })}
                             </Typography>
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                 <TextField
                                     fullWidth
-                                    placeholder={`Enter option ${i + 1}`}
+                                    placeholder={t("create.enterOption", { number: i + 1 })}
                                     value={opt}
                                     onChange={(e) => handleOptionChange(i, e.target.value)}
                                     sx={inputSx}
@@ -177,12 +179,12 @@ export default function CreatePollModal({ open, onClose }: CreatePollModalProps)
                         size="small"
                         sx={{ mt: 1.5, textTransform: "none", color: "#6366f1", fontWeight: 600, fontSize: "0.82rem", px: 0, "&:hover": { backgroundColor: "transparent", opacity: 0.8 } }}
                     >
-                        Add option ({options.length}/4)
+                        {t("create.addOption", { count: options.length })}
                     </Button>
                 )}
 
                 {error && <Typography sx={{ color: "error.main", fontSize: "0.8rem", mt: 1.5 }}>{error}</Typography>}
-                {success && <Typography sx={{ color: "success.main", fontSize: "0.8rem", mt: 1.5, fontWeight: 600 }}>Poll created successfully!</Typography>}
+                {success && <Typography sx={{ color: "success.main", fontSize: "0.8rem", mt: 1.5, fontWeight: 600 }}>{t("create.pollCreated")}</Typography>}
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5 }}>
@@ -203,7 +205,7 @@ export default function CreatePollModal({ open, onClose }: CreatePollModalProps)
                         "&:disabled": { opacity: 0.6 },
                     }}
                 >
-                    {loading ? <CircularProgress size={20} sx={{ color: "#fff" }} /> : "Create Poll"}
+                    {loading ? <CircularProgress size={20} sx={{ color: "#fff" }} /> : t("create.createPollBtn")}
                 </Button>
             </DialogActions>
         </Dialog>

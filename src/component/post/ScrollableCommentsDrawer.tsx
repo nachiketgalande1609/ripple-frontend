@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import TranslateButton from "../TranslateButton";
 import {
   Typography, IconButton, Avatar, Box, TextField,
   SwipeableDrawer, useMediaQuery, useTheme,
@@ -54,12 +56,14 @@ export default function ScrollableCommentsDrawer({
   content, username, avatarUrl,
   handleDeleteComment,
 }: ScrollableCommentsDrawerProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isDark = theme.palette.mode === "dark";
   const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
   const [activeCommentMenu, setActiveCommentMenu] = useState<number | null>(null);
+  const [translatedComments, setTranslatedComments] = useState<Record<number, string | null>>({});
   const [emojiAnchorEl, setEmojiAnchorEl] = useState<null | HTMLElement>(null);
   const [likesState, setLikesState] = useState<Record<number, { liked: boolean; count: number }>>({});
   const [likeAnimating, setLikeAnimating] = useState<number | null>(null);
@@ -188,9 +192,14 @@ export default function ScrollableCommentsDrawer({
 
             <Box sx={{ display: "inline-block", backgroundColor: (t) => t.palette.action.hover, borderRadius: isReply ? "4px 12px 12px 12px" : "4px 14px 14px 14px", px: 1.5, py: 0.85, maxWidth: "100%" }}>
               <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: isReply ? "0.8rem" : "0.83rem", color: (t) => t.palette.text.primary, lineHeight: 1.5, wordBreak: "break-word" }}>
-                {comment.content}
+                {translatedComments[comment.id] ?? comment.content}
               </Typography>
             </Box>
+            <TranslateButton
+              text={comment.content}
+              isTranslated={!!translatedComments[comment.id]}
+              onTranslated={(text) => setTranslatedComments((prev) => ({ ...prev, [comment.id]: text }))}
+            />
 
             {/* Reply button (top-level only) */}
             {!isReply && (
@@ -205,7 +214,7 @@ export default function ScrollableCommentsDrawer({
                   transition: "color 0.15s",
                 }}
               >
-                Reply
+                {t("post.reply")}
               </Box>
             )}
           </Box>
@@ -258,7 +267,7 @@ export default function ScrollableCommentsDrawer({
           >
             <Box sx={{ width: 24, height: "1px", backgroundColor: (t) => t.palette.divider }} />
             <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.72rem", fontWeight: 600, color: ACCENT }}>
-              {repliesExpanded ? "Hide replies" : `${replies.length} ${replies.length === 1 ? "reply" : "replies"}`}
+              {repliesExpanded ? t("post.hideReplies") : `${replies.length} ${replies.length === 1 ? t("post.reply") : t("post.replies")}`}
             </Typography>
           </Box>
         )}
@@ -305,7 +314,7 @@ export default function ScrollableCommentsDrawer({
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", px: 2, pb: 1.25, flexShrink: 0 }}>
           <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: "0.92rem", color: (t) => t.palette.text.primary }}>
-            Comments
+            {t("post.commentsTitle")}
           </Typography>
           {totalCount > 0 && (
             <Box sx={{ position: "absolute", right: 16, px: 1.25, py: 0.25, borderRadius: "20px", backgroundColor: (t) => t.palette.action.hover, border: "1px solid", borderColor: (t) => t.palette.divider }}>
@@ -339,8 +348,8 @@ export default function ScrollableCommentsDrawer({
               <Box sx={{ width: 52, height: 52, borderRadius: "16px", backgroundColor: (t) => t.palette.action.hover, border: "1px solid", borderColor: (t) => t.palette.divider, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <ChatBubbleOutlineRoundedIcon sx={{ fontSize: "1.4rem", color: (t) => t.palette.text.disabled }} />
               </Box>
-              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", color: (t) => t.palette.text.secondary, fontWeight: 500 }}>No comments yet</Typography>
-              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.75rem", color: (t) => t.palette.text.disabled }}>Be the first to comment</Typography>
+              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", color: (t) => t.palette.text.secondary, fontWeight: 500 }}>{t("post.noComments")}</Typography>
+              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.75rem", color: (t) => t.palette.text.disabled }}>{t("post.beFirstToComment")}</Typography>
             </Box>
           ) : (
             topLevel.map((c) => renderComment(c))
@@ -353,7 +362,7 @@ export default function ScrollableCommentsDrawer({
           {replyingTo && (
             <Box sx={{ pl: 1.25, py: 0.5, mb: 0.75, borderLeft: `2px solid ${ACCENT}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.73rem", color: (t) => t.palette.text.disabled }}>
-                Replying to <Box component="span" sx={{ color: ACCENT, fontWeight: 600 }}>@{replyingTo.username}</Box>
+                {t("post.replyingTo")} <Box component="span" sx={{ color: ACCENT, fontWeight: 600 }}>@{replyingTo.username}</Box>
               </Typography>
               <IconButton size="small" onClick={() => setReplyingTo(null)} sx={{ p: 0.3, color: (t) => t.palette.text.disabled, "&:hover": { color: (t) => t.palette.text.secondary } }}>
                 <CloseIcon sx={{ fontSize: 12 }} />
@@ -365,7 +374,7 @@ export default function ScrollableCommentsDrawer({
             <Box sx={{ flex: 1, display: "flex", alignItems: "center", backgroundColor: "var(--nav-bg)", borderRadius: "14px", border: "none", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", pl: 2, pr: 0.875, py: 0.875, transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)", "&:focus-within": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)" } }}>
               <TextField
                 fullWidth variant="standard"
-                placeholder={replyingTo ? `Reply to @${replyingTo.username}…` : "Add a comment…"}
+                placeholder={replyingTo ? t("post.replyPlaceholder", { username: replyingTo.username }) : t("post.addComment")}
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && canSend) { e.preventDefault(); handleSend(); } }}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Dialog, Box, Button } from "@mui/material";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
@@ -59,6 +60,7 @@ function DialogButton({ icon, label, onClick, danger = false, muted = false }: {
 }
 
 const MessageOptionsDialog = ({ open, onClose, onDelete, onInfo }: MessageOptionsDialogProps) => {
+    const { t } = useTranslation();
     const dialogPaperSx = {
         borderRadius: "36px",
         backgroundColor: "background.paper",
@@ -72,9 +74,9 @@ const MessageOptionsDialog = ({ open, onClose, onDelete, onInfo }: MessageOption
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs" BackdropProps={dialogBackdrop} sx={{ "& .MuiDialog-paper": dialogPaperSx }}>
             <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "32px 32px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 32px 32px !important", marginBottom: "0 !important" } }}>
-                <DialogButton icon={<DeleteRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Delete Message" onClick={onDelete} danger />
-                <DialogButton icon={<InfoRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Message Info" onClick={onInfo} />
-                <DialogButton icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />} label="Cancel" onClick={onClose} muted />
+                <DialogButton icon={<DeleteRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("messages.deleteMessage")} onClick={onDelete} danger />
+                <DialogButton icon={<InfoRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("messages.messageInfo")} onClick={onInfo} />
+                <DialogButton icon={<CloseRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("common.cancel")} onClick={onClose} muted />
             </Box>
         </Dialog>
     );

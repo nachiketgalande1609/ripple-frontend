@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Box, Button, Modal, TextField, Typography, Backdrop, Fade,
     IconButton, CircularProgress, Tooltip, useTheme, useMediaQuery,
@@ -35,6 +36,7 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
     const [isDragging, setIsDragging] = useState(false);
     const [isPreviewHovered, setIsPreviewHovered] = useState(false);
 
+    const { t } = useTranslation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const isDark = theme.palette.mode === "dark";
@@ -83,13 +85,13 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
             }
         } catch (error) {
             console.error("Failed to upload story:", error);
-            alert("Error uploading story. Please try again.");
+            alert(t("create.storyError"));
         } finally {
             setLoading(false);
         }
     };
 
-    const bc = (t: any) => t.palette.divider;
+    const bc = (th: any) => th.palette.divider;
 
     return (
         <Modal
@@ -120,16 +122,16 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                         <Typography sx={{
                             fontFamily: "'Inter', sans-serif",
                             fontSize: "1rem", fontWeight: 600,
-                            color: (t) => t.palette.text.primary,
+                            color: (th) => th.palette.text.primary,
                             letterSpacing: "-0.2px",
                         }}>
-                            Create story
+                            {t("create.createStory")}
                         </Typography>
-                        <Tooltip title="Close">
+                        <Tooltip title={t("common.close")}>
                             <IconButton onClick={handleClose} size="small" sx={{
                                 width: 32, height: 32, borderRadius: "10px",
-                                color: (t) => t.palette.text.secondary,
-                                "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
+                                color: (th) => th.palette.text.secondary,
+                                "&:hover": { backgroundColor: (th) => th.palette.action.hover, color: (th) => th.palette.text.primary },
                             }}>
                                 <Close sx={{ fontSize: 16 }} />
                             </IconButton>
@@ -154,11 +156,11 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                 {(currentUser?.username || "U").slice(0, 2).toUpperCase()}
                             </Box>
                             <Box>
-                                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.85rem", fontWeight: 600, color: (t) => t.palette.text.primary, lineHeight: 1.2 }}>
+                                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.85rem", fontWeight: 600, color: (th) => th.palette.text.primary, lineHeight: 1.2 }}>
                                     {currentUser?.username || "You"}
                                 </Typography>
-                                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.72rem", color: (t) => t.palette.text.disabled }}>
-                                    Posting now
+                                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.72rem", color: (th) => th.palette.text.disabled }}>
+                                    {t("create.postingNow")}
                                 </Typography>
                             </Box>
                         </Box>
@@ -172,7 +174,7 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                 overflow: "hidden",
                                 cursor: media ? "default" : "pointer",
                                 position: "relative",
-                                backgroundColor: isDragging ? `${ACCENT}0d` : (t) => t.palette.action.hover,
+                                backgroundColor: isDragging ? `${ACCENT}0d` : (th) => th.palette.action.hover,
                                 outline: isDragging ? `2px dashed ${ACCENT}60` : "none",
                                 outlineOffset: "-8px",
                                 minHeight: media ? (isMobile ? 200 : 240) : 160,
@@ -202,8 +204,8 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                             }}
                                         />
                                     ) : (
-                                        <Typography sx={{ color: (t) => t.palette.error.main, fontSize: "0.84rem" }}>
-                                            Unsupported format
+                                        <Typography sx={{ color: (th) => th.palette.error.main, fontSize: "0.84rem" }}>
+                                            {t("create.unsupportedFormat")}
                                         </Typography>
                                     )}
 
@@ -213,7 +215,7 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                             display: "flex", alignItems: "center", justifyContent: "center", gap: 1,
                                             opacity: isPreviewHovered ? 1 : 0, transition: "opacity 0.2s",
                                         }}>
-                                            <Tooltip title="Change image">
+                                            <Tooltip title={t("create.changeImage")}>
                                                 <IconButton
                                                     onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
                                                     sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#111", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}
@@ -221,7 +223,7 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                                     <EditIcon sx={{ fontSize: 16 }} />
                                                 </IconButton>
                                             </Tooltip>
-                                            <Tooltip title="Remove">
+                                            <Tooltip title={t("common.remove")}>
                                                 <IconButton
                                                     onClick={(e) => { e.stopPropagation(); setMedia(null); }}
                                                     sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#dc2626", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}
@@ -244,20 +246,20 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                     </Box>
                                     <Typography sx={{
                                         fontFamily: "'Inter', sans-serif", fontSize: "0.9rem",
-                                        fontWeight: 600, color: (t) => t.palette.text.primary, mb: 0.4,
+                                        fontWeight: 600, color: (th) => th.palette.text.primary, mb: 0.4,
                                         letterSpacing: "-0.1px",
                                     }}>
-                                        {isDragging ? "Drop to upload" : "Drop photo or video"}
+                                        {isDragging ? t("create.dropToUpload") : t("create.dropPhotoOrVideo")}
                                     </Typography>
-                                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.disabled, mb: 1.5 }}>
-                                        or click to browse
+                                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", color: (th) => th.palette.text.disabled, mb: 1.5 }}>
+                                        {t("create.orClickToBrowse")}
                                     </Typography>
                                     <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center", flexWrap: "wrap" }}>
                                         {["JPG", "PNG", "GIF", "MP4", "MOV"].map((ext) => (
                                             <Typography key={ext} sx={{
                                                 fontFamily: "'Inter', sans-serif", fontSize: "0.65rem", fontWeight: 600,
-                                                color: (t) => t.palette.text.disabled,
-                                                backgroundColor: (t) => t.palette.background.paper,
+                                                color: (th) => th.palette.text.disabled,
+                                                backgroundColor: (th) => th.palette.background.paper,
                                                 border: "1px solid", borderColor: bc,
                                                 borderRadius: "6px", px: 0.875, py: "2px",
                                                 letterSpacing: "0.04em",
@@ -278,11 +280,11 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                             }}>
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.625 }}>
                                     {isVideo
-                                        ? <VideoIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />
-                                        : <ImageIcon sx={{ fontSize: 13, color: (t) => t.palette.text.disabled }} />}
+                                        ? <VideoIcon sx={{ fontSize: 13, color: (th) => th.palette.text.disabled }} />
+                                        : <ImageIcon sx={{ fontSize: 13, color: (th) => th.palette.text.disabled }} />}
                                     <Typography sx={{
                                         fontFamily: "'Inter', sans-serif", fontSize: "0.73rem",
-                                        color: (t) => t.palette.text.disabled, fontStyle: "italic",
+                                        color: (th) => th.palette.text.disabled, fontStyle: "italic",
                                         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200,
                                     }}>
                                         {media.name}
@@ -290,11 +292,11 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                 </Box>
                                 <Typography component="button" onClick={() => setMedia(null)} sx={{
                                     fontFamily: "'Inter', sans-serif", fontSize: "0.73rem",
-                                    color: (t) => t.palette.error.main,
+                                    color: (th) => th.palette.error.main,
                                     background: "none", border: "none", cursor: "pointer", p: 0,
                                     "&:hover": { textDecoration: "underline" },
                                 }}>
-                                    Remove
+                                    {t("common.remove")}
                                 </Typography>
                             </Box>
                         )}
@@ -304,7 +306,7 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                             <Box sx={{ position: "relative" }}>
                                 <TextField
                                     fullWidth multiline rows={3} variant="standard"
-                                    placeholder="Write a caption…"
+                                    placeholder={t("create.writeCaptionStory")}
                                     value={caption}
                                     onChange={(e) => setCaption(e.target.value)}
                                     inputProps={{ maxLength: CAPTION_LIMIT }}
@@ -312,22 +314,22 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                         "& .MuiInput-root": {
                                             fontSize: "0.875rem",
                                             fontFamily: "'Inter', sans-serif",
-                                            color: (t) => t.palette.text.primary,
+                                            color: (th) => th.palette.text.primary,
                                             "&:before, &:after": { display: "none" },
                                             pr: "32px",
                                         },
-                                        "& textarea::placeholder": { color: (t: any) => t.palette.text.disabled, opacity: 1 },
+                                        "& textarea::placeholder": { color: (th: any) => th.palette.text.disabled, opacity: 1 },
                                     }}
                                 />
-                                <Tooltip title="Add emoji">
+                                <Tooltip title={t("create.addEmoji")}>
                                     <IconButton
                                         onClick={(e) => setEmojiAnchorEl(e.currentTarget)}
                                         size="small"
                                         sx={{
                                             position: "absolute", top: 0, right: 0,
                                             width: 26, height: 26, borderRadius: "7px",
-                                            color: (t) => t.palette.text.disabled,
-                                            "&:hover": { color: ACCENT, backgroundColor: (t) => t.palette.action.hover },
+                                            color: (th) => th.palette.text.disabled,
+                                            "&:hover": { color: ACCENT, backgroundColor: (th) => th.palette.action.hover },
                                         }}
                                     >
                                         <EmojiIcon sx={{ fontSize: 15 }} />
@@ -336,7 +338,7 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                             </Box>
                             <Typography sx={{
                                 fontFamily: "'Inter', sans-serif", fontSize: "0.67rem",
-                                color: (t) => t.palette.text.disabled, textAlign: "right", mt: 0.75,
+                                color: (th) => th.palette.text.disabled, textAlign: "right", mt: 0.75,
                             }}>
                                 {caption.length} / {CAPTION_LIMIT}
                             </Typography>
@@ -352,21 +354,21 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                         {!isReady && (
                             <Typography sx={{
                                 fontFamily: "'Inter', sans-serif", fontSize: "0.78rem",
-                                color: (t) => t.palette.text.disabled, mr: "auto",
+                                color: (th) => th.palette.text.disabled, mr: "auto",
                             }}>
-                                Add a photo or video to share
+                                {t("create.addPhotoOrVideo")}
                             </Typography>
                         )}
 
                         <Button variant="text" onClick={handleClose} sx={{
                             borderRadius: "10px",
-                            color: (t) => t.palette.text.secondary,
+                            color: (th) => th.palette.text.secondary,
                             fontFamily: "'Inter', sans-serif",
                             fontSize: "0.84rem", fontWeight: 500,
                             textTransform: "none", px: 2, py: 0.75,
-                            "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
+                            "&:hover": { backgroundColor: (th) => th.palette.action.hover, color: (th) => th.palette.text.primary },
                         }}>
-                            Cancel
+                            {t("common.cancel")}
                         </Button>
 
                         <Button
@@ -392,7 +394,7 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                 "&.Mui-disabled": { backgroundColor: `${ACCENT}35`, color: "rgba(255,255,255,0.5)" },
                             }}
                         >
-                            {posted ? "Shared!" : loading ? "Sharing…" : "Share story"}
+                            {posted ? t("create.shared") : loading ? t("create.sharing") : t("create.shareStory")}
                         </Button>
                     </Box>
 

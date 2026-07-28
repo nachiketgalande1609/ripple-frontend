@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Box, TextField, IconButton, CircularProgress,
   useMediaQuery, useTheme, Typography, Popover,
@@ -53,6 +54,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   inputMessage, handleTyping, setInputMessage, handleSendMessage,
   handleFileChange, isSendingMessage, selectedMessageForReply, selectedUser, cancelReply,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isDark = theme.palette.mode === "dark";
@@ -146,7 +148,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
         >
           <Box sx={{ overflow: "hidden" }}>
             <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: ACCENT, mb: "2px" }}>
-              {selectedMessageForReply.sender_id === currentUser.id ? "You" : selectedUser?.username}
+              {selectedMessageForReply.sender_id === currentUser.id ? t("messages.you") : selectedUser?.username}
             </Typography>
             <Typography noWrap sx={{ fontSize: "0.78rem", color: (t) => t.palette.text.secondary }}>
               {selectedMessageForReply.message_text.length > 65
@@ -257,7 +259,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
         >
           <TextField
             fullWidth
-            placeholder="Message…"
+            placeholder={t("messages.messagePlaceholder")}
             size="small"
             value={inputMessage}
             variant="standard"

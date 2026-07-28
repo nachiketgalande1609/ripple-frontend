@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, Box, Typography, Avatar, InputBase, IconButton, useTheme } from "@mui/material";
 import { Close as CloseIcon, Search as SearchIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,7 @@ interface NewChatUsersListProps {
 }
 
 const NewChatUsersList = ({ open, setAnchorEl, usersList }: NewChatUsersListProps) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const theme = useTheme();
     const isDark = theme.palette.mode === "dark";
@@ -79,7 +81,7 @@ const NewChatUsersList = ({ open, setAnchorEl, usersList }: NewChatUsersListProp
                         color: (t) => t.palette.text.primary,
                     }}
                 >
-                    New message
+                    {t("messages.newMessage")}
                 </Typography>
                 <IconButton
                     size="small"
@@ -123,7 +125,7 @@ const NewChatUsersList = ({ open, setAnchorEl, usersList }: NewChatUsersListProp
                     />
                     <InputBase
                         inputRef={searchInputRef}
-                        placeholder="Search people..."
+                        placeholder={t("messages.newMessageSearch")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         sx={{
@@ -196,7 +198,7 @@ const NewChatUsersList = ({ open, setAnchorEl, usersList }: NewChatUsersListProp
                                 color: (t) => t.palette.text.disabled,
                             }}
                         >
-                            No users found
+                            {t("messages.noUsersFound")}
                         </Typography>
                     </Box>
                 )}
