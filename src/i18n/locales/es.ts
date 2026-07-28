@@ -85,6 +85,7 @@ export default {
         unfollowFailed: "Error al dejar de seguir. Inténtalo más tarde.",
         blockFailed: "Acción fallida. Inténtalo más tarde.",
         userUnfollowed: "Usuario dejado de seguir", userUnblocked: "Usuario desbloqueado", userBlocked: "Usuario bloqueado",
+        pinned: "Fijados", unpin: "Desfijar", pinToProfile: "Fijar en el perfil", maxPinsReached: "Solo puedes fijar hasta 3 publicaciones", allPosts: "Todas las publicaciones",
     },
     followers: {
         title: "Seguidores",

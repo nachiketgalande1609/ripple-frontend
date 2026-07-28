@@ -85,6 +85,7 @@ export default {
         unfollowFailed: "Entfolgen fehlgeschlagen. Bitte später versuchen.",
         blockFailed: "Aktion fehlgeschlagen. Bitte später versuchen.",
         userUnfollowed: "Nutzer entfolgt", userUnblocked: "Nutzer entsperrt", userBlocked: "Nutzer gesperrt",
+        pinned: "Angeheftet", unpin: "Lösen", pinToProfile: "An Profil anheften", maxPinsReached: "Du kannst nur bis zu 3 Beiträge anheften", allPosts: "Alle Beiträge",
     },
     followers: {
         title: "Follower",

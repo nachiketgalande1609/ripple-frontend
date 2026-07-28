@@ -85,6 +85,7 @@ export default {
         unfollowFailed: "Failed to unfollow user. Please try again later.",
         blockFailed: "Action failed. Please try again.",
         userUnfollowed: "User Unfollowed", userUnblocked: "User unblocked", userBlocked: "User blocked",
+        pinned: "Pinned", unpin: "Unpin", pinToProfile: "Pin to profile", maxPinsReached: "You can only pin up to 3 posts", allPosts: "All Posts",
     },
     followers: {
         title: "Followers",

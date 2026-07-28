@@ -85,6 +85,7 @@ export default {
         unfollowFailed: "フォロー解除できませんでした。後でもう一度お試しください。",
         blockFailed: "操作に失敗しました。後でもう一度お試しください。",
         userUnfollowed: "フォローを解除しました", userUnblocked: "ブロック解除しました", userBlocked: "ブロックしました",
+        pinned: "ピン留め", unpin: "ピンを外す", pinToProfile: "プロフィールにピン留め", maxPinsReached: "ピン留めできるのは3件までです", allPosts: "すべての投稿",
     },
     followers: {
         title: "フォロワー",

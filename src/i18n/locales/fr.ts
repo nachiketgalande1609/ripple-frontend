@@ -85,6 +85,7 @@ export default {
         unfollowFailed: "Impossible de se désabonner. Réessayez plus tard.",
         blockFailed: "Action échouée. Réessayez plus tard.",
         userUnfollowed: "Utilisateur désabonné", userUnblocked: "Utilisateur débloqué", userBlocked: "Utilisateur bloqué",
+        pinned: "Épinglés", unpin: "Désépingler", pinToProfile: "Épingler sur le profil", maxPinsReached: "Vous ne pouvez épingler que 3 publications", allPosts: "Toutes les publications",
     },
     followers: {
         title: "Abonnés",

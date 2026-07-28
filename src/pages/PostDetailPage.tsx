@@ -35,6 +35,7 @@ import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import PushPinRoundedIcon from "@mui/icons-material/PushPinRounded";
 import BlankProfileImage from "../static/profile_blank.png";
 import VideoPlayer from "../component/VideoPlayer";
 import {
@@ -48,6 +49,8 @@ import {
   toggleLikeComment,
   getSearchResults,
   updatePostTags,
+  pinPost,
+  unpinPost,
 } from "../services/api";
 import { useAppNotifications } from "../hooks/useNotification";
 
@@ -367,9 +370,10 @@ const PostDetailPage = () => {
   const [tagResults, setTagResults] = useState<{ id: number; username: string; profile_picture?: string }[]>([]);
   const [tagSearchLoading, setTagSearchLoading] = useState(false);
   const [savingTags, setSavingTags] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
   const tagSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isOwner = currentUser?.id === post?.user_id;
+  const isOwner = currentUser?.id == post?.user_id;
 
   const theme = useTheme();
 
@@ -419,6 +423,7 @@ const PostDetailPage = () => {
       setCommentCount(data.comment_count || 0);
       setTaggedUsers(data.tagged_users || []);
       setMediaFiles(data.media_files || []);
+      setIsPinned(Boolean(data.is_pinned));
     } catch (err) {
       console.error(err);
     } finally {
@@ -1280,6 +1285,27 @@ const PostDetailPage = () => {
                   setEditedContent(post.content);
                   setOptionsOpen(false);
                   setConfirmDelete(false);
+                }}
+              />
+              <SheetButton
+                icon={<PushPinRoundedIcon sx={{ fontSize: "1rem", transform: isPinned ? "none" : "rotate(45deg)" }} />}
+                label={isPinned ? t("profile.unpin") : t("profile.pinToProfile")}
+                onClick={async () => {
+                  setOptionsOpen(false);
+                  setConfirmDelete(false);
+                  try {
+                    if (isPinned) {
+                      await unpinPost(Number(post.id));
+                      setIsPinned(false);
+                    } else {
+                      await pinPost(Number(post.id));
+                      setIsPinned(true);
+                    }
+                  } catch (e: any) {
+                    if (e?.response?.data?.error === "max_pins_reached") {
+                      notifications.show(t("profile.maxPinsReached"), { severity: "warning", autoHideDuration: 3000 });
+                    }
+                  }
                 }}
               />
               <SheetButton

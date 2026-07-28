@@ -24,7 +24,8 @@ import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, getFollowingUsers, repostPost, unrepostPost } from "../../services/api";
+import PushPinRoundedIcon from "@mui/icons-material/PushPinRounded";
+import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, getFollowingUsers, repostPost, unrepostPost, pinPost, unpinPost } from "../../services/api";
 import ScrollableCommentsDrawer from "./ScrollableCommentsDrawer";
 import { useNavigate } from "react-router-dom";
 import { useAppNotifications } from "../../hooks/useNotification";
@@ -57,6 +58,7 @@ interface Post {
     media_files?: string[];
     repost_count?: number;
     is_reposted?: boolean;
+    is_pinned?: boolean;
     comments: Array<{
         id: number;
         post_id: string;
@@ -187,6 +189,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const [saveAnimating, setSaveAnimating] = useState(false);
     const [isReposted, setIsReposted] = useState(Boolean(post.is_reposted));
     const [repostCount, setRepostCount] = useState(post.repost_count || 0);
+    const [isPinned, setIsPinned] = useState(Boolean(post.is_pinned));
 
     const filteredUsers = usersList.filter((u: User) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -803,6 +806,27 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                 setEditedContent(post.content);
                                 setOptionsDialogOpen(false);
                                 setConfirmDelete(false);
+                            }}
+                        />
+                        <DialogBtn
+                            icon={<PushPinRoundedIcon sx={{ fontSize: "1rem", transform: isPinned ? "none" : "rotate(45deg)" }} />}
+                            label={isPinned ? t("profile.unpin") : t("profile.pinToProfile")}
+                            onClick={async () => {
+                                setOptionsDialogOpen(false);
+                                setConfirmDelete(false);
+                                try {
+                                    if (isPinned) {
+                                        await unpinPost(Number(post.id));
+                                        setIsPinned(false);
+                                    } else {
+                                        await pinPost(Number(post.id));
+                                        setIsPinned(true);
+                                    }
+                                } catch (e: any) {
+                                    if (e?.response?.data?.error === "max_pins_reached") {
+                                        notifications.show(t("profile.maxPinsReached"), { severity: "warning", autoHideDuration: 3000 });
+                                    }
+                                }
                             }}
                         />
                         <DialogBtn

@@ -19,7 +19,7 @@ import { ACCENT_COLOR } from "../../theme";
 const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts, getUserReels, getMutualFollowers } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts, getUserReels, getMutualFollowers, getPinnedPosts, pinPost, unpinPost } from "../../services/api";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
@@ -37,6 +37,7 @@ import {
     PersonPin,
     RepeatRounded,
     SlowMotionVideoRounded,
+    PushPin,
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import MoreOptionsDialog from "./MoreOptionsDialog";
@@ -90,6 +91,67 @@ const StatCol = ({ value, label, onClick }: { value: number; label: string; onCl
     );
 };
 
+/* ─── Pinned Posts Section ──────────────────────────────────── */
+const pinnedCardCss = `
+.pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px; padding-top: 0; }
+.pin-card { position: relative; aspect-ratio: 1; border-radius: 14px; overflow: hidden; cursor: pointer; background: rgba(100,116,139,0.08); }
+.pin-card img, .pin-card video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.32s ease; }
+.pin-card:hover img, .pin-card:hover video { transform: scale(1.04); }
+.pin-card .pin-ovl { position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s ease; background: linear-gradient(135deg,rgba(100,116,139,0.4) 0%,rgba(0,0,0,0.5) 100%); border-radius: 14px; }
+.pin-card:hover .pin-ovl { opacity: 1; }
+.pin-badge { position: absolute; bottom: 7px; right: 7px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; }
+@media (max-width: 600px) {
+  .pin-grid { gap: 3px; padding: 3px; }
+  .pin-card { border-radius: 8px; }
+}
+`;
+
+const PinnedSection = ({ posts, imageErrors, onImageError, onPostClick }: {
+    posts: any[];
+    imageErrors: Record<string, boolean>;
+    onImageError: (id: string) => void;
+    onPostClick: (id: number) => void;
+}) => {
+    const { t } = useTranslation();
+    if (posts.length === 0) return null;
+    return (
+        <Box>
+            <style>{pinnedCardCss}</style>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, px: 2, pt: 1, pb: 0.75 }}>
+                <PushPin sx={{ fontSize: 15, color: "text.secondary", transform: "rotate(45deg)" }} />
+                <Typography sx={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "text.secondary" }}>
+                    {t("profile.pinned")}
+                </Typography>
+                <Typography sx={{ fontSize: "0.72rem", fontWeight: 500, color: "text.disabled", ml: 0.5 }}>
+                    {posts.length}
+                </Typography>
+            </Box>
+            <div className="pin-grid">
+                {posts.map((post) => {
+                    const isVideo = post.file_url && /\.(mp4|mov|webm)$/i.test(post.file_url);
+                    return (
+                        <div key={post.id} className="pin-card" onClick={() => onPostClick(post.id)}>
+                            {isVideo ? (
+                                <video src={post.file_url} muted playsInline />
+                            ) : !imageErrors[post.id] ? (
+                                <img src={post.file_url} alt="" onError={() => onImageError(post.id)} />
+                            ) : (
+                                <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <PhotoCamera sx={{ fontSize: 22, color: "rgba(255,255,255,0.2)" }} />
+                                </Box>
+                            )}
+                            <div className="pin-ovl" />
+                            <div className="pin-badge">
+                                <PushPin sx={{ fontSize: 13, color: "#fff", transform: "rotate(45deg)" }} />
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </Box>
+    );
+};
+
 /* ─── Post Card ─────────────────────────────────────────────────
    Uses CSS class selectors so hover works without re-renders.    */
 const postCardCss = `
@@ -120,13 +182,14 @@ const masonryCss = `
 .masonry-item:hover img { transform: scale(1.04); }
 `;
 
-const PostGrid = ({ posts, username, profilePicture, imageErrors, onImageError, onPostClick }: {
+const PostGrid = ({ posts, username, profilePicture, imageErrors, onImageError, onPostClick, pinnedIds }: {
     posts: any[];
     username?: string;
     profilePicture?: string;
     imageErrors: Record<string, boolean>;
     onImageError: (id: string) => void;
     onPostClick: (id: number) => void;
+    pinnedIds?: Set<number>;
 }) => (
     <>
         <style>{masonryCss}</style>
@@ -135,6 +198,7 @@ const PostGrid = ({ posts, username, profilePicture, imageErrors, onImageError, 
                 const isVideo = post.file_url && /\.(mp4|mov|webm)$/i.test(post.file_url);
                 const owner = post.username || username;
                 const avatar = post.profile_picture || profilePicture;
+                const isPinned = pinnedIds?.has(post.id) ?? false;
                 return (
                     <div key={post.id} className="masonry-item" onClick={() => onPostClick(post.id)}>
                         {isVideo ? (
@@ -145,6 +209,12 @@ const PostGrid = ({ posts, username, profilePicture, imageErrors, onImageError, 
                             <Box sx={{ aspectRatio: "1", bgcolor: "action.hover", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                 <PhotoCamera sx={{ fontSize: 20, color: "rgba(255,255,255,0.2)" }} />
                             </Box>
+                        )}
+                        {/* pin badge always visible on pinned posts */}
+                        {isPinned && (
+                            <div style={{ position: "absolute", top: 7, right: 7, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
+                                <PushPin style={{ fontSize: 12, color: "#fff", transform: "rotate(45deg)" }} />
+                            </div>
                         )}
                         <div className="ovl" style={{ flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-end", padding: "12px", gap: 6 }}>
                             {owner && (
@@ -319,6 +389,7 @@ const ProfilePage = () => {
     const [scrolled, setScrolled] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [isBlocked, setIsBlocked] = useState(false);
+    const [pinnedPosts, setPinnedPosts] = useState<any[]>([]);
 
     const isOwnProfile = currentUser?.id == userId;
 
@@ -444,6 +515,31 @@ const ProfilePage = () => {
         }
     }
 
+    const fetchPinnedPostsFn = useCallback(async () => {
+        if (!userId) return;
+        try {
+            const res = await getPinnedPosts(userId);
+            setPinnedPosts(res.data ?? []);
+        } catch (e) {
+            console.error(e);
+        }
+    }, [userId]);
+
+    const handlePinToggle = async (postId: number, isPinned: boolean) => {
+        try {
+            if (isPinned) {
+                await unpinPost(postId);
+                setPinnedPosts((prev) => prev.filter((p) => p.id !== postId));
+            } else {
+                await pinPost(postId);
+                const post = posts.find((p) => p.id === postId);
+                if (post) setPinnedPosts((prev) => [post, ...prev.filter((p) => p.id !== postId)]);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     const fetchUserPosts = useCallback(
         async (reset = false) => {
             if (fetchingRef.current) return;
@@ -486,6 +582,7 @@ const ProfilePage = () => {
         setMutualTotal(0);
         fetchProfile();
         checkBlockedStatus();
+        fetchPinnedPostsFn();
         offsetRef.current = 0;
         hasMoreRef.current = true;
         setHasMore(true);
@@ -1016,14 +1113,34 @@ const ProfilePage = () => {
                                     }
                                 />
                             ) : (
-                                <PostGrid
-                                    posts={posts}
-                                    username={profileData?.username}
-                                    profilePicture={profileData?.profile_picture}
-                                    imageErrors={imageErrors}
-                                    onImageError={(id) => setImageErrors((prev) => ({ ...prev, [id]: true }))}
-                                    onPostClick={(id) => navigate(`/posts/${id}`)}
-                                />
+                                <>
+                                    {pinnedPosts.length > 0 && (
+                                        <>
+                                            <PinnedSection
+                                                posts={pinnedPosts}
+                                                imageErrors={imageErrors}
+                                                onImageError={(id) => setImageErrors((prev) => ({ ...prev, [id]: true }))}
+                                                onPostClick={(id) => navigate(`/posts/${id}`)}
+                                            />
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.25 }}>
+                                                <Box sx={{ flex: 1, height: "1px", bgcolor: "divider" }} />
+                                                <Typography sx={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "text.disabled", whiteSpace: "nowrap" }}>
+                                                    {t("profile.allPosts")}
+                                                </Typography>
+                                                <Box sx={{ flex: 1, height: "1px", bgcolor: "divider" }} />
+                                            </Box>
+                                        </>
+                                    )}
+                                    <PostGrid
+                                        posts={posts}
+                                        username={profileData?.username}
+                                        profilePicture={profileData?.profile_picture}
+                                        imageErrors={imageErrors}
+                                        onImageError={(id) => setImageErrors((prev) => ({ ...prev, [id]: true }))}
+                                        onPostClick={(id) => navigate(`/posts/${id}`)}
+                                        pinnedIds={new Set(pinnedPosts.map((p) => p.id))}
+                                    />
+                                </>
                             )}
 
                             {loadingMore && (

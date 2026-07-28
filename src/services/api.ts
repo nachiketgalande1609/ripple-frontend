@@ -73,6 +73,21 @@ import {
     REELS_ENDPOINT,
 } from "./apiEndpoints";
 
+export const getPinnedPosts = async (userId: string) => {
+    const response = await api.get(`/api/posts/pinned/${userId}`);
+    return response.data;
+};
+
+export const pinPost = async (postId: number) => {
+    const response = await api.put(`/api/posts/pin/${postId}`);
+    return response.data;
+};
+
+export const unpinPost = async (postId: number) => {
+    const response = await api.put(`/api/posts/unpin/${postId}`);
+    return response.data;
+};
+
 interface UserRegisterData {
     email: string;
     username: string;

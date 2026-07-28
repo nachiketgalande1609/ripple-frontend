@@ -85,6 +85,7 @@ export default {
         unfollowFailed: "अनफ़ॉलो नहीं हो सका। बाद में पुनः प्रयास करें।",
         blockFailed: "कार्रवाई विफल। बाद में पुनः प्रयास करें।",
         userUnfollowed: "उपयोगकर्ता अनफ़ॉलो किया", userUnblocked: "उपयोगकर्ता अनब्लॉक किया", userBlocked: "उपयोगकर्ता ब्लॉक किया",
+        pinned: "पिन किए गए", unpin: "अनपिन करें", pinToProfile: "प्रोफ़ाइल पर पिन करें", maxPinsReached: "आप केवल 3 पोस्ट पिन कर सकते हैं", allPosts: "सभी पोस्ट",
     },
     followers: {
         title: "फ़ॉलोअर्स",
