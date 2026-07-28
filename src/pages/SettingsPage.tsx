@@ -130,7 +130,7 @@ const SettingsPage = () => {
             letterSpacing: "-0.3px",
           }}
         >
-          No category selected
+          {t("settings.selectCategory")}
         </Typography>
         <Typography
           sx={{
@@ -141,7 +141,7 @@ const SettingsPage = () => {
             lineHeight: 1.6,
           }}
         >
-          Choose a section from the sidebar to manage your preferences.
+          {t("settings.selectCategoryDesc")}
         </Typography>
       </Box>
     );

@@ -24,6 +24,7 @@ import {
 } from "@mui/icons-material";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { timeAgo } from "../../utils/utils";
 import socket from "../../services/socket";
 import BlankProfileImage from "../../static/profile_blank.png";
@@ -133,6 +134,7 @@ const ViewerRow = ({
 );
 
 const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selectedStoryIndex }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -453,7 +455,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
 
                         {/* Pause / Mute / Close */}
                         <Stack direction="row" spacing={0.5} alignItems="center">
-                            <Tooltip title={paused ? "Play" : "Pause"}>
+                            <Tooltip title={paused ? t("common.play") : t("common.pause")}>
                                 <IconButton
                                     size="small"
                                     onClick={(e) => { e.stopPropagation(); handlePauseToggle(); }}
@@ -467,7 +469,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                             </Tooltip>
 
                             {currentStory.media_type === "video" && (
-                                <Tooltip title={isMuted ? "Unmute" : "Mute"}>
+                                <Tooltip title={isMuted ? t("common.unmute") : t("common.mute")}>
                                     <IconButton
                                         size="small"
                                         onClick={(e) => { e.stopPropagation(); handleVideoMute(); }}
@@ -481,7 +483,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                 </Tooltip>
                             )}
 
-                            <Tooltip title="Close">
+                            <Tooltip title={t("common.close")}>
                                 <IconButton
                                     size="small"
                                     onClick={handleClose}
@@ -658,7 +660,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
 
                         {/* Prev arrow */}
                         {currentIndex > 0 && showControls && (
-                            <Tooltip title="Previous">
+                            <Tooltip title={t("common.previous")}>
                                 <IconButton
                                     sx={{
                                         position: "absolute",
@@ -684,7 +686,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
 
                         {/* Next arrow */}
                         {currentIndex < selectedUserStories.length - 1 && showControls && (
-                            <Tooltip title="Next">
+                            <Tooltip title={t("common.next")}>
                                 <IconButton
                                     sx={{
                                         position: "absolute",
@@ -739,7 +741,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                         >
                             <Visibility sx={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.75)" }} />
                             <Typography sx={{ color: "rgba(255,255,255,0.9)", fontSize: "0.82rem", fontWeight: 600 }}>
-                                {viewerCount} {viewerCount === 1 ? "view" : "views"}
+                                {`${viewerCount} ${viewerCount === 1 ? t("post.view") : t("post.views")}`}
                             </Typography>
                         </Box>
                     </Box>
@@ -795,7 +797,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                         <Stack direction="row" alignItems="center" spacing={1}>
                             <Visibility sx={{ fontSize: "1rem", color: "rgba(255,255,255,0.5)" }} />
                             <Typography sx={{ fontWeight: 700, fontSize: "1rem" }}>
-                                {viewerCount} {viewerCount === 1 ? "View" : "Views"}
+                                {`${viewerCount} ${viewerCount === 1 ? t("post.view") : t("post.views")}`}
                             </Typography>
                         </Stack>
                         <Tooltip title="Close">
@@ -823,10 +825,10 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                             <Box sx={{ textAlign: "center", py: 6 }}>
                                 <Visibility sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.15)", display: "block", mx: "auto", mb: 1.5 }} />
                                 <Typography sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.88rem" }}>
-                                    No views yet
+                                    {t("post.noViewsYet")}
                                 </Typography>
                                 <Typography sx={{ color: "rgba(255,255,255,0.2)", fontSize: "0.78rem", mt: 0.5 }}>
-                                    Be the first to share this story
+                                    {t("post.beFirstToShare")}
                                 </Typography>
                             </Box>
                         )}

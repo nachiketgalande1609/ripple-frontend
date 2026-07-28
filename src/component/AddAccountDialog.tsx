@@ -41,10 +41,10 @@ export default function AddAccountDialog({ open, onClose }: AddAccountDialogProp
                 switchAccount(String(res.data.user.id));
                 window.location.href = "/";
             } else {
-                setError(res.error || "Login failed");
+                setError(res.error || t("auth.loginFailed"));
             }
         } catch (err: any) {
-            setError(err.response?.data?.error || "Login failed");
+            setError(err.response?.data?.error || t("auth.loginFailed"));
         } finally {
             setLoading(false);
         }

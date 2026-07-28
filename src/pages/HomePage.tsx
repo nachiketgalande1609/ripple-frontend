@@ -5,6 +5,7 @@ import EndOfFeed from "../component/EndOfFeed";
 import StoryDialog from "../component/stories/StoryDialog";
 import UploadStoryDialog from "../component/stories/UploadStoryDialog";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { getPosts, getStories, fetchPollsFeed } from "../services/api";
 import SuggestionsDrawer from "../component/SuggestionsDrawer";
 import PollCard from "../component/post/PollCard";
@@ -151,6 +152,7 @@ function StorySkeleton() {
 
 /* ── HomePage ───────────────────────────────────────────────────── */
 const HomePage = () => {
+    const { t } = useTranslation();
     useEffect(() => { injectStyles(); }, []);
     useHomeCssVars();
     usePageTitle("Home");
@@ -201,7 +203,7 @@ const HomePage = () => {
                 }
             } catch (e) {
                 console.error(e);
-                setFetchError('Failed to load posts. Please try again.');
+                setFetchError(t("home.failedToLoad"));
             } finally {
                 setLoadingPosts(false);
                 setLoadingMore(false);
@@ -423,7 +425,7 @@ const HomePage = () => {
                                     mb: 0.75,
                                 }}
                             >
-                                Nothing here yet
+                                {t("home.nothingHereYet")}
                             </Typography>
                             <Typography
                                 sx={{
@@ -433,7 +435,7 @@ const HomePage = () => {
                                     maxWidth: 240,
                                 }}
                             >
-                                Follow people or share something to get started.
+                                {t("home.followOrShare")}
                             </Typography>
                             <Box
                                 onClick={() => setOpenUploadDialog(true)}
@@ -456,7 +458,7 @@ const HomePage = () => {
                                     "&:active": { transform: "scale(0.96)" },
                                 }}
                             >
-                                Share a story
+                                {t("home.shareAStory")}
                             </Box>
                         </Box>
                     )}

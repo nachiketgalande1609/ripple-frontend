@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Badge, Box, IconButton, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import { FavoriteBorder, Favorite, MenuRounded, AddRounded } from "@mui/icons-material";
 import { useGlobalStore } from "../../store/store";
@@ -10,6 +11,7 @@ interface MobileTopBarProps {
 export default function MobileTopBar({
   unreadNotificationsCount,
 }: MobileTopBarProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -54,7 +56,7 @@ export default function MobileTopBar({
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
         {/* Create */}
         {!!currentUser?.id && (
-          <Tooltip title="Create" placement="bottom">
+          <Tooltip title={t("nav.create")} placement="bottom">
             <IconButton
               onClick={() => setMobileCreateOpen(true)}
               sx={{
@@ -72,7 +74,7 @@ export default function MobileTopBar({
         )}
 
         {/* Notifications */}
-        <Tooltip title="Notifications" placement="bottom">
+        <Tooltip title={t("nav.notifications")} placement="bottom">
           <IconButton
             onClick={() => navigate("/notifications")}
             sx={{

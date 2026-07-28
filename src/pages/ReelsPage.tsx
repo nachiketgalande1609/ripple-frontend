@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     Box,
@@ -331,6 +332,7 @@ function SkeletonCard() {
 // ── ReelsPage ────────────────────────────────────────────────────────────
 
 export default function ReelsPage() {
+    const { t } = useTranslation();
     const location = useLocation();
     const startPostId: number | undefined = (location.state as any)?.startPostId;
     const theme = useTheme();
@@ -564,8 +566,8 @@ export default function ReelsPage() {
     if (!reels.length) {
         return (
             <Box sx={{ width: "100%", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 1.5, background: "#000" }}>
-                <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: "1.1rem", fontWeight: 600 }}>No reels yet</Typography>
-                <Typography sx={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem" }}>Post a video to see it appear here.</Typography>
+                <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: "1.1rem", fontWeight: 600 }}>{t("profile.noReels")}</Typography>
+                <Typography sx={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem" }}>{t("profile.uploadFirstReel")}</Typography>
             </Box>
         );
     }
@@ -694,7 +696,7 @@ export default function ReelsPage() {
                     sx: { borderRadius: "20px", background: (t) => t.palette.background.paper, maxHeight: "70vh" },
                 }}
             >
-                <DialogTitle sx={{ fontWeight: 700, fontSize: "1rem", pb: 0 }}>Comments</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 700, fontSize: "1rem", pb: 0 }}>{t("post.commentsTitle")}</DialogTitle>
                 <DialogContent dividers>
                     {commentReel?.comments?.length ? (
                         <List disablePadding>
@@ -714,7 +716,7 @@ export default function ReelsPage() {
                             ))}
                         </List>
                     ) : (
-                        <Typography sx={{ textAlign: "center", color: "text.disabled", py: 4, fontSize: "0.9rem" }}>No comments yet.</Typography>
+                        <Typography sx={{ textAlign: "center", color: "text.disabled", py: 4, fontSize: "0.9rem" }}>{t("post.noComments")}</Typography>
                     )}
                 </DialogContent>
             </Dialog>

@@ -1,6 +1,9 @@
 import { Box, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
-export default function EndOfFeed({ message = "You're all caught up" }: { message?: string }) {
+export default function EndOfFeed({ message }: { message?: string }) {
+  const { t } = useTranslation();
+  const displayMessage = message || t("home.allCaughtUp");
   return (
     <Box
       sx={{
@@ -59,7 +62,7 @@ export default function EndOfFeed({ message = "You're all caught up" }: { messag
           letterSpacing: "0.02em",
         }}
       >
-        {message}
+        {displayMessage}
       </Typography>
 
       {/* Decorative line */}

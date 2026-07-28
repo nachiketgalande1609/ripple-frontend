@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, IconButton, Fade, useTheme, CircularProgress } from "@mui/material";
 import { ArrowBackRounded, BookmarkBorder } from "@mui/icons-material";
@@ -66,6 +67,7 @@ function PostGrid({ posts, onPostClick }: { posts: any[]; onPostClick: (id: numb
 }
 
 export default function SavedPage() {
+    const { t } = useTranslation();
     usePageTitle("Saved");
     const navigate = useNavigate();
     const theme = useTheme();
@@ -107,7 +109,7 @@ export default function SavedPage() {
                 <IconButton size="small" onClick={() => navigate(-1)} sx={{ color: "text.primary" }}>
                     <ArrowBackRounded />
                 </IconButton>
-                <Typography sx={{ fontWeight: 600, fontSize: "1rem" }}>Saved</Typography>
+                <Typography sx={{ fontWeight: 600, fontSize: "1rem" }}>{t("profile.saved")}</Typography>
             </Box>
 
             {/* Content */}
@@ -120,8 +122,8 @@ export default function SavedPage() {
                     <Fade in timeout={300}>
                         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mt: 10, gap: 1.5 }}>
                             <BookmarkBorder sx={{ fontSize: 44, color: "text.disabled" }} />
-                            <Typography sx={{ fontWeight: 600, color: "text.primary" }}>Nothing saved yet</Typography>
-                            <Typography sx={{ fontSize: "0.85rem", color: "text.secondary" }}>Posts you save will appear here</Typography>
+                            <Typography sx={{ fontWeight: 600, color: "text.primary" }}>{t("profile.nothingSaved")}</Typography>
+                            <Typography sx={{ fontSize: "0.85rem", color: "text.secondary" }}>{t("profile.savedAppearHere")}</Typography>
                         </Box>
                     </Fade>
                 ) : (

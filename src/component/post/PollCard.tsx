@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Box, Typography, Avatar, Tooltip, IconButton, Dialog, Button } from "@mui/material";
 import { MoreHoriz, DeleteOutlineRounded, CloseRounded, CheckRounded } from "@mui/icons-material";
 import { formatDateInUserTz } from "../../utils/utils";
@@ -42,6 +43,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function PollCard({ poll, onDeleted, borderRadius = "14px" }: PollCardProps) {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [options, setOptions] = useState<PollOption[]>(poll.options);
     const [votedOption, setVotedOption] = useState<number | null>(poll.user_voted_option);
@@ -203,9 +205,9 @@ export default function PollCard({ poll, onDeleted, borderRadius = "14px" }: Pol
 
                 {/* Footer */}
                 <Typography sx={{ fontSize: "0.72rem", color: "text.disabled", mt: 0.25 }}>
-                    {totalVotes} {totalVotes === 1 ? "vote" : "votes"}
+                    {t("post.votes", { count: totalVotes })}
                     {hasVoted && (
-                        <Box component="span" sx={{ ml: 0.75, color: "#6366f1", fontWeight: 600 }}>· voted</Box>
+                        <Box component="span" sx={{ ml: 0.75, color: "#6366f1", fontWeight: 600 }}>{" · "}{t("post.voted")}</Box>
                     )}
                 </Typography>
             </Box>
@@ -225,8 +227,8 @@ export default function PollCard({ poll, onDeleted, borderRadius = "14px" }: Pol
                     <DeleteOutlineRounded sx={{ fontSize: "1.2rem", color: "error.main" }} />
                 </Box>
                 <Box>
-                    <Typography sx={{ fontWeight: 600, fontSize: "0.9rem", color: "text.primary", lineHeight: 1.3 }}>Delete this poll?</Typography>
-                    <Typography sx={{ fontSize: "0.75rem", color: "text.disabled" }}>This action cannot be undone.</Typography>
+                    <Typography sx={{ fontWeight: 600, fontSize: "0.9rem", color: "text.primary", lineHeight: 1.3 }}>{t("post.deletePollTitle")}</Typography>
+                    <Typography sx={{ fontSize: "0.75rem", color: "text.disabled" }}>{t("common.cannotBeUndone")}</Typography>
                 </Box>
             </Box>
             <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "32px 32px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 32px 32px !important", marginBottom: "0 !important" } }}>
@@ -235,14 +237,14 @@ export default function PollCard({ poll, onDeleted, borderRadius = "14px" }: Pol
                     <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "rgba(211,47,47,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <DeleteOutlineRounded sx={{ fontSize: "1.1rem", color: "error.main" }} />
                     </Box>
-                    {deleting ? "Deleting…" : "Delete poll"}
+                    {deleting ? t("post.deleting") : t("post.deletePoll")}
                 </Button>
                 <Button fullWidth onClick={() => setConfirmDelete(false)} disabled={deleting}
                     sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.4, textTransform: "none", justifyContent: "flex-start", fontWeight: 500, fontSize: "0.875rem", color: "text.disabled", border: "none", backgroundColor: "var(--nav-bg)", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", "&:hover": { backgroundColor: "var(--nav-bg)", boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: "text.secondary" } }}>
                     <Box sx={{ width: 34, height: 34, borderRadius: "10px", backgroundColor: "action.hover", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <CloseRounded sx={{ fontSize: "1.1rem", color: "text.disabled" }} />
                     </Box>
-                    Cancel
+                    {t("common.cancel")}
                 </Button>
             </Box>
         </Dialog>

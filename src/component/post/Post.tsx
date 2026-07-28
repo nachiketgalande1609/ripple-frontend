@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import TranslateButton from "../TranslateButton";
 import { Typography, IconButton, Avatar, Box, TextField, Dialog, DialogContent, Button, CircularProgress, useTheme, Popover, Tooltip } from "@mui/material";
 import { formatDateInUserTz } from "../../utils/utils";
@@ -160,6 +161,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const navigate = useNavigate();
     const notifications = useAppNotifications();
     const theme = useTheme();
+    const { t } = useTranslation();
     const [commentText, setCommentText] = useState("");
     const [comment_count, setCommentCount] = useState(post.comment_count);
     const [likeCount, setLikeCount] = useState(post.like_count);
@@ -244,7 +246,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
             receiverId: user.id,
             postId: post.id,
         });
-        notifications.show("Post sent!", { severity: "success", autoHideDuration: 3000 });
+        notifications.show(t("post.postSent"), { severity: "success", autoHideDuration: 3000 });
         setUsersModalOpen(false);
     };
 
@@ -308,7 +310,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
             updated_at: new Date().toISOString(),
             commenter_username: currentUser.username,
             commenter_profile_picture: currentUser.profile_picture_url,
-            timeAgo: "Just now",
+            timeAgo: t("common.justNow"),
             likes_count: 0,
             liked_by_user: false,
         };
@@ -421,7 +423,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         </Box>
                     </Box>
                     {isOwner && (
-                        <Tooltip title="More options" placement="top">
+                        <Tooltip title={t("common.moreOptions")} placement="top">
                             <IconButton
                                 onClick={() => setOptionsDialogOpen(true)}
                                 size="small"
@@ -488,7 +490,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
 
                                 {/* Carousel arrows */}
                                 {allMedia.length > 1 && carouselIndex > 0 && (
-                                    <Tooltip title="Previous">
+                                    <Tooltip title={t("common.previous")}>
                                         <IconButton onClick={(e) => { e.stopPropagation(); setIsImageLoading(true); setCarouselIndex((i) => i - 1); }}
                                             sx={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
                                             <ArrowBackIos sx={{ fontSize: 12, ml: 0.5 }} />
@@ -496,7 +498,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                     </Tooltip>
                                 )}
                                 {allMedia.length > 1 && carouselIndex < allMedia.length - 1 && (
-                                    <Tooltip title="Next">
+                                    <Tooltip title={t("common.next")}>
                                         <IconButton onClick={(e) => { e.stopPropagation(); setIsImageLoading(true); setCarouselIndex((i) => i + 1); }}
                                             sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
                                             <ArrowForwardIos sx={{ fontSize: 12 }} />
@@ -541,7 +543,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 1.25, pt: 0.625, pb: 0.25 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
                         {/* Like */}
-                        <Tooltip title={isLiked ? "Unlike" : "Like"} placement="top">
+                        <Tooltip title={isLiked ? t("post.unlike") : t("post.like")} placement="top">
                             <IconButton
                                 onClick={handleLike}
                                 disableRipple
@@ -572,7 +574,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         </Typography>
 
                         {/* Comment */}
-                        <Tooltip title="Comment" placement="top">
+                        <Tooltip title={t("post.comment")} placement="top">
                             <IconButton
                                 disableRipple
                                 onClick={() => {
@@ -601,7 +603,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         </Typography>
 
                         {/* Repost */}
-                        <Tooltip title={isReposted ? "Undo repost" : "Repost"} placement="top">
+                        <Tooltip title={isReposted ? t("post.undoRepost") : t("post.repost")} placement="top">
                             <IconButton
                                 disableRipple
                                 onClick={handleRepost}
@@ -628,7 +630,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         </Typography>
 
                         {/* Share */}
-                        <Tooltip title="Share" placement="top">
+                        <Tooltip title={t("post.share")} placement="top">
                             <IconButton
                                 disableRipple
                                 onClick={handlePaperPlaneClick}
@@ -644,7 +646,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                     </Box>
 
                     {/* Save */}
-                    <Tooltip title={isSaved ? "Unsave" : "Save"} placement="top">
+                    <Tooltip title={isSaved ? t("post.unsave") : t("post.saved")} placement="top">
                         <IconButton
                             disableRipple
                             onClick={handleSavePost}
@@ -799,7 +801,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         variant="standard"
                         value={editedContent}
                         onChange={(e) => setEditedContent(e.target.value)}
-                        placeholder="Write a caption…"
+                        placeholder={t("post.writeCaption")}
                         InputProps={{
                             disableUnderline: true,
                             sx: {
@@ -831,7 +833,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                             },
                         }}
                     >
-                        Save
+                        {t("common.save")}
                     </Button>
                 </Box>
             </Dialog>
@@ -852,7 +854,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                     <Box sx={{ "& button": { borderRadius: "0 !important" }, "& button:first-of-type": { borderRadius: "18px 18px 0 0 !important" }, "& button:last-of-type": { borderRadius: "0 0 18px 18px !important", marginBottom: "0 !important" } }}>
                         <DialogBtn
                             icon={<EditRoundedIcon sx={{ fontSize: "1rem" }} />}
-                            label="Edit caption"
+                            label={t("post.editCaption")}
                             onClick={() => {
                                 setIsEditing(true);
                                 setEditedContent(post.content);
@@ -862,14 +864,14 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         />
                         <DialogBtn
                             icon={confirmDelete ? <WarningRoundedIcon sx={{ fontSize: "1rem" }} /> : <DeleteRoundedIcon sx={{ fontSize: "1rem" }} />}
-                            label={confirmDelete ? "Confirm delete" : "Delete post"}
+                            label={confirmDelete ? t("post.confirmDelete") : t("post.deletePost")}
                             onClick={() => (confirmDelete ? handleDelete() : setConfirmDelete(true))}
                             danger={!confirmDelete}
                             warning={confirmDelete}
                         />
                         <DialogBtn
                             icon={<CloseRoundedIcon sx={{ fontSize: "1rem" }} />}
-                            label="Cancel"
+                            label={t("common.cancel")}
                             onClick={() => {
                                 setOptionsDialogOpen(false);
                                 setConfirmDelete(false);
@@ -904,7 +906,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         borderBottom: `1px solid ${theme.palette.divider}`,
                     }}>
                         <Typography sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "0.95rem", color: theme.palette.text.primary }}>
-                            Send to
+                            {t("post.sendTo")}
                         </Typography>
                         <IconButton
                             size="small"
@@ -930,7 +932,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                             <TextField
                                 variant="standard"
                                 size="small"
-                                placeholder="Search people…"
+                                placeholder={t("common.searchPeoplePlaceholder")}
                                 fullWidth
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -1003,7 +1005,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                             transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
                                         }}
                                     >
-                                        Send
+                                        {t("common.send")}
                                     </button>
                                 </Box>
                             ))}
@@ -1011,7 +1013,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                     ) : (
                         <Box sx={{ py: 5, textAlign: "center" }}>
                             <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.82rem", color: theme.palette.text.disabled }}>
-                                No people found
+                                {t("common.noPeopleFound")}
                             </Typography>
                         </Box>
                     )}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Avatar, Box, Button, IconButton, Skeleton, Typography } from "@mui/material";
 import { KeyboardArrowUpRounded } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +19,7 @@ interface SuggestedUsersProps {
 }
 
 export default function SuggestedUsers({ bare }: SuggestedUsersProps = {}) {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [users, setUsers] = useState<SuggestedUser[]>([]);
     const [loading, setLoading] = useState(true);
@@ -92,12 +94,12 @@ export default function SuggestedUsers({ bare }: SuggestedUsersProps = {}) {
                                           {user.username}
                                       </Typography>
                                       <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3 }}>
-                                          {user.mutual_count > 0 ? `${user.mutual_count} mutual` : `${user.follower_count} followers`}
+                                          {user.mutual_count > 0 ? `${user.mutual_count} ${t("common.mutual")}` : `${user.follower_count} ${t("profile.followers")}`}
                                       </Typography>
                                   </Box>
                                   {isRequested ? (
                                       <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "text.disabled", flexShrink: 0 }}>
-                                          Requested
+                                          {t("common.requested")}
                                       </Typography>
                                   ) : (
                                       <button
@@ -112,7 +114,7 @@ export default function SuggestedUsers({ bare }: SuggestedUsersProps = {}) {
                                               transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
                                           }}
                                       >
-                                          Follow
+                                          {t("common.follow")}
                                       </button>
                                   )}
                               </Box>
@@ -151,10 +153,10 @@ export default function SuggestedUsers({ bare }: SuggestedUsersProps = {}) {
             >
                 <Box sx={{ borderLeft: "2.5px solid #6366f1", pl: 1.25, flex: 1 }}>
                     <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
-                        People you may know
+                        {t("quickPanel.peopleYouMayKnow")}
                     </Typography>
                     <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3 }}>
-                        Based on your network
+                        {t("quickPanel.basedOnNetwork")}
                     </Typography>
                 </Box>
                 <IconButton

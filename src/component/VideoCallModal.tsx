@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Box, IconButton, Typography, Avatar, Tooltip } from "@mui/material";
 import MicIcon from "@mui/icons-material/Mic";
 import MicOffIcon from "@mui/icons-material/MicOff";
@@ -39,11 +40,12 @@ export default function VideoCallModal({
     remoteStream,
     pc,
     handleEndCall,
-    localUsername = "You",
+    localUsername = "",
     localProfilePicture,
-    remoteUsername = "Remote",
+    remoteUsername = "",
     remoteProfilePicture,
 }: VideoCallModalProps) {
+    const { t } = useTranslation();
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOn, setIsVideoOn] = useState(true);
     const [isSharing, setIsSharing] = useState(false);
@@ -156,8 +158,8 @@ export default function VideoCallModal({
     const pipVideoRef = isSwapped ? remoteVideoRef : localVideoRef;
     const mainStream = isSwapped ? localStream : remoteStream;
     const pipStream = isSwapped ? remoteStream : localStream;
-    const mainUsername = isSwapped ? localUsername : remoteUsername;
-    const pipUsername = isSwapped ? remoteUsername : localUsername;
+    const mainUsername = isSwapped ? (localUsername || t("common.you")) : (remoteUsername || t("common.remote"));
+    const pipUsername = isSwapped ? (remoteUsername || t("common.remote")) : (localUsername || t("common.you"));
     const mainPicture = isSwapped ? localProfilePicture : remoteProfilePicture;
     const pipPicture = isSwapped ? remoteProfilePicture : localProfilePicture;
 
@@ -227,7 +229,7 @@ export default function VideoCallModal({
                 </Box>
 
                 {/* ── PiP window ── */}
-                <Tooltip title="Tap to swap" placement="left">
+                <Tooltip title={t("common.tapToSwap")} placement="left">
                     <Box
                         onClick={() => { setIsSwapped((s) => !s); resetControlsTimer(); }}
                         sx={{
@@ -295,7 +297,7 @@ export default function VideoCallModal({
                     transition: "opacity 0.35s ease",
                 }}
             >
-                <Tooltip title={isMuted ? "Unmute" : "Mute"} placement="top">
+                <Tooltip title={isMuted ? t("common.unmute") : t("common.mute")} placement="top">
                     <IconButton
                         onClick={toggleMic}
                         sx={{
@@ -312,7 +314,7 @@ export default function VideoCallModal({
                     </IconButton>
                 </Tooltip>
 
-                <Tooltip title={isVideoOn ? "Turn off camera" : "Turn on camera"} placement="top">
+                <Tooltip title={isVideoOn ? t("common.turnOffCamera") : t("common.turnOnCamera")} placement="top">
                     <IconButton
                         onClick={toggleVideo}
                         sx={{
@@ -332,7 +334,7 @@ export default function VideoCallModal({
                 </Tooltip>
 
                 {/* Screen share — hidden on mobile (not supported in most mobile browsers) */}
-                <Tooltip title={isSharing ? "Stop sharing" : "Share screen"} placement="top">
+                <Tooltip title={isSharing ? t("common.stopSharing") : t("common.shareScreen")} placement="top">
                     <IconButton
                         onClick={toggleScreenShare}
                         sx={{
@@ -351,7 +353,7 @@ export default function VideoCallModal({
                 </Tooltip>
 
                 {/* End call */}
-                <Tooltip title="End call" placement="top">
+                <Tooltip title={t("common.endCall")} placement="top">
                     <IconButton
                         onClick={handleEndCall}
                         sx={{

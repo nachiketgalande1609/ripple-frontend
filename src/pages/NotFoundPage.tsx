@@ -1,8 +1,10 @@
 import { Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { usePageTitle } from "../hooks/usePageTitle";
 
 const NotFoundPage = () => {
+    const { t } = useTranslation();
     usePageTitle("Page not found");
     const navigate = useNavigate();
 
@@ -232,11 +234,11 @@ const NotFoundPage = () => {
 
                     <div className="nf-divider" />
 
-                    <Typography className="nf-title">Page not found</Typography>
-                    <Typography className="nf-sub">The page you're looking for doesn't exist or has been moved somewhere else.</Typography>
+                    <Typography className="nf-title">{t("notFound.title")}</Typography>
+                    <Typography className="nf-sub">{t("notFound.description")}</Typography>
 
                     <Button className="nf-btn" onClick={() => navigate("/")}>
-                        Back to home
+                        {t("notFound.backToHome")}
                     </Button>
                 </div>
             </div>
