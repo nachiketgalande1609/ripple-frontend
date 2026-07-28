@@ -6,6 +6,8 @@ import { getFollowingUsers } from "../../services/api";
 import NewChatUsersList from "./NewChatUsersList";
 import BlankProfileImage from "../../static/profile_blank.png";
 import { timeAgo } from "../../utils/utils";
+import { formatLastSeen } from "../../utils/lastSeen";
+import { useGlobalStore } from "../../store/store";
 
 type MessagesDrawerProps = {
     users: User[];
@@ -22,6 +24,7 @@ type User = {
     username: string;
     profile_picture: string;
     isOnline: boolean;
+    last_seen?: string | null;
     latest_message: string;
     latest_message_timestamp: string;
     unread_count: number;
@@ -70,6 +73,7 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
     setAnchorEl,
     mutedUserIds,
 }) => {
+    const { hideActivity } = useGlobalStore();
     const [usersList, setUsersList] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
@@ -227,7 +231,7 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                 ) : (
                     <List disablePadding>
                         {filteredUsers.map((user) => {
-                            const isOnline = onlineUsers.includes(user.id.toString());
+                            const isOnline = !hideActivity && onlineUsers.includes(user.id.toString());
                             const unreadCount = user.unread_count || 0;
                             const isSelected = selectedUser?.id === user.id;
                             const timestamp = timeAgo(user.latest_message_timestamp);
@@ -355,6 +359,7 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                                                     alignItems: "center",
                                                 }}
                                             >
+                                                <Box sx={{ minWidth: 0, flex: 1 }}>
                                                 <Typography
                                                     sx={{
                                                         fontSize: "0.76rem",
@@ -368,6 +373,19 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                                                 >
                                                     {user.latest_message}
                                                 </Typography>
+                                                {!isOnline && !hideActivity && formatLastSeen(user.last_seen, false) && (
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: "0.67rem",
+                                                            color: "text.disabled",
+                                                            whiteSpace: "nowrap",
+                                                            lineHeight: 1.3,
+                                                        }}
+                                                    >
+                                                        {formatLastSeen(user.last_seen, false)}
+                                                    </Typography>
+                                                )}
+                                                </Box>
 
                                                 {/* Right-side indicator: muted bell OR unread count, never both */}
                                                 {isMuted ? (

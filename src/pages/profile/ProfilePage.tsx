@@ -43,6 +43,7 @@ import { useGlobalStore } from "../../store/store";
 import FollowButton from "./FollowButton";
 import BlankProfileImage from "../../static/profile_blank.png";
 import CreatePostModal from "../../component/post/CreatePostModal";
+import { formatLastSeen } from "../../utils/lastSeen";
 
 interface Profile {
     id?: number;
@@ -61,6 +62,7 @@ interface Profile {
     website?: string;
     location?: string;
     created_at?: string;
+    last_seen?: string | null;
 }
 
 /* ─── Stat Column ─────────────────────────────────────────────── */
@@ -281,7 +283,7 @@ const EmptyState = ({ icon, title, subtitle, action }: { icon: React.ReactNode; 
 const ProfilePage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
-    const { postUploading, profileMenuOpen, setProfileMenuOpen } = useGlobalStore();
+    const { postUploading, profileMenuOpen, setProfileMenuOpen, onlineUsers, hideActivity } = useGlobalStore();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -754,12 +756,26 @@ const ProfilePage = () => {
                     </Stack>
                 </Stack>
 
-                {/* Name + verified */}
+                {/* Name + verified + online indicator */}
                 <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mt: 1.75 }}>
                     <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.05rem", sm: "1.15rem" }, color: (t) => t.palette.text.primary }}>
                         {profileData?.username}
                     </Typography>
                     {profileData?.is_verified && <Verified sx={{ fontSize: 15, color: "#1d9bf0" }} />}
+                    {profileData && !isOwnProfile && !hideActivity && (() => {
+                        const isOnline = onlineUsers.includes(String(profileData.id));
+                        const label = !isOnline ? formatLastSeen(profileData.last_seen, false) : null;
+                        return (
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                                <Box sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: isOnline ? "#22c55e" : "action.disabled", flexShrink: 0, opacity: isOnline ? 1 : 0.5 }} />
+                                {label && (
+                                    <Typography sx={{ fontSize: "0.75rem", color: "text.disabled", lineHeight: 1 }}>
+                                        {label}
+                                    </Typography>
+                                )}
+                            </Box>
+                        );
+                    })()}
                 </Stack>
 
                 {/* Mutual followers */}

@@ -16,6 +16,8 @@ interface globalStoreState {
     profileTabValue: number;
     profileMenuOpen: boolean;
     mobileCreateOpen: boolean;
+    onlineUsers: string[];
+    hideActivity: boolean;
     setUser: (user: User | null) => void;
     setUnreadNotificationsCount: (count: number | null) => void;
     setUnreadMessagesCount: (count: number | null) => void;
@@ -24,6 +26,8 @@ interface globalStoreState {
     setProfileTabValue: (value: number) => void;
     setProfileMenuOpen: (open: boolean) => void;
     setMobileCreateOpen: (open: boolean) => void;
+    setOnlineUsers: (users: string[]) => void;
+    setHideActivity: (hide: boolean) => void;
 }
 
 export const useGlobalStore = create<globalStoreState>((set) => ({
@@ -34,6 +38,8 @@ export const useGlobalStore = create<globalStoreState>((set) => ({
     profileTabValue: 0,
     profileMenuOpen: false,
     mobileCreateOpen: false,
+    onlineUsers: [],
+    hideActivity: false,
     setUser: (user) => {
         localStorage.setItem("user", JSON.stringify(user));
         set({ user });
@@ -45,4 +51,6 @@ export const useGlobalStore = create<globalStoreState>((set) => ({
     setProfileTabValue: (value) => set({ profileTabValue: value }),
     setProfileMenuOpen: (open) => set({ profileMenuOpen: open }),
     setMobileCreateOpen: (open) => set({ mobileCreateOpen: open }),
+    setOnlineUsers: (users) => set({ onlineUsers: users }),
+    setHideActivity: (hide) => set({ hideActivity: hide }),
 }));

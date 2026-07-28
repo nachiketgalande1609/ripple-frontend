@@ -85,6 +85,7 @@ type User = {
   username: string;
   profile_picture: string;
   isOnline: boolean;
+  last_seen?: string | null;
   latest_message: string;
   latest_message_timestamp: string;
   unread_count: number;
@@ -934,7 +935,7 @@ const Messages: React.FC<MessageProps> = ({
             }}
           >
             <MessagesTopBar
-              selectedUser={selectedUser}
+              selectedUser={selectedUser ? { ...selectedUser, isOnline: onlineUsers.includes(selectedUser.id.toString()) } : null}
               chatTheme={chatTheme}
               setChatTheme={setChatTheme}
               openVideoCall={handleVideoCall}
@@ -1029,7 +1030,7 @@ const Messages: React.FC<MessageProps> = ({
               <>
                 {/* Top bar */}
                 <MessagesTopBar
-                  selectedUser={selectedUser}
+                  selectedUser={selectedUser ? { ...selectedUser, isOnline: onlineUsers.includes(selectedUser.id.toString()) } : null}
                   chatTheme={chatTheme}
                   setChatTheme={setChatTheme}
                   openVideoCall={handleVideoCall}

@@ -955,6 +955,26 @@ export const updatePrivacy = async (isPrivate: boolean) => {
     }
 };
 
+export const getActivityStatus = async () => {
+    try {
+        const response = await api.get(`${SETTINGS_ENDPOINT}/activity-status`);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        throw error;
+    }
+};
+
+export const updateActivityStatus = async (hideActivity: boolean) => {
+    try {
+        const response = await api.patch(`${SETTINGS_ENDPOINT}/update-activity-status`, { hideActivity });
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) console.error(error.message);
+        throw error;
+    }
+};
+
 /////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// MESSAGES APIS //////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////

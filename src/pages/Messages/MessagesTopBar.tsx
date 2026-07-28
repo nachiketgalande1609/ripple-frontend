@@ -25,6 +25,8 @@ import bg4 from "../../static/bg4.jpg";
 import BlankProfileImage from "../../static/profile_blank.png";
 import { getMutedUsers, toggleMuteUser } from "../../services/api";
 import { useAppNotifications } from "../../hooks/useNotification";
+import { formatLastSeen } from "../../utils/lastSeen";
+import { useGlobalStore } from "../../store/store";
 
 // ── your existing types ──────────────────────────────────────────
 type Message = {
@@ -67,6 +69,7 @@ type User = {
   username: string;
   profile_picture: string;
   isOnline: boolean;
+  last_seen?: string | null;
   latest_message: string;
   latest_message_timestamp: string;
   unread_count: number;
@@ -186,6 +189,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [muteLoading, setMuteLoading] = useState(false);
   const notifications = useAppNotifications();
+  const { hideActivity } = useGlobalStore();
 
   const dialogPaperSx = {
     borderRadius: "36px",
@@ -280,33 +284,49 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
         >
           <ChevronLeft fontSize="small" />
         </IconButton>
-        <Avatar
-          sx={{
-            width: 36,
-            height: 36,
-            cursor: "pointer",
-            ml: isMobile ? -1 : 0,
-            border: "2px solid",
-            borderColor: (t) => t.palette.divider,
-          }}
-          src={selectedUser?.profile_picture || BlankProfileImage}
-          onClick={() => navigate(`/profile/${selectedUser?.id}`)}
-        />
-        <Typography
-          onClick={() => navigate(`/profile/${selectedUser?.id}`)}
-          sx={{
-            cursor: "pointer",
-            color: (t) => t.palette.text.primary,
-            fontWeight: 500,
-            fontSize: "0.92rem",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            "&:hover": { color: (t) => t.palette.text.secondary },
-          }}
-        >
-          {selectedUser?.username}
-        </Typography>
+        <Box sx={{ position: "relative", flexShrink: 0, ml: isMobile ? -1 : 0 }}>
+          <Avatar
+            sx={{
+              width: 36,
+              height: 36,
+              cursor: "pointer",
+              border: "2px solid",
+              borderColor: (t) => t.palette.divider,
+            }}
+            src={selectedUser?.profile_picture || BlankProfileImage}
+            onClick={() => navigate(`/profile/${selectedUser?.id}`)}
+          />
+          {selectedUser && !hideActivity && (
+            <Box sx={{
+              width: 10, height: 10, borderRadius: "50%", position: "absolute", bottom: 0, right: 0,
+              backgroundColor: selectedUser.isOnline ? "#22c55e" : "#9e9e9e",
+              border: "2px solid", borderColor: (t: any) => t.palette.background.paper,
+            }} />
+          )}
+        </Box>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            onClick={() => navigate(`/profile/${selectedUser?.id}`)}
+            sx={{
+              cursor: "pointer",
+              color: (t) => t.palette.text.primary,
+              fontWeight: 500,
+              fontSize: "0.92rem",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              lineHeight: 1.25,
+              "&:hover": { color: (t) => t.palette.text.secondary },
+            }}
+          >
+            {selectedUser?.username}
+          </Typography>
+          {selectedUser && !hideActivity && !selectedUser.isOnline && formatLastSeen(selectedUser.last_seen, false) && (
+            <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3, whiteSpace: "nowrap" }}>
+              {formatLastSeen(selectedUser.last_seen, false)}
+            </Typography>
+          )}
+        </Box>
       </Box>
 
       {/* Right: actions */}

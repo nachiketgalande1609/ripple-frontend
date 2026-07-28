@@ -23,7 +23,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Notifications from "./pages/notifications/Notifications";
 import SettingsPage from "./pages/SettingsPage";
-import { getNotificationsCount } from "./services/api";
+import { getNotificationsCount, getActivityStatus } from "./services/api";
 import NavDrawer from "./component/navbar/NavDrawer";
 import MessagesPip from "./component/messages/MessagesPip";
 import VideoCallModal from "./component/VideoCallModal";
@@ -67,9 +67,10 @@ const AppContent = () => {
     unreadMessagesCount,
     setUnreadMessagesCount,
     postUploading,
+    onlineUsers,
+    setOnlineUsers,
+    setHideActivity,
   } = useGlobalStore();
-
-  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const notifications = useAppNotifications();
 
   const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
@@ -159,6 +160,13 @@ const AppContent = () => {
       socket.off("onlineUsers");
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    getActivityStatus()
+      .then((res) => { if (res.success) setHideActivity(res.data.hideActivity); })
+      .catch(() => {});
+  }, [user?.id]);
 
   useEffect(() => {
     if (
