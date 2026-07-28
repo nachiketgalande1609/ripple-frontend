@@ -13,7 +13,10 @@ import {
   Collapse,
   Fade,
   useTheme,
+  useMediaQuery,
   Skeleton,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import Cropper from "react-cropper";
 import "cropperjs/dist/cropper.css";
@@ -60,6 +63,17 @@ const ProfileDetails = () => {
   const { setUser } = useGlobalStore();
   const notifications = useAppNotifications();
   const isDark = theme.palette.mode === "dark";
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const PRONOUN_OPTIONS = [
+    { value: "", label: t("profile.noPronounsSet") },
+    { value: "he/him", label: "he/him" },
+    { value: "she/her", label: "she/her" },
+    { value: "they/them", label: "they/them" },
+    { value: "he/they", label: "he/they" },
+    { value: "she/they", label: "she/they" },
+    { value: "any/all", label: "any/all" },
+  ];
 
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user") || "null")
@@ -71,6 +85,7 @@ const ProfileDetails = () => {
   const [newUsername, setNewUsername] = useState("");
   const [newBio, setNewBio] = useState("");
   const [newWebsite, setNewWebsite] = useState("");
+  const [newPronouns, setNewPronouns] = useState("");
   const [websiteError, setWebsiteError] = useState("");
   const [profileUpdating, setProfileUpdating] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -93,12 +108,13 @@ const ProfileDetails = () => {
       setIsModified(
         newUsername !== profileData.username ||
           newBio !== (profileData.bio ?? "") ||
-          newWebsite !== ((profileData as any).website ?? ""),
+          newWebsite !== ((profileData as any).website ?? "") ||
+          newPronouns !== ((profileData as any).pronouns ?? ""),
       );
       setSaveSuccess(false);
       setSaveError("");
     }
-  }, [newUsername, newBio, newWebsite, profileData]);
+  }, [newUsername, newBio, newWebsite, newPronouns, profileData]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -131,6 +147,7 @@ const ProfileDetails = () => {
         setNewUsername(res.data.username);
         setNewBio(res.data.bio ?? "");
         setNewWebsite(res.data.website ?? "");
+        setNewPronouns(res.data.pronouns ?? "");
       }
     } catch (e) {
       console.error(e);
@@ -197,13 +214,13 @@ const ProfileDetails = () => {
       const normalizedWebsite = newWebsite.trim()
         ? newWebsite.trim().startsWith("http") ? newWebsite.trim() : `https://${newWebsite.trim()}`
         : "";
-      await updateProfileDetails({ username: newUsername, bio: newBio, website: normalizedWebsite });
+      await updateProfileDetails({ username: newUsername, bio: newBio, website: normalizedWebsite, pronouns: newPronouns } as any);
       const updatedUser = { ...user, username: newUsername };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setNewWebsite(normalizedWebsite);
       setProfileData((p) =>
-        p ? { ...p, username: newUsername, bio: newBio, website: normalizedWebsite } as any : p,
+        p ? { ...p, username: newUsername, bio: newBio, website: normalizedWebsite, pronouns: newPronouns } as any : p,
       );
       setSaveSuccess(true);
       notifications.show(t("settings.profileUpdated"), { severity: "success", autoHideDuration: 3000 });
@@ -672,6 +689,90 @@ const ProfileDetails = () => {
                   </Alert>
                 </Collapse>
               </>
+            )}
+          </Box>
+
+          {/* Pronouns */}
+          <Box>
+            <Typography component="label" sx={labelSx}>
+              {t("settings.pronouns")}
+            </Typography>
+            {profileLoading ? (
+              <Skeleton variant="rounded" height={42} sx={{ borderRadius: "10px", bgcolor: (t) => t.palette.action.hover }} />
+            ) : isMobile ? (
+              /* Mobile: native-style dropdown */
+              <Select
+                fullWidth
+                value={newPronouns}
+                onChange={(e) => setNewPronouns(e.target.value)}
+                displayEmpty
+                variant="outlined"
+                sx={{
+                  borderRadius: "14px",
+                  backgroundColor: "var(--nav-bg)",
+                  fontSize: "0.875rem",
+                  boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                  "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                  "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" },
+                  "& .MuiSelect-select": { py: "10.5px", color: newPronouns ? "text.primary" : "text.disabled" },
+                }}
+                MenuProps={{ PaperProps: { sx: { borderRadius: "14px", mt: 0.5 } } }}
+              >
+                {PRONOUN_OPTIONS.map(opt => (
+                  <MenuItem key={opt.value} value={opt.value} sx={{ fontSize: "0.875rem" }}>{opt.label}</MenuItem>
+                ))}
+              </Select>
+            ) : (
+              /* Desktop: pill selector */
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {PRONOUN_OPTIONS.filter(o => o.value).map(opt => {
+                  const selected = newPronouns === opt.value;
+                  return (
+                    <Box
+                      key={opt.value}
+                      onClick={() => setNewPronouns(selected ? "" : opt.value)}
+                      sx={{
+                        px: 2, py: 0.875,
+                        borderRadius: "30px",
+                        cursor: "pointer",
+                        fontSize: "0.82rem",
+                        fontWeight: selected ? 600 : 400,
+                        color: selected ? "primary.main" : "text.secondary",
+                        backgroundColor: selected ? (t: any) => `${t.palette.primary.main}18` : "var(--nav-bg)",
+                        border: "1.5px solid",
+                        borderColor: selected ? "primary.main" : "divider",
+                        boxShadow: selected
+                          ? "none"
+                          : "inset 2px 2px 6px var(--nav-neo-shadow1), inset -2px -2px 6px var(--nav-neo-shadow2)",
+                        transition: "all 0.2s cubic-bezier(0.4,0,0.2,1)",
+                        userSelect: "none",
+                        "&:hover": {
+                          borderColor: selected ? "primary.main" : "text.secondary",
+                          color: selected ? "primary.main" : "text.primary",
+                        },
+                      }}
+                    >
+                      {opt.label}
+                    </Box>
+                  );
+                })}
+                {/* Clear button if something is selected */}
+                {newPronouns && (
+                  <Box
+                    onClick={() => setNewPronouns("")}
+                    sx={{
+                      px: 2, py: 0.875, borderRadius: "30px", cursor: "pointer",
+                      fontSize: "0.78rem", color: "text.disabled",
+                      border: "1.5px dashed", borderColor: "divider",
+                      transition: "all 0.2s",
+                      "&:hover": { color: "text.secondary", borderColor: "text.disabled" },
+                    }}
+                  >
+                    {t("common.remove")}
+                  </Box>
+                )}
+              </Box>
             )}
           </Box>
         </Box>

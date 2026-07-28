@@ -88,6 +88,41 @@ export const unpinPost = async (postId: number) => {
     return response.data;
 };
 
+export const sharePostAsStory = async (postId: number, caption?: string) => {
+    const response = await api.post(`/api/stories/share-post-as-story`, { post_id: postId, caption });
+    return response.data;
+};
+
+export const getHighlights = async (userId: string | number) => {
+    const response = await api.get(`/api/highlights/${userId}`);
+    return response.data;
+};
+
+export const createHighlight = async (title: string, items: { media_url: string; media_type: string }[], cover_url?: string) => {
+    const response = await api.post(`/api/highlights`, { title, items, cover_url });
+    return response.data;
+};
+
+export const updateHighlight = async (id: number, data: { title?: string; cover_url?: string }) => {
+    const response = await api.put(`/api/highlights/${id}`, data);
+    return response.data;
+};
+
+export const deleteHighlight = async (id: number) => {
+    const response = await api.delete(`/api/highlights/${id}`);
+    return response.data;
+};
+
+export const addHighlightItems = async (highlightId: number, items: { media_url: string; media_type: string }[]) => {
+    const response = await api.post(`/api/highlights/${highlightId}/items`, { items });
+    return response.data;
+};
+
+export const removeHighlightItem = async (highlightId: number, itemId: number) => {
+    const response = await api.delete(`/api/highlights/${highlightId}/items/${itemId}`);
+    return response.data;
+};
+
 interface UserRegisterData {
     email: string;
     username: string;

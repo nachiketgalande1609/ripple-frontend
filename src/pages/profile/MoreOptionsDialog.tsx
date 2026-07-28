@@ -14,6 +14,7 @@ import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import BlockRoundedIcon from "@mui/icons-material/BlockRounded";
 import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
+import StyleRoundedIcon from "@mui/icons-material/StyleRounded";
 
 import BlankProfileImage from "../../static/profile_blank.png";
 
@@ -26,6 +27,7 @@ interface MoreOptionsDialogProps {
     isFollowing: boolean | undefined;
     isBlocked: boolean;
     onBlockToggle: () => void;
+    onShareCard?: () => void;
 }
 
 /* Reusable icon container */
@@ -111,6 +113,7 @@ export default function MoreOptionsDialog({
     isFollowing,
     isBlocked,
     onBlockToggle,
+    onShareCard,
 }: MoreOptionsDialogProps) {
     const navigate = useNavigate();
     const location = useLocation();
@@ -302,6 +305,11 @@ export default function MoreOptionsDialog({
                     />
                 )}
 
+
+                {/* Share Profile as Card — own profile only */}
+                {isOwnProfile && onShareCard && (
+                    <DialogButton icon={<StyleRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("profile.shareProfileCard")} onClick={() => { handleCloseDialog(); onShareCard(); }} />
+                )}
 
                 {/* Copy Profile Link — always visible */}
                 <DialogButton icon={<LinkRoundedIcon sx={{ fontSize: "1.1rem" }} />} label={t("profile.copyProfileLink")} onClick={handleCopyLink} />

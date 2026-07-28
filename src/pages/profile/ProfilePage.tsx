@@ -19,7 +19,7 @@ import { ACCENT_COLOR } from "../../theme";
 const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts, getUserReels, getMutualFollowers, getPinnedPosts, pinPost, unpinPost } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts, getUserReels, getMutualFollowers, getPinnedPosts, pinPost, unpinPost, getHighlights, deleteHighlight } from "../../services/api";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
@@ -46,6 +46,11 @@ import FollowButton from "./FollowButton";
 import BlankProfileImage from "../../static/profile_blank.png";
 import CreatePostModal from "../../component/post/CreatePostModal";
 import { formatLastSeen } from "../../utils/lastSeen";
+import ShareProfileCardModal from "../../component/profile/ShareProfileCardModal";
+import HighlightViewer, { type Highlight } from "../../component/stories/HighlightViewer";
+import CreateHighlightModal from "../../component/stories/CreateHighlightModal";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
 interface Profile {
     id?: number;
@@ -65,6 +70,7 @@ interface Profile {
     location?: string;
     created_at?: string;
     last_seen?: string | null;
+    pronouns?: string;
 }
 
 /* ─── Stat Column ─────────────────────────────────────────────── */
@@ -390,6 +396,10 @@ const ProfilePage = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [isBlocked, setIsBlocked] = useState(false);
     const [pinnedPosts, setPinnedPosts] = useState<any[]>([]);
+    const [shareCardOpen, setShareCardOpen] = useState(false);
+    const [highlights, setHighlights] = useState<Highlight[]>([]);
+    const [viewingHighlight, setViewingHighlight] = useState<Highlight | null>(null);
+    const [createHighlightOpen, setCreateHighlightOpen] = useState(false);
 
     const isOwnProfile = currentUser?.id == userId;
 
@@ -525,6 +535,16 @@ const ProfilePage = () => {
         }
     }, [userId]);
 
+    const fetchHighlightsFn = useCallback(async () => {
+        if (!userId) return;
+        try {
+            const res = await getHighlights(userId);
+            setHighlights(res.data ?? []);
+        } catch (e) {
+            console.error(e);
+        }
+    }, [userId]);
+
     const handlePinToggle = async (postId: number, isPinned: boolean) => {
         try {
             if (isPinned) {
@@ -583,6 +603,7 @@ const ProfilePage = () => {
         fetchProfile();
         checkBlockedStatus();
         fetchPinnedPostsFn();
+        fetchHighlightsFn();
         offsetRef.current = 0;
         hasMoreRef.current = true;
         setHasMore(true);
@@ -877,6 +898,22 @@ const ProfilePage = () => {
                     })()}
                 </Stack>
 
+                {/* Pronouns chip */}
+                {profileData?.pronouns && (
+                    <Box
+                        sx={{
+                            display: "inline-flex", alignItems: "center",
+                            mt: 0.5, px: 1.25, py: 0.35, borderRadius: "20px",
+                            backgroundColor: "action.hover",
+                            border: "1px solid", borderColor: "divider",
+                        }}
+                    >
+                        <Typography sx={{ fontSize: "0.72rem", color: "text.secondary", fontWeight: 500 }}>
+                            {profileData.pronouns}
+                        </Typography>
+                    </Box>
+                )}
+
                 {/* Mutual followers */}
                 {!isOwnProfile && mutualFollowers.length > 0 && (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.75 }}>
@@ -1004,6 +1041,82 @@ const ProfilePage = () => {
                     />
                 </Stack>
             </Box>
+
+            {/* ── Story Highlights ── */}
+            {(highlights.length > 0 || isOwnProfile) && (
+                <Box sx={{ maxWidth: 900, mx: "auto", px: "8px", mt: 1.5, mb: 0.5 }}>
+                    <Box
+                        sx={{
+                            display: "flex", alignItems: "center", gap: 1,
+                            overflowX: "auto", pb: 1,
+                            "&::-webkit-scrollbar": { display: "none" },
+                            scrollbarWidth: "none",
+                        }}
+                    >
+                        {/* Add New highlight circle — own profile only */}
+                        {isOwnProfile && (
+                            <Box
+                                onClick={() => setCreateHighlightOpen(true)}
+                                sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75, cursor: "pointer", flexShrink: 0 }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: 64, height: 64, borderRadius: "50%",
+                                        border: "2px dashed", borderColor: "divider",
+                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                        backgroundColor: "action.hover",
+                                        transition: "border-color 0.2s, background-color 0.2s",
+                                        "&:hover": { borderColor: "text.secondary", backgroundColor: "action.selected" },
+                                    }}
+                                >
+                                    <AddRoundedIcon sx={{ fontSize: 22, color: "text.secondary" }} />
+                                </Box>
+                                <Typography sx={{ fontSize: "0.65rem", color: "text.disabled", whiteSpace: "nowrap" }}>
+                                    {t("profile.addHighlight")}
+                                </Typography>
+                            </Box>
+                        )}
+
+                        {/* Highlight circles */}
+                        {highlights.map(highlight => (
+                            <Box
+                                key={highlight.id}
+                                onClick={() => highlight.items.length > 0 && setViewingHighlight(highlight)}
+                                sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75, cursor: highlight.items.length > 0 ? "pointer" : "default", flexShrink: 0 }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: 64, height: 64, borderRadius: "50%", overflow: "hidden",
+                                        border: "2px solid", borderColor: "divider",
+                                        background: "action.hover", position: "relative",
+                                        transition: "transform 0.2s",
+                                        "&:hover": highlight.items.length > 0 ? { transform: "scale(1.06)" } : {},
+                                    }}
+                                >
+                                    {highlight.cover_url || highlight.items[0]?.media_url ? (
+                                        <Box
+                                            component="img"
+                                            src={highlight.cover_url || highlight.items[0].media_url}
+                                            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                        />
+                                    ) : (
+                                        <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "action.hover" }}>
+                                            <AutoAwesomeRoundedIcon sx={{ fontSize: 24, color: "text.disabled" }} />
+                                        </Box>
+                                    )}
+                                </Box>
+                                <Typography sx={{
+                                    fontSize: "0.65rem", color: "text.secondary",
+                                    whiteSpace: "nowrap", maxWidth: 72,
+                                    overflow: "hidden", textOverflow: "ellipsis", textAlign: "center",
+                                }}>
+                                    {highlight.title}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                </Box>
+            )}
 
             {/* ── Tabs ── */}
             <Box
@@ -1329,6 +1442,25 @@ const ProfilePage = () => {
                     setIsBlocked((prev) => !prev);
                     fetchProfile();
                 }}
+                onShareCard={isOwnProfile ? () => setShareCardOpen(true) : undefined}
+            />
+
+            <ShareProfileCardModal
+                open={shareCardOpen}
+                onClose={() => setShareCardOpen(false)}
+                profile={profileData}
+            />
+
+            <HighlightViewer
+                open={!!viewingHighlight}
+                onClose={() => setViewingHighlight(null)}
+                highlight={viewingHighlight}
+            />
+
+            <CreateHighlightModal
+                open={createHighlightOpen}
+                onClose={() => setCreateHighlightOpen(false)}
+                onCreated={fetchHighlightsFn}
             />
 
             <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />

@@ -25,7 +25,8 @@ import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PushPinRoundedIcon from "@mui/icons-material/PushPinRounded";
-import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, getFollowingUsers, repostPost, unrepostPost, pinPost, unpinPost } from "../../services/api";
+import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
+import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, getFollowingUsers, repostPost, unrepostPost, pinPost, unpinPost, sharePostAsStory } from "../../services/api";
 import ScrollableCommentsDrawer from "./ScrollableCommentsDrawer";
 import { useNavigate } from "react-router-dom";
 import { useAppNotifications } from "../../hooks/useNotification";
@@ -829,6 +830,22 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                 }
                             }}
                         />
+                        {post.file_url && (
+                            <DialogBtn
+                                icon={<AutoStoriesRoundedIcon sx={{ fontSize: "1rem" }} />}
+                                label={t("profile.shareToStory")}
+                                onClick={async () => {
+                                    setOptionsDialogOpen(false);
+                                    setConfirmDelete(false);
+                                    try {
+                                        await sharePostAsStory(Number(post.id));
+                                        notifications.show(t("profile.sharedToStory"), { severity: "success", autoHideDuration: 3000 });
+                                    } catch {
+                                        notifications.show(t("common.error"), { severity: "error", autoHideDuration: 3000 });
+                                    }
+                                }}
+                            />
+                        )}
                         <DialogBtn
                             icon={confirmDelete ? <WarningRoundedIcon sx={{ fontSize: "1rem" }} /> : <DeleteRoundedIcon sx={{ fontSize: "1rem" }} />}
                             label={confirmDelete ? t("post.confirmDelete") : t("post.deletePost")}
@@ -883,6 +900,46 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                             <Close sx={{ fontSize: 18 }} />
                         </IconButton>
                     </Box>
+
+                    {/* Share to Story row */}
+                    {post.file_url && (
+                        <Box
+                            sx={{
+                                px: 2, py: 1.25,
+                                borderBottom: `1px solid ${theme.palette.divider}`,
+                                display: "flex", alignItems: "center", gap: 1.5,
+                            }}
+                        >
+                            <Box
+                                onClick={async () => {
+                                    setUsersModalOpen(false);
+                                    try {
+                                        await sharePostAsStory(Number(post.id));
+                                        notifications.show(t("profile.sharedToStory"), { severity: "success", autoHideDuration: 3000 });
+                                    } catch {
+                                        notifications.show(t("common.error"), { severity: "error", autoHideDuration: 3000 });
+                                    }
+                                }}
+                                sx={{
+                                    display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5,
+                                    cursor: "pointer", minWidth: 56,
+                                }}
+                            >
+                                <Box sx={{
+                                    width: 48, height: 48, borderRadius: "50%",
+                                    background: `linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)`,
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    transition: "transform 0.18s",
+                                    "&:hover": { transform: "scale(1.08)" },
+                                }}>
+                                    <AutoStoriesRoundedIcon sx={{ fontSize: 22, color: "#fff" }} />
+                                </Box>
+                                <Typography sx={{ fontSize: "0.68rem", color: "text.secondary", whiteSpace: "nowrap" }}>
+                                    {t("profile.shareToStory")}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    )}
 
                     {/* Search */}
                     <Box sx={{ px: 2, py: 1.25, borderBottom: `1px solid ${theme.palette.divider}` }}>
