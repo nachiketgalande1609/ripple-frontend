@@ -3,10 +3,13 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { CircularProgress, Box, Typography, Button } from "@mui/material";
 import { CheckCircleOutline, ErrorOutline } from "@mui/icons-material";
 import { verifyUser } from "../services/api";
+import { useTranslation } from "react-i18next";
+import AuthLanguageSelector from "../component/auth/AuthLanguageSelector";
 
 const ACCENT = "#64748B";
 
 const VerifyAccount: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState<string | null>(null);
@@ -16,7 +19,7 @@ const VerifyAccount: React.FC = () => {
   useEffect(() => {
     const token = searchParams.get("token");
     if (!token) {
-      setError("Invalid or missing verification token.");
+      setError(t("auth.invalidToken"));
       setLoading(false);
       return;
     }
@@ -24,20 +27,20 @@ const VerifyAccount: React.FC = () => {
       try {
         const response = await verifyUser(token);
         if (response.success) {
-          setSuccess("Your account has been successfully verified!");
+          setSuccess(t("auth.accountVerifiedSuccess"));
         } else {
-          setError(response.error || "Verification failed.");
+          setError(response.error || t("auth.verificationFailedError"));
         }
       } catch (err: any) {
         setError(
-          err.response?.data?.error || "An error occurred during verification.",
+          err.response?.data?.error || t("auth.verificationError"),
         );
       } finally {
         setLoading(false);
       }
     };
     verify();
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   return (
     <Box
@@ -49,8 +52,13 @@ const VerifyAccount: React.FC = () => {
         backgroundColor: (t) => t.palette.background.default,
         fontFamily: "'Inter', -apple-system, sans-serif",
         px: 2,
+        position: "relative",
       }}
     >
+      <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+        <AuthLanguageSelector />
+      </Box>
+
       <Box
         sx={{
           width: "100%",
@@ -89,7 +97,7 @@ const VerifyAccount: React.FC = () => {
                 color: (t) => t.palette.text.primary,
               }}
             >
-              Verifying your account…
+              {t("auth.verifyingAccount")}
             </Typography>
             <Typography
               sx={{
@@ -98,7 +106,7 @@ const VerifyAccount: React.FC = () => {
                 color: (t) => t.palette.text.disabled,
               }}
             >
-              This will only take a moment
+              {t("auth.onlyAMoment")}
             </Typography>
           </Box>
         )}
@@ -139,7 +147,7 @@ const VerifyAccount: React.FC = () => {
                 color: (t) => t.palette.text.primary,
               }}
             >
-              Account verified
+              {t("auth.accountVerified")}
             </Typography>
             <Typography
               sx={{
@@ -169,7 +177,7 @@ const VerifyAccount: React.FC = () => {
                 "&:active": { transform: "scale(0.97)" },
               }}
             >
-              Go to login
+              {t("auth.goToLogin")}
             </Button>
           </Box>
         )}
@@ -210,7 +218,7 @@ const VerifyAccount: React.FC = () => {
                 color: (t) => t.palette.text.primary,
               }}
             >
-              Verification failed
+              {t("auth.verificationFailed")}
             </Typography>
             <Typography
               sx={{
@@ -242,7 +250,7 @@ const VerifyAccount: React.FC = () => {
                 },
               }}
             >
-              Back to home
+              {t("notFound.backToHome")}
             </Button>
           </Box>
         )}

@@ -40,6 +40,7 @@ import FollowingPage from "./pages/FollowingPage";
 import MobileTopBar from "./component/navbar/MobileTopBar";
 import ReelsPage from "./pages/ReelsPage";
 import SavedPage from "./pages/SavedPage";
+import AboutPage from "./pages/AboutPage";
 
 type User = {
   id: number;
@@ -438,7 +439,7 @@ const AppContent = () => {
     };
   }, [pc, localStream]);
 
-  const isPublicRoute = ["/login", "/register", "/verify-account", "/reset-password", "/reels"].includes(location.pathname) || location.pathname.startsWith("/messages");
+  const isPublicRoute = ["/login", "/register", "/verify-account", "/reset-password", "/reels", "/about"].includes(location.pathname) || location.pathname.startsWith("/messages");
 
   return (
     <Box
@@ -447,12 +448,12 @@ const AppContent = () => {
         backgroundColor: theme.palette.background.default,
       }}
     >
-      <MobileTopBar unreadNotificationsCount={unreadNotificationsCount} />
-      <NavDrawer
+      {!isPublicRoute && <MobileTopBar unreadNotificationsCount={unreadNotificationsCount} />}
+      {!isPublicRoute && <NavDrawer
         unreadMessagesCount={unreadMessagesCount}
         unreadNotificationsCount={unreadNotificationsCount}
         setUnreadMessagesCount={setUnreadMessagesCount}
-      />
+      />}
 
       {/* Main content */}
       <Box
@@ -584,6 +585,7 @@ const AppContent = () => {
               </PrivateRoute>
             }
           />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Box>

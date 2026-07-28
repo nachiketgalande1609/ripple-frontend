@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Box } from "@mui/material";
 import { registerUser } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../static/logo-transparent.png";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useTranslation } from "react-i18next";
+import AuthLanguageSelector from "../component/auth/AuthLanguageSelector";
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = `
@@ -425,7 +427,8 @@ const strengthClass = ["", "weak", "fair", "good", "strong"];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const RegisterPage: React.FC = () => {
-  usePageTitle("Sign up");
+  const { t } = useTranslation();
+  usePageTitle(t("auth.registerPageTitle"));
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -459,19 +462,17 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
 
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setError(
-        "Only letters, numbers and underscores are allowed in the username.",
-      );
+      setError(t("auth.usernameOnlyLetters"));
       setLoading(false);
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("auth.passwordsDontMatchError"));
       setLoading(false);
       return;
     }
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(t("auth.passwordTooShort"));
       setLoading(false);
       return;
     }
@@ -479,18 +480,16 @@ const RegisterPage: React.FC = () => {
     try {
       const response = await registerUser({ email, username, password });
       if (response.success) {
-        setSuccess(
-          "Account created! Check your email for a verification link.",
-        );
+        setSuccess(t("auth.accountCreatedCheckEmail"));
         setUsername("");
         setEmail("");
         setPassword("");
         setConfirmPassword("");
       } else {
-        setError(response.error || "Registration failed.");
+        setError(response.error || t("auth.registrationFailed"));
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || "Registration failed.");
+      setError(err.response?.data?.error || t("auth.registrationFailed"));
     } finally {
       setLoading(false);
     }
@@ -603,12 +602,12 @@ const RegisterPage: React.FC = () => {
             <div className="ig-reg-visual-overlay" />
             <div className="ig-reg-visual-brand">
               <p className="ig-reg-visual-tagline">
-                Your story
+                {t("auth.yourStory")}
                 <br />
-                <em>starts here.</em>
+                <em>{t("auth.startsHere")}</em>
               </p>
               <p className="ig-reg-visual-sub">
-                Join millions sharing life's best moments.
+                {t("auth.joinMillions")}
               </p>
             </div>
           </motion.div>
@@ -623,7 +622,11 @@ const RegisterPage: React.FC = () => {
             variants={panelVariants}
             initial="hidden"
             animate="visible"
+            style={{ position: "relative" }}
           >
+            <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+              <AuthLanguageSelector />
+            </Box>
             {/* Logo */}
             <motion.div variants={fade(0)} initial="hidden" animate="visible">
               <div className="ig-reg-logo">
@@ -636,7 +639,7 @@ const RegisterPage: React.FC = () => {
 
             {/* Greeting + headline */}
             <motion.div variants={fade(1)} initial="hidden" animate="visible">
-              <p className="ig-reg-greeting">Create account</p>
+              <p className="ig-reg-greeting">{t("auth.createAccount")}</p>
             </motion.div>
 
             {/* Alerts */}
@@ -679,22 +682,22 @@ const RegisterPage: React.FC = () => {
                   {/* Username + Email row */}
                   <div className="ig-reg-field-row">
                     <div className="ig-reg-field">
-                      <label htmlFor="ig-reg-username">Username</label>
+                      <label htmlFor="ig-reg-username">{t("auth.username")}</label>
                       <input
                         id="ig-reg-username"
                         type="text"
-                        placeholder="john_doe"
+                        placeholder={t("auth.usernamePlaceholder")}
                         value={username}
                         autoComplete="username"
                         onChange={(e) => setUsername(e.target.value)}
                       />
                     </div>
                     <div className="ig-reg-field">
-                      <label htmlFor="ig-reg-email">Email</label>
+                      <label htmlFor="ig-reg-email">{t("auth.email")}</label>
                       <input
                         id="ig-reg-email"
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder={t("auth.emailPlaceholder")}
                         value={email}
                         autoComplete="email"
                         onChange={(e) => setEmail(e.target.value)}
@@ -704,11 +707,11 @@ const RegisterPage: React.FC = () => {
 
                   {/* Password */}
                   <div className="ig-reg-field">
-                    <label htmlFor="ig-reg-password">Password</label>
+                    <label htmlFor="ig-reg-password">{t("auth.password")}</label>
                     <input
                       id="ig-reg-password"
                       type="password"
-                      placeholder="Min. 6 characters"
+                      placeholder={t("auth.passwordPlaceholder")}
                       value={password}
                       autoComplete="new-password"
                       onChange={(e) => setPassword(e.target.value)}
@@ -727,21 +730,21 @@ const RegisterPage: React.FC = () => {
 
                   {/* Confirm password */}
                   <div className="ig-reg-field">
-                    <label htmlFor="ig-reg-confirm">Confirm Password</label>
+                    <label htmlFor="ig-reg-confirm">{t("auth.confirmPassword")}</label>
                     <input
                       id="ig-reg-confirm"
                       type="password"
-                      placeholder="Re-enter password"
+                      placeholder={t("auth.reEnterPassword")}
                       value={confirmPassword}
                       autoComplete="new-password"
                       onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                     {passwordsMatch && (
-                      <p className="ig-reg-match ok">✓ Passwords match</p>
+                      <p className="ig-reg-match ok">{"✓ " + t("auth.passwordsMatch")}</p>
                     )}
                     {passwordsMismatch && (
                       <p className="ig-reg-match bad">
-                        ✗ Passwords don't match
+                        {"✗ " + t("auth.passwordsDontMatch")}
                       </p>
                     )}
                   </div>
@@ -763,7 +766,7 @@ const RegisterPage: React.FC = () => {
                     />
                   ) : (
                     <>
-                      Create account{" "}
+                      {t("auth.createAccount")}{" "}
                       <span style={{ fontSize: 16, opacity: 0.75 }}>→</span>
                     </>
                   )}
@@ -774,9 +777,9 @@ const RegisterPage: React.FC = () => {
             {/* Terms */}
             <motion.div variants={fade(4)} initial="hidden" animate="visible">
               <p className="ig-reg-terms">
-                By signing up you agree to our{" "}
-                <a href="/terms">Terms of Service</a> and{" "}
-                <a href="/privacy">Privacy Policy</a>.
+                {t("auth.bySigningUp")}{" "}
+                <a href="/terms">{t("auth.termsOfService")}</a> {t("common.and")}{" "}
+                <a href="/privacy">{t("auth.privacyPolicy")}</a>.
               </p>
             </motion.div>
 
@@ -784,7 +787,7 @@ const RegisterPage: React.FC = () => {
             <motion.div variants={fade(5)} initial="hidden" animate="visible">
               <div className="ig-reg-divider">
                 <div className="ig-reg-divider-line" />
-                <span className="ig-reg-divider-text">Have an account?</span>
+                <span className="ig-reg-divider-text">{t("auth.haveAccount")}</span>
                 <div className="ig-reg-divider-line" />
               </div>
             </motion.div>
@@ -792,10 +795,10 @@ const RegisterPage: React.FC = () => {
             {/* Footer */}
             <motion.div variants={fade(6)} initial="hidden" animate="visible">
               <div className="ig-reg-footer">
-                <a href="/login">Sign in instead</a>
+                <a href="/login">{t("auth.signInInstead")}</a>
                 <span style={{ margin: "0 10px", opacity: 0.25 }}>·</span>
                 <a href="/about" className="ig-reg-about">
-                  About Ripple
+                  {t("auth.aboutRipple")}
                 </a>
               </div>
             </motion.div>

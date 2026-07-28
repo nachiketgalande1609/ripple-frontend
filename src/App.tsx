@@ -9,6 +9,8 @@ import AppContent from "./AppContent";
 function ThemeTogglePill() {
     const { mode, setMode } = useColorScheme();
     const location = useLocation();
+    const authPaths = ["/login", "/register", "/reset-password", "/verify"];
+    if (authPaths.some(p => location.pathname.startsWith(p))) return null;
     if (location.pathname.startsWith("/messages") || location.pathname === "/reels") return null;
     const [spinning, setSpinning] = React.useState(false);
 

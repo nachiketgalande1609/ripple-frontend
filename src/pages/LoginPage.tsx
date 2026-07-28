@@ -10,6 +10,8 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../static/logo-transparent.png";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useTranslation } from "react-i18next";
+import AuthLanguageSelector from "../component/auth/AuthLanguageSelector";
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = `
@@ -450,7 +452,8 @@ const styles = `
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const LoginPage: React.FC = () => {
-  usePageTitle("Log in");
+  const { t, i18n } = useTranslation();
+  usePageTitle(t("auth.loginPageTitle"));
   const { setUser } = useGlobalStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -507,11 +510,11 @@ const LoginPage: React.FC = () => {
         setUser(user);
         navigate("/");
       } else {
-        setError(response.error || "Login failed!");
+        setError(response.error || t("auth.loginFailed"));
         setLoading(false);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || "Login failed!");
+      setError(err.response?.data?.error || t("auth.loginFailed"));
       setLoading(false);
     }
   };
@@ -609,12 +612,12 @@ const LoginPage: React.FC = () => {
               <div className="ig-visual-overlay" />
               <div className="ig-visual-brand">
                 <p className="ig-visual-tagline">
-                  Every moment
+                  {t("auth.everyMoment")}
                   <br />
-                  <em>worth sharing.</em>
+                  <em>{t("auth.worthSharing")}</em>
                 </p>
                 <p className="ig-visual-sub">
-                  Connect, create, and be inspired daily.
+                  {t("auth.connectCreate")}
                 </p>
               </div>
             </motion.div>
@@ -629,7 +632,11 @@ const LoginPage: React.FC = () => {
               variants={panelVariants}
               initial="hidden"
               animate="visible"
+              style={{ position: "relative" }}
             >
+              <div style={{ position: "absolute", top: 16, right: 16, zIndex: 10 }}>
+                <AuthLanguageSelector />
+              </div>
               {/* Logo */}
               <motion.div variants={fade(0)} initial="hidden" animate="visible">
                 <div className="ig-logo">
@@ -642,29 +649,15 @@ const LoginPage: React.FC = () => {
 
               {/* Greeting + headline */}
               <motion.div variants={fade(1)} initial="hidden" animate="visible">
-                <p className="ig-greeting">Welcome back</p>
+                <p className="ig-greeting">{t("auth.welcomeBack")}</p>
                 <h1 className="ig-headline">
-                  Sign in to your
+                  {t("auth.signInTo")}
                   <br />
-                  <em>world.</em>
+                  <em>{t("auth.world")}</em>
                 </h1>
                 <p className="ig-subtext">
-                  Your feed, your stories, your people — all waiting.
+                  {t("auth.feedTagline")}
                 </p>
-              </motion.div>
-
-              {/* Social proof */}
-              <motion.div variants={fade(2)} initial="hidden" animate="visible">
-                <div className="ig-avatars">
-                  <div className="ig-avatar-stack">
-                    <div className="ig-avatar">A</div>
-                    <div className="ig-avatar">J</div>
-                    <div className="ig-avatar">M</div>
-                  </div>
-                  <p className="ig-social-text">
-                    <strong>2.4M people</strong> shared moments today
-                  </p>
-                </div>
               </motion.div>
 
               {/* Error */}
@@ -693,18 +686,18 @@ const LoginPage: React.FC = () => {
                 >
                   <div className="ig-fields">
                     <div className="ig-field">
-                      <label htmlFor="ig-email">Email</label>
+                      <label htmlFor="ig-email">{t("auth.email")}</label>
                       <input
                         id="ig-email"
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder={t("auth.emailPlaceholder")}
                         value={email}
                         autoComplete="email"
                         onChange={(e) => setEmail(e.target.value)}
                       />
                     </div>
                     <div className="ig-field">
-                      <label htmlFor="ig-password">Password</label>
+                      <label htmlFor="ig-password">{t("auth.password")}</label>
                       <input
                         id="ig-password"
                         type="password"
@@ -728,7 +721,7 @@ const LoginPage: React.FC = () => {
                       className="ig-forgot"
                       onClick={() => navigate("/reset-password")}
                     >
-                      Forgot password?
+                      {t("auth.forgotPassword")}
                     </button>
                     <button
                       type="submit"
@@ -743,7 +736,7 @@ const LoginPage: React.FC = () => {
                         />
                       ) : (
                         <>
-                          Sign in{" "}
+                          {t("auth.signIn")}{" "}
                           <span style={{ fontSize: 16, opacity: 0.75 }}>→</span>
                         </>
                       )}
@@ -756,7 +749,7 @@ const LoginPage: React.FC = () => {
               <motion.div variants={fade(5)} initial="hidden" animate="visible">
                 <div className="ig-divider">
                   <div className="ig-divider-line" />
-                  <span className="ig-divider-text">New to Ripple?</span>
+                  <span className="ig-divider-text">{t("auth.newToRipple")}</span>
                   <div className="ig-divider-line" />
                 </div>
               </motion.div>
@@ -764,10 +757,10 @@ const LoginPage: React.FC = () => {
               {/* Footer */}
               <motion.div variants={fade(6)} initial="hidden" animate="visible">
                 <div className="ig-footer">
-                  <a href="/register">Create your account</a>
+                  <a href="/register">{t("auth.createAccount")}</a>
                   <span style={{ margin: "0 10px", opacity: 0.25 }}>·</span>
                   <a href="/about" className="ig-about">
-                    About Ripple
+                    {t("auth.aboutRipple")}
                   </a>
                 </div>
               </motion.div>

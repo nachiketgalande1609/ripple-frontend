@@ -8,6 +8,8 @@ import {
 } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../static/logo-transparent.png";
+import { useTranslation } from "react-i18next";
+import AuthLanguageSelector from "../component/auth/AuthLanguageSelector";
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = `
@@ -457,6 +459,7 @@ const stepIndex: Record<Step, number> = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const ForgotPasswordPage: React.FC = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const [newPassword, setNewPassword] = useState("");
@@ -467,6 +470,14 @@ const ForgotPasswordPage: React.FC = () => {
   const [step, setStep] = useState<Step>("email");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
+
+  // ── Step label for greeting ────────────────────────────────────────────────
+  const greetingLabel: Record<Step, string> = {
+    email: t("auth.accountRecovery"),
+    otp: t("auth.verification"),
+    reset: t("auth.newPasswordStep"),
+    success: t("auth.allDoneStep"),
+  };
 
   useEffect(() => {
     const id = "ig-fp-styles";
@@ -489,10 +500,10 @@ const ForgotPasswordPage: React.FC = () => {
       if (response.success) {
         setStep("otp");
       } else {
-        setError(response.error || "Failed to send OTP!");
+        setError(response.error || t("auth.failedToSendOtp"));
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to send OTP!");
+      setError(err.response?.data?.error || t("auth.failedToSendOtp"));
     } finally {
       setLoading(false);
     }
@@ -527,7 +538,7 @@ const ForgotPasswordPage: React.FC = () => {
   const handleOTPVerify = async () => {
     const fullOTP = otp.join("");
     if (fullOTP.length < 6) {
-      setError("Please enter the full 6-digit code.");
+      setError(t("auth.pleaseEnterFullCode"));
       return;
     }
     setLoading(true);
@@ -537,10 +548,10 @@ const ForgotPasswordPage: React.FC = () => {
       if (response.success) {
         setStep("reset");
       } else {
-        setError(response.error || "Invalid code. Please try again.");
+        setError(response.error || t("auth.invalidCode"));
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || "Verification failed.");
+      setError(err.response?.data?.error || t("auth.verificationFailedError"));
     } finally {
       setLoading(false);
     }
@@ -549,15 +560,15 @@ const ForgotPasswordPage: React.FC = () => {
   const handlePasswordReset = async () => {
     setError(null);
     if (!newPassword || !confirmPassword) {
-      setError("Please fill in both fields.");
+      setError(t("auth.fillBothFields"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("auth.passwordsDontMatchError"));
       return;
     }
     if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(t("auth.passwordTooShort"));
       return;
     }
     setLoading(true);
@@ -570,10 +581,10 @@ const ForgotPasswordPage: React.FC = () => {
           2500,
         );
       } else {
-        setError(response.error || "Password reset failed.");
+        setError(response.error || t("auth.passwordResetFailed"));
       }
     } catch (err: any) {
-      setError(err.message || "Password reset failed.");
+      setError(err.message || t("auth.passwordResetFailed"));
     } finally {
       setLoading(false);
     }
@@ -618,14 +629,6 @@ const ForgotPasswordPage: React.FC = () => {
   });
 
   const currentIdx = stepIndex[step];
-
-  // ── Step label for greeting ────────────────────────────────────────────────
-  const greetingLabel: Record<Step, string> = {
-    email: "Account recovery",
-    otp: "Verification",
-    reset: "New password",
-    success: "All done",
-  };
 
   return (
     <div className="ig-fp-root">
@@ -692,11 +695,11 @@ const ForgotPasswordPage: React.FC = () => {
             <div className="ig-fp-visual-overlay" />
             <div className="ig-fp-visual-brand">
               <p className="ig-fp-visual-tagline">
-                Don't lose
+                {t("auth.dontLose")}
                 <br />
-                <em>your place.</em>
+                <em>{t("auth.yourPlace")}</em>
               </p>
-              <p className="ig-fp-visual-sub">We'll get you back in no time.</p>
+              <p className="ig-fp-visual-sub">{t("auth.backInNoTime")}</p>
             </div>
           </motion.div>
         )}
@@ -711,6 +714,11 @@ const ForgotPasswordPage: React.FC = () => {
             initial="hidden"
             animate="visible"
           >
+            {/* Language selector */}
+            <div style={{ position: "absolute", top: 16, right: 16 }}>
+              <AuthLanguageSelector />
+            </div>
+
             {/* Logo */}
             <motion.div variants={fade(0)} initial="hidden" animate="visible">
               <div className="ig-fp-logo">
@@ -768,22 +776,22 @@ const ForgotPasswordPage: React.FC = () => {
                     </svg>
                   </div>
                   <h1 className="ig-fp-headline">
-                    Forgot your
+                    {t("auth.forgotYourPassword")}
                     <br />
-                    <em>password?</em>
+                    <em>{t("auth.password")}</em>
                   </h1>
                   <p className="ig-fp-subtext">
-                    Enter your email and we'll send you a verification code.
+                    {t("auth.enterEmailForCode")}
                   </p>
 
                   <form onSubmit={handleEmailSend} noValidate>
                     <div className="ig-fp-fields">
                       <div className="ig-fp-field">
-                        <label htmlFor="fp-email">Email address</label>
+                        <label htmlFor="fp-email">{t("auth.emailAddress")}</label>
                         <input
                           id="fp-email"
                           type="email"
-                          placeholder="you@example.com"
+                          placeholder={t("auth.emailPlaceholder")}
                           value={email}
                           autoComplete="email"
                           onChange={(e) => setEmail(e.target.value)}
@@ -803,7 +811,7 @@ const ForgotPasswordPage: React.FC = () => {
                         />
                       ) : (
                         <>
-                          Send code{" "}
+                          {t("auth.sendCode")}{" "}
                           <span style={{ fontSize: 16, opacity: 0.75 }}>→</span>
                         </>
                       )}
@@ -829,12 +837,12 @@ const ForgotPasswordPage: React.FC = () => {
                     </svg>
                   </div>
                   <h1 className="ig-fp-headline">
-                    Check your
+                    {t("auth.checkYour")}
                     <br />
-                    <em>inbox.</em>
+                    <em>{t("auth.inbox")}</em>
                   </h1>
                   <p className="ig-fp-subtext">
-                    We sent a 6-digit code to
+                    {t("auth.sentCodeTo")}
                     <br />
                     <strong>{email}</strong>
                   </p>
@@ -870,7 +878,7 @@ const ForgotPasswordPage: React.FC = () => {
                       />
                     ) : (
                       <>
-                        Verify code{" "}
+                        {t("auth.verifyCode")}{" "}
                         <span style={{ fontSize: 16, opacity: 0.75 }}>→</span>
                       </>
                     )}
@@ -884,7 +892,7 @@ const ForgotPasswordPage: React.FC = () => {
                       setError(null);
                     }}
                   >
-                    ← Change email
+                    {t("auth.changeEmail")}
                   </button>
                 </motion.div>
               )}
@@ -905,17 +913,17 @@ const ForgotPasswordPage: React.FC = () => {
                     </svg>
                   </div>
                   <h1 className="ig-fp-headline">
-                    Set a new
+                    {t("auth.setANew")}
                     <br />
-                    <em>password.</em>
+                    <em>{t("auth.passwordDot")}</em>
                   </h1>
                   <p className="ig-fp-subtext">
-                    Choose something strong — at least 6 characters.
+                    {t("auth.chooseStrong")}
                   </p>
 
                   <div className="ig-fp-fields">
                     <div className="ig-fp-field">
-                      <label htmlFor="fp-newpw">New password</label>
+                      <label htmlFor="fp-newpw">{t("auth.newPassword")}</label>
                       <input
                         id="fp-newpw"
                         type="password"
@@ -926,7 +934,7 @@ const ForgotPasswordPage: React.FC = () => {
                       />
                     </div>
                     <div className="ig-fp-field">
-                      <label htmlFor="fp-confirmpw">Confirm password</label>
+                      <label htmlFor="fp-confirmpw">{t("auth.confirmPassword")}</label>
                       <input
                         id="fp-confirmpw"
                         type="password"
@@ -951,7 +959,7 @@ const ForgotPasswordPage: React.FC = () => {
                       />
                     ) : (
                       <>
-                        Reset password{" "}
+                        {t("auth.resetPassword")}{" "}
                         <span style={{ fontSize: 16, opacity: 0.75 }}>→</span>
                       </>
                     )}
@@ -975,12 +983,12 @@ const ForgotPasswordPage: React.FC = () => {
                       </svg>
                     </div>
                     <h1 className="ig-fp-headline" style={{ marginBottom: 10 }}>
-                      All <em>done!</em>
+                      {t("auth.allDone")}
                     </h1>
                     <p className="ig-fp-subtext" style={{ marginBottom: 0 }}>
-                      Your password has been reset.
+                      {t("auth.passwordHasBeenReset")}
                       <br />
-                      Redirecting you to sign in…
+                      {t("auth.redirectingToSignIn")}
                     </p>
                   </div>
                 </motion.div>
@@ -995,7 +1003,7 @@ const ForgotPasswordPage: React.FC = () => {
                 transition={{ delay: 0.5 }}
               >
                 <div className="ig-fp-footer">
-                  Remember it? <a href="/login">Back to sign in</a>
+                  {t("auth.rememberIt")} <a href="/login">{t("auth.backToSignIn")}</a>
                 </div>
               </motion.div>
             )}
