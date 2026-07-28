@@ -24,7 +24,7 @@ import {
     Poll as PollIcon,
     SlowMotionVideoRounded,
 } from "@mui/icons-material";
-import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton, Popover } from "@mui/material";
+import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton, Popover, Tooltip } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
 import LogoImage from "../../static/logo-transparent.png";
 import { faSignIn, faUserPlus } from "@fortawesome/free-solid-svg-icons";
@@ -385,16 +385,18 @@ function MobileBanner({ toast, onDismiss, onClick }: { toast: ToastItem; onDismi
             </Box>
 
             {/* Dismiss */}
-            <IconButton
-                size="small"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onDismiss(toast.id);
-                }}
-                sx={{ color: (t) => t.palette.text.disabled, p: 0.5, flexShrink: 0 }}
-            >
-                <CloseIcon sx={{ fontSize: "1rem" }} />
-            </IconButton>
+            <Tooltip title="Dismiss">
+                <IconButton
+                    size="small"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDismiss(toast.id);
+                    }}
+                    sx={{ color: (t) => t.palette.text.disabled, p: 0.5, flexShrink: 0 }}
+                >
+                    <CloseIcon sx={{ fontSize: "1rem" }} />
+                </IconButton>
+            </Tooltip>
 
             {/* Progress bar — keyed on version to restart animation on each new message */}
             <Box
@@ -531,16 +533,18 @@ function DesktopToast({
                 </Typography>
             </Box>
 
-            <IconButton
-                size="small"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onDismiss(toast.id);
-                }}
-                sx={{ color: (t) => t.palette.text.disabled, p: 0.25, flexShrink: 0 }}
-            >
-                <CloseIcon sx={{ fontSize: "0.85rem" }} />
-            </IconButton>
+            <Tooltip title="Dismiss">
+                <IconButton
+                    size="small"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDismiss(toast.id);
+                    }}
+                    sx={{ color: (t) => t.palette.text.disabled, p: 0.25, flexShrink: 0 }}
+                >
+                    <CloseIcon sx={{ fontSize: "0.85rem" }} />
+                </IconButton>
+            </Tooltip>
 
             <Box
                 key={`${toast.id}-${toast.version}`}

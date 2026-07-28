@@ -262,6 +262,7 @@ function CommentItem({
 
             {/* Like */}
             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.1 }}>
+              <Tooltip title={liked ? "Unlike" : "Like"}>
               <IconButton
                 size="small"
                 onClick={handleLike}
@@ -275,6 +276,7 @@ function CommentItem({
               >
                 {liked ? <Favorite sx={{ fontSize: 13 }} /> : <FavoriteBorder sx={{ fontSize: 13 }} />}
               </IconButton>
+              </Tooltip>
               {likeCount > 0 && (
                 <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.6rem", color: liked ? theme.palette.error.light : (t) => t.palette.text.disabled, fontWeight: liked ? 600 : 400, lineHeight: 1 }}>
                   {likeCount}
@@ -712,16 +714,20 @@ const PostDetailPage = () => {
 
           {/* Carousel arrows */}
           {allMedia.length > 1 && carouselIndex > 0 && (
+            <Tooltip title="Previous">
             <IconButton onClick={() => { setIsImageLoaded(false); setCarouselIndex((i) => i - 1); }}
               sx={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 32, height: 32, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
               <ArrowBack sx={{ fontSize: 15 }} />
             </IconButton>
+            </Tooltip>
           )}
           {allMedia.length > 1 && carouselIndex < allMedia.length - 1 && (
+            <Tooltip title="Next">
             <IconButton onClick={() => { setIsImageLoaded(false); setCarouselIndex((i) => i + 1); }}
               sx={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 32, height: 32, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
               <ArrowBack sx={{ fontSize: 15, transform: "rotate(180deg)" }} />
             </IconButton>
+            </Tooltip>
           )}
 
           {/* Dot indicators */}
@@ -861,9 +867,11 @@ const PostDetailPage = () => {
           </Box>
         </Box>
         {isOwner && (
+          <Tooltip title="More options">
           <IconButton onClick={() => setOptionsOpen(true)} size="small" sx={{ color: (t) => t.palette.text.disabled, ml: 1, flexShrink: 0, "&:hover": { bgcolor: (t) => t.palette.action.hover, color: (t) => t.palette.text.secondary }, borderRadius: "8px", p: 0.6 }}>
             <MoreHoriz sx={{ fontSize: 18 }} />
           </IconButton>
+          </Tooltip>
         )}
       </Box>
 
@@ -998,6 +1006,7 @@ const PostDetailPage = () => {
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Tooltip title={isLiked ? "Unlike" : "Like"} placement="top">
               <IconButton
                 onClick={handleLike}
                 disableRipple
@@ -1011,6 +1020,7 @@ const PostDetailPage = () => {
               >
                 {isLiked ? <Favorite sx={{ fontSize: 21 }} /> : <FavoriteBorder sx={{ fontSize: 21 }} />}
               </IconButton>
+              </Tooltip>
               {likeCount > 0 && (
                 <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.secondary, fontWeight: 500 }}>
                   {likeCount}
@@ -1018,6 +1028,7 @@ const PostDetailPage = () => {
               )}
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Tooltip title="Comment" placement="top">
               <IconButton
                 disableRipple
                 onClick={() => commentInputRef.current?.focus()}
@@ -1029,6 +1040,7 @@ const PostDetailPage = () => {
               >
                 <ChatBubbleOutline sx={{ fontSize: 20 }} />
               </IconButton>
+              </Tooltip>
               {commentCount > 0 && (
                 <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: (t) => t.palette.text.secondary, fontWeight: 500 }}>
                   {commentCount}
@@ -1036,6 +1048,7 @@ const PostDetailPage = () => {
               )}
             </Box>
           </Box>
+          <Tooltip title={isSaved ? "Unsave" : "Save"} placement="top">
           <IconButton
             disableRipple
             onClick={handleSave}
@@ -1058,6 +1071,7 @@ const PostDetailPage = () => {
               <BookmarkBorderOutlined sx={{ fontSize: 21 }} />
             )}
           </IconButton>
+          </Tooltip>
         </Box>
 
         {/* Replying to indicator */}
@@ -1072,9 +1086,11 @@ const PostDetailPage = () => {
               Replying to{" "}
               <Box component="span" sx={{ color: "#64748B", fontWeight: 600 }}>@{replyingTo.username}</Box>
             </Typography>
+            <Tooltip title="Cancel reply" placement="top">
             <IconButton size="small" onClick={() => setReplyingTo(null)} sx={{ p: 0.3, color: (t) => t.palette.text.disabled, "&:hover": { color: (t) => t.palette.text.secondary } }}>
               <CloseRoundedIcon sx={{ fontSize: 12 }} />
             </IconButton>
+            </Tooltip>
           </Box>
         )}
 
@@ -1133,6 +1149,7 @@ const PostDetailPage = () => {
               }}
             />
           </Box>
+          <Tooltip title="Send" placement="top">
           <IconButton
             onClick={handleComment}
             disabled={!commentText.trim() || submitting}
@@ -1158,6 +1175,7 @@ const PostDetailPage = () => {
           >
             <SendRounded sx={{ fontSize: 17 }} />
           </IconButton>
+          </Tooltip>
         </Box>
       </Box>
     </Box>
@@ -1191,6 +1209,7 @@ const PostDetailPage = () => {
           {/* Centered content wrapper */}
           <Box sx={{ maxWidth: 1100, width: "100%", mx: "auto", position: "relative", display: "flex", flexDirection: "column", height: "100%" }}>
             {/* Floating back button */}
+            <Tooltip title="Back">
             <IconButton
               onClick={() => navigate(-1)}
               size="small"
@@ -1213,6 +1232,7 @@ const PostDetailPage = () => {
             >
               <ChevronLeft sx={{ fontSize: 22 }} />
             </IconButton>
+            </Tooltip>
 
             {/* Main card */}
             <Box
@@ -1347,6 +1367,7 @@ const PostDetailPage = () => {
                     "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)",
                 }}
               />
+              <Tooltip title="Close">
               <IconButton
                 onClick={() => setIsEditing(false)}
                 size="small"
@@ -1365,6 +1386,7 @@ const PostDetailPage = () => {
               >
                 <Close sx={{ fontSize: 14 }} />
               </IconButton>
+              </Tooltip>
             </Box>
           )}
 

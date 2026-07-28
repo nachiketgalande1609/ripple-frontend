@@ -127,19 +127,21 @@ export default function PollCard({ poll, onDeleted, borderRadius = "14px" }: Pol
                     </Box>
                 </Box>
                 {isOwner && (
-                    <IconButton
-                        onClick={() => setConfirmDelete(true)}
-                        size="small"
-                        sx={{
-                            width: 30,
-                            height: 30,
-                            borderRadius: "8px",
-                            color: "text.disabled",
-                            "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
-                        }}
-                    >
-                        <MoreHoriz sx={{ fontSize: 18 }} />
-                    </IconButton>
+                    <Tooltip title="More options">
+                        <IconButton
+                            onClick={() => setConfirmDelete(true)}
+                            size="small"
+                            sx={{
+                                width: 30,
+                                height: 30,
+                                borderRadius: "8px",
+                                color: "text.disabled",
+                                "&:hover": { backgroundColor: "action.hover", color: "text.primary" },
+                            }}
+                        >
+                            <MoreHoriz sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Tooltip>
                 )}
             </Box>
 

@@ -9,6 +9,7 @@ import {
     Fade,
     Skeleton as MuiSkeleton,
     CircularProgress,
+    Tooltip,
     useTheme,
     useMediaQuery,
 } from "@mui/material";
@@ -651,23 +652,25 @@ const ProfilePage = () => {
                     <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ pb: 0.5 }}>
                         {!isOwnProfile && currentUser?.id && (
                             <>
-                                <IconButton
-                                    size="small"
-                                    onClick={() => navigate(`/messages/${userId}`, { state: profileData })}
-                                    sx={{
-                                        border: "none",
-                                        borderRadius: "14px",
-                                        width: 34,
-                                        height: 34,
-                                        backgroundColor: "var(--nav-bg)",
-                                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-                                        color: (t) => t.palette.text.secondary,
-                                        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
-                                        "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: (t) => t.palette.text.primary, bgcolor: "var(--nav-bg)" },
-                                    }}
-                                >
-                                    <Message sx={{ fontSize: 17 }} />
-                                </IconButton>
+                                <Tooltip title="Message" placement="top">
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => navigate(`/messages/${userId}`, { state: profileData })}
+                                        sx={{
+                                            border: "none",
+                                            borderRadius: "14px",
+                                            width: 34,
+                                            height: 34,
+                                            backgroundColor: "var(--nav-bg)",
+                                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                            color: (t) => t.palette.text.secondary,
+                                            transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                            "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: (t) => t.palette.text.primary, bgcolor: "var(--nav-bg)" },
+                                        }}
+                                    >
+                                        <Message sx={{ fontSize: 17 }} />
+                                    </IconButton>
+                                </Tooltip>
                                 <FollowButton
                                     isFollowing={isFollowing}
                                     profileData={profileData}
@@ -676,24 +679,26 @@ const ProfilePage = () => {
                                     handleCancelRequest={handleCancelRequest}
                                     handleUnfollow={handleUnfollow}
                                 />
-                                <IconButton
-                                    size="small"
-                                    onClick={() => setOpenDialog(true)}
-                                    sx={{
-                                        display: { xs: "none", sm: "flex" },
-                                        border: "none",
-                                        borderRadius: "14px",
-                                        width: 34,
-                                        height: 34,
-                                        backgroundColor: "var(--nav-bg)",
-                                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-                                        color: (t) => t.palette.text.secondary,
-                                        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
-                                        "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: (t) => t.palette.text.primary, bgcolor: "var(--nav-bg)" },
-                                    }}
-                                >
-                                    <MoreHoriz sx={{ fontSize: 18 }} />
-                                </IconButton>
+                                <Tooltip title="More options" placement="top">
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => setOpenDialog(true)}
+                                        sx={{
+                                            display: { xs: "none", sm: "flex" },
+                                            border: "none",
+                                            borderRadius: "14px",
+                                            width: 34,
+                                            height: 34,
+                                            backgroundColor: "var(--nav-bg)",
+                                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                            color: (t) => t.palette.text.secondary,
+                                            transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                            "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: (t) => t.palette.text.primary, bgcolor: "var(--nav-bg)" },
+                                        }}
+                                    >
+                                        <MoreHoriz sx={{ fontSize: 18 }} />
+                                    </IconButton>
+                                </Tooltip>
                             </>
                         )}
                         {isOwnProfile && (
@@ -724,24 +729,26 @@ const ProfilePage = () => {
                                 >
                                     Edit profile
                                 </Button>
-                                <IconButton
-                                    size="small"
-                                    onClick={() => setOpenDialog(true)}
-                                    sx={{
-                                        display: { xs: "none", sm: "flex" },
-                                        border: "none",
-                                        borderRadius: "14px",
-                                        width: 34,
-                                        height: 34,
-                                        backgroundColor: "var(--nav-bg)",
-                                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-                                        color: (t) => t.palette.text.secondary,
-                                        transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
-                                        "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: (t) => t.palette.text.primary, bgcolor: "var(--nav-bg)" },
-                                    }}
-                                >
-                                    <MoreHoriz sx={{ fontSize: 18 }} />
-                                </IconButton>
+                                <Tooltip title="More options" placement="top">
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => setOpenDialog(true)}
+                                        sx={{
+                                            display: { xs: "none", sm: "flex" },
+                                            border: "none",
+                                            borderRadius: "14px",
+                                            width: 34,
+                                            height: 34,
+                                            backgroundColor: "var(--nav-bg)",
+                                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                            color: (t) => t.palette.text.secondary,
+                                            transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                            "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)", color: (t) => t.palette.text.primary, bgcolor: "var(--nav-bg)" },
+                                        }}
+                                    >
+                                        <MoreHoriz sx={{ fontSize: 18 }} />
+                                    </IconButton>
+                                </Tooltip>
                             </>
                         )}
                     </Stack>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
     Box, Button, Modal, TextField, Typography, Backdrop, Fade,
-    IconButton, CircularProgress, useTheme, useMediaQuery,
+    IconButton, CircularProgress, Tooltip, useTheme, useMediaQuery,
 } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { uploadStory } from "../../services/api";
@@ -125,13 +125,15 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                         }}>
                             Create story
                         </Typography>
-                        <IconButton onClick={handleClose} size="small" sx={{
-                            width: 32, height: 32, borderRadius: "10px",
-                            color: (t) => t.palette.text.secondary,
-                            "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
-                        }}>
-                            <Close sx={{ fontSize: 16 }} />
-                        </IconButton>
+                        <Tooltip title="Close">
+                            <IconButton onClick={handleClose} size="small" sx={{
+                                width: 32, height: 32, borderRadius: "10px",
+                                color: (t) => t.palette.text.secondary,
+                                "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
+                            }}>
+                                <Close sx={{ fontSize: 16 }} />
+                            </IconButton>
+                        </Tooltip>
                     </Box>
 
                     {/* ── Body ── */}
@@ -211,18 +213,22 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                             display: "flex", alignItems: "center", justifyContent: "center", gap: 1,
                                             opacity: isPreviewHovered ? 1 : 0, transition: "opacity 0.2s",
                                         }}>
-                                            <IconButton
-                                                onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
-                                                sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#111", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}
-                                            >
-                                                <EditIcon sx={{ fontSize: 16 }} />
-                                            </IconButton>
-                                            <IconButton
-                                                onClick={(e) => { e.stopPropagation(); setMedia(null); }}
-                                                sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#dc2626", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}
-                                            >
-                                                <DeleteIcon sx={{ fontSize: 16 }} />
-                                            </IconButton>
+                                            <Tooltip title="Change image">
+                                                <IconButton
+                                                    onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
+                                                    sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#111", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}
+                                                >
+                                                    <EditIcon sx={{ fontSize: 16 }} />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Remove">
+                                                <IconButton
+                                                    onClick={(e) => { e.stopPropagation(); setMedia(null); }}
+                                                    sx={{ backgroundColor: "rgba(255,255,255,0.92)", color: "#dc2626", width: 38, height: 38, "&:hover": { backgroundColor: "#fff" } }}
+                                                >
+                                                    <DeleteIcon sx={{ fontSize: 16 }} />
+                                                </IconButton>
+                                            </Tooltip>
                                         </Box>
                                     )}
                                 </>
@@ -313,18 +319,20 @@ const UploadStoryDialog: React.FC<UploadStoryDialogProps> = ({ open, onClose, fe
                                         "& textarea::placeholder": { color: (t: any) => t.palette.text.disabled, opacity: 1 },
                                     }}
                                 />
-                                <IconButton
-                                    onClick={(e) => setEmojiAnchorEl(e.currentTarget)}
-                                    size="small"
-                                    sx={{
-                                        position: "absolute", top: 0, right: 0,
-                                        width: 26, height: 26, borderRadius: "7px",
-                                        color: (t) => t.palette.text.disabled,
-                                        "&:hover": { color: ACCENT, backgroundColor: (t) => t.palette.action.hover },
-                                    }}
-                                >
-                                    <EmojiIcon sx={{ fontSize: 15 }} />
-                                </IconButton>
+                                <Tooltip title="Add emoji">
+                                    <IconButton
+                                        onClick={(e) => setEmojiAnchorEl(e.currentTarget)}
+                                        size="small"
+                                        sx={{
+                                            position: "absolute", top: 0, right: 0,
+                                            width: 26, height: 26, borderRadius: "7px",
+                                            color: (t) => t.palette.text.disabled,
+                                            "&:hover": { color: ACCENT, backgroundColor: (t) => t.palette.action.hover },
+                                        }}
+                                    >
+                                        <EmojiIcon sx={{ fontSize: 15 }} />
+                                    </IconButton>
+                                </Tooltip>
                             </Box>
                             <Typography sx={{
                                 fontFamily: "'Inter', sans-serif", fontSize: "0.67rem",

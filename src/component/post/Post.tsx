@@ -419,19 +419,21 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         </Box>
                     </Box>
                     {isOwner && (
-                        <IconButton
-                            onClick={() => setOptionsDialogOpen(true)}
-                            size="small"
-                            sx={{
-                                width: 30,
-                                height: 30,
-                                borderRadius: "8px",
-                                color: (t) => t.palette.text.disabled,
-                                "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
-                            }}
-                        >
-                            <MoreHoriz sx={{ fontSize: 18 }} />
-                        </IconButton>
+                        <Tooltip title="More options" placement="top">
+                            <IconButton
+                                onClick={() => setOptionsDialogOpen(true)}
+                                size="small"
+                                sx={{
+                                    width: 30,
+                                    height: 30,
+                                    borderRadius: "8px",
+                                    color: (t) => t.palette.text.disabled,
+                                    "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: (t) => t.palette.text.primary },
+                                }}
+                            >
+                                <MoreHoriz sx={{ fontSize: 18 }} />
+                            </IconButton>
+                        </Tooltip>
                     )}
                 </Box>
 
@@ -484,16 +486,20 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
 
                                 {/* Carousel arrows */}
                                 {allMedia.length > 1 && carouselIndex > 0 && (
-                                    <IconButton onClick={(e) => { e.stopPropagation(); setIsImageLoading(true); setCarouselIndex((i) => i - 1); }}
-                                        sx={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
-                                        <ArrowBackIos sx={{ fontSize: 12, ml: 0.5 }} />
-                                    </IconButton>
+                                    <Tooltip title="Previous">
+                                        <IconButton onClick={(e) => { e.stopPropagation(); setIsImageLoading(true); setCarouselIndex((i) => i - 1); }}
+                                            sx={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
+                                            <ArrowBackIos sx={{ fontSize: 12, ml: 0.5 }} />
+                                        </IconButton>
+                                    </Tooltip>
                                 )}
                                 {allMedia.length > 1 && carouselIndex < allMedia.length - 1 && (
-                                    <IconButton onClick={(e) => { e.stopPropagation(); setIsImageLoading(true); setCarouselIndex((i) => i + 1); }}
-                                        sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
-                                        <ArrowForwardIos sx={{ fontSize: 12 }} />
-                                    </IconButton>
+                                    <Tooltip title="Next">
+                                        <IconButton onClick={(e) => { e.stopPropagation(); setIsImageLoading(true); setCarouselIndex((i) => i + 1); }}
+                                            sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(0,0,0,0.45)", color: "#fff", width: 28, height: 28, zIndex: 4, "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}>
+                                            <ArrowForwardIos sx={{ fontSize: 12 }} />
+                                        </IconButton>
+                                    </Tooltip>
                                 )}
 
                                 {/* Dot indicators */}
@@ -533,22 +539,24 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 1.25, pt: 0.625, pb: 0.25 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
                         {/* Like */}
-                        <IconButton
-                            onClick={handleLike}
-                            disableRipple
-                            className={likeAnimating ? "like-pop" : ""}
-                            sx={{
-                                p: 0.75,
-                                color: isLiked ? (t) => t.palette.error.main : (t) => t.palette.text.disabled,
-                                transition: "color 0.15s",
-                                "&:hover": {
-                                    backgroundColor: "transparent",
-                                    color: isLiked ? (t) => t.palette.error.main : (t) => t.palette.text.primary,
-                                },
-                            }}
-                        >
-                            {isLiked ? <Favorite sx={{ fontSize: 21 }} /> : <FavoriteBorder sx={{ fontSize: 21 }} />}
-                        </IconButton>
+                        <Tooltip title={isLiked ? "Unlike" : "Like"} placement="top">
+                            <IconButton
+                                onClick={handleLike}
+                                disableRipple
+                                className={likeAnimating ? "like-pop" : ""}
+                                sx={{
+                                    p: 0.75,
+                                    color: isLiked ? (t) => t.palette.error.main : (t) => t.palette.text.disabled,
+                                    transition: "color 0.15s",
+                                    "&:hover": {
+                                        backgroundColor: "transparent",
+                                        color: isLiked ? (t) => t.palette.error.main : (t) => t.palette.text.primary,
+                                    },
+                                }}
+                            >
+                                {isLiked ? <Favorite sx={{ fontSize: 21 }} /> : <FavoriteBorder sx={{ fontSize: 21 }} />}
+                            </IconButton>
+                        </Tooltip>
                         <Typography
                             sx={{
                                 fontFamily: "'Inter', sans-serif",
@@ -562,20 +570,22 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         </Typography>
 
                         {/* Comment */}
-                        <IconButton
-                            disableRipple
-                            onClick={() => {
-                                commentInputRef.current?.focus();
-                                setDrawerOpen(true);
-                            }}
-                            sx={{
-                                p: 0.75,
-                                color: (t) => t.palette.text.disabled,
-                                "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
-                            }}
-                        >
-                            <ChatBubbleOutline sx={{ fontSize: 20 }} />
-                        </IconButton>
+                        <Tooltip title="Comment" placement="top">
+                            <IconButton
+                                disableRipple
+                                onClick={() => {
+                                    commentInputRef.current?.focus();
+                                    setDrawerOpen(true);
+                                }}
+                                sx={{
+                                    p: 0.75,
+                                    color: (t) => t.palette.text.disabled,
+                                    "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
+                                }}
+                            >
+                                <ChatBubbleOutline sx={{ fontSize: 20 }} />
+                            </IconButton>
+                        </Tooltip>
                         <Typography
                             sx={{
                                 fontFamily: "'Inter', sans-serif",
@@ -589,18 +599,20 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         </Typography>
 
                         {/* Repost */}
-                        <IconButton
-                            disableRipple
-                            onClick={handleRepost}
-                            sx={{
-                                p: 0.75,
-                                color: isReposted ? "#22c55e" : (t) => t.palette.text.disabled,
-                                transition: "color 0.15s",
-                                "&:hover": { backgroundColor: "transparent", color: isReposted ? "#22c55e" : (t) => t.palette.text.primary },
-                            }}
-                        >
-                            <RepeatRounded className={repostAnimating ? "repost-spin" : ""} sx={{ fontSize: 21 }} />
-                        </IconButton>
+                        <Tooltip title={isReposted ? "Undo repost" : "Repost"} placement="top">
+                            <IconButton
+                                disableRipple
+                                onClick={handleRepost}
+                                sx={{
+                                    p: 0.75,
+                                    color: isReposted ? "#22c55e" : (t) => t.palette.text.disabled,
+                                    transition: "color 0.15s",
+                                    "&:hover": { backgroundColor: "transparent", color: isReposted ? "#22c55e" : (t) => t.palette.text.primary },
+                                }}
+                            >
+                                <RepeatRounded className={repostAnimating ? "repost-spin" : ""} sx={{ fontSize: 21 }} />
+                            </IconButton>
+                        </Tooltip>
                         <Typography
                             sx={{
                                 fontFamily: "'Inter', sans-serif",
@@ -614,34 +626,38 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         </Typography>
 
                         {/* Share */}
-                        <IconButton
-                            disableRipple
-                            onClick={handlePaperPlaneClick}
-                            sx={{
-                                p: 0.75,
-                                color: (t) => t.palette.text.disabled,
-                                "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
-                            }}
-                        >
-                            <SendRounded sx={{ fontSize: 20 }} />
-                        </IconButton>
+                        <Tooltip title="Share" placement="top">
+                            <IconButton
+                                disableRipple
+                                onClick={handlePaperPlaneClick}
+                                sx={{
+                                    p: 0.75,
+                                    color: (t) => t.palette.text.disabled,
+                                    "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
+                                }}
+                            >
+                                <SendRounded sx={{ fontSize: 20 }} />
+                            </IconButton>
+                        </Tooltip>
                     </Box>
 
                     {/* Save */}
-                    <IconButton
-                        disableRipple
-                        onClick={handleSavePost}
-                        sx={{
-                            p: 0.75,
-                            color: isSaved ? "#f59e0b" : (t) => t.palette.text.disabled,
-                            transition: "color 0.15s",
-                            "&:hover": { backgroundColor: "transparent", color: isSaved ? "#f59e0b" : (t) => t.palette.text.primary },
-                        }}
-                    >
-                        {isSaved
-                            ? <Bookmark className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 21 }} />
-                            : <BookmarkBorderOutlined className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 21 }} />}
-                    </IconButton>
+                    <Tooltip title={isSaved ? "Unsave" : "Save"} placement="top">
+                        <IconButton
+                            disableRipple
+                            onClick={handleSavePost}
+                            sx={{
+                                p: 0.75,
+                                color: isSaved ? "#f59e0b" : (t) => t.palette.text.disabled,
+                                transition: "color 0.15s",
+                                "&:hover": { backgroundColor: "transparent", color: isSaved ? "#f59e0b" : (t) => t.palette.text.primary },
+                            }}
+                        >
+                            {isSaved
+                                ? <Bookmark className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 21 }} />
+                                : <BookmarkBorderOutlined className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 21 }} />}
+                        </IconButton>
+                    </Tooltip>
                 </Box>
 
                 {/* ── Caption ── */}

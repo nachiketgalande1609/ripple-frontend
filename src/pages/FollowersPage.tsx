@@ -15,6 +15,7 @@ import {
     Button,
     Dialog,
     DialogContent,
+    Tooltip,
 } from "@mui/material";
 import { ArrowBack, Search, PersonOff, PersonRemove } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
@@ -409,24 +410,26 @@ const FollowersPage = () => {
                     borderColor: "divider",
                 }}
             >
-                <IconButton
-                    onClick={() => navigate(-1)}
-                    size="small"
-                    sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: "12px",
-                        bgcolor: "var(--nav-bg)",
-                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-                        color: "text.secondary",
-                        "&:hover": {
-                            boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
-                            color: "text.primary",
-                        },
-                    }}
-                >
-                    <ArrowBack sx={{ fontSize: 17 }} />
-                </IconButton>
+                <Tooltip title="Back" placement="bottom">
+                    <IconButton
+                        onClick={() => navigate(-1)}
+                        size="small"
+                        sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: "12px",
+                            bgcolor: "var(--nav-bg)",
+                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                            color: "text.secondary",
+                            "&:hover": {
+                                boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                                color: "text.primary",
+                            },
+                        }}
+                    >
+                        <ArrowBack sx={{ fontSize: 17 }} />
+                    </IconButton>
+                </Tooltip>
                 <Box>
                     <Typography
                         sx={{

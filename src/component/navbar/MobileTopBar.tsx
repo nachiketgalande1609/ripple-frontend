@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Badge, Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
+import { Badge, Box, IconButton, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import { FavoriteBorder, Favorite, MenuRounded, AddRounded } from "@mui/icons-material";
 import { useGlobalStore } from "../../store/store";
 
@@ -54,56 +54,60 @@ export default function MobileTopBar({
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
         {/* Create */}
         {!!currentUser?.id && (
+          <Tooltip title="Create" placement="bottom">
+            <IconButton
+              onClick={() => setMobileCreateOpen(true)}
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: "10px",
+                color: (t) => t.palette.text.secondary,
+                transition: "background 0.15s, color 0.15s",
+                "&:active": { transform: "scale(0.92)" },
+              }}
+            >
+              <AddRounded sx={{ fontSize: "1.8rem" }} />
+            </IconButton>
+          </Tooltip>
+        )}
+
+        {/* Notifications */}
+        <Tooltip title="Notifications" placement="bottom">
           <IconButton
-            onClick={() => setMobileCreateOpen(true)}
+            onClick={() => navigate("/notifications")}
             sx={{
               width: 36,
               height: 36,
               borderRadius: "10px",
-              color: (t) => t.palette.text.secondary,
+              backgroundColor: isNotifActive
+                ? (t) => t.palette.action.selected
+                : "transparent",
+              color: isNotifActive
+                ? (t) => t.palette.text.primary
+                : (t) => t.palette.text.secondary,
               transition: "background 0.15s, color 0.15s",
               "&:active": { transform: "scale(0.92)" },
             }}
           >
-            <AddRounded sx={{ fontSize: "1.8rem" }} />
+            <Badge
+              badgeContent={unreadNotificationsCount}
+              color="error"
+              sx={{
+                "& .MuiBadge-badge": {
+                  fontSize: "0.75rem",
+                  minWidth: 15,
+                  height: 15,
+                },
+              }}
+            >
+              {isNotifActive ? (
+                <Favorite sx={{ fontSize: "1.8rem" }} />
+              ) : (
+                <FavoriteBorder sx={{ fontSize: "1.8rem" }} />
+              )}
+            </Badge>
           </IconButton>
-        )}
-
-        {/* Notifications */}
-        <IconButton
-          onClick={() => navigate("/notifications")}
-          sx={{
-            width: 36,
-            height: 36,
-            borderRadius: "10px",
-            backgroundColor: isNotifActive
-              ? (t) => t.palette.action.selected
-              : "transparent",
-            color: isNotifActive
-              ? (t) => t.palette.text.primary
-              : (t) => t.palette.text.secondary,
-            transition: "background 0.15s, color 0.15s",
-            "&:active": { transform: "scale(0.92)" },
-          }}
-        >
-          <Badge
-            badgeContent={unreadNotificationsCount}
-            color="error"
-            sx={{
-              "& .MuiBadge-badge": {
-                fontSize: "0.75rem",
-                minWidth: 15,
-                height: 15,
-              },
-            }}
-          >
-            {isNotifActive ? (
-              <Favorite sx={{ fontSize: "1.8rem" }} />
-            ) : (
-              <FavoriteBorder sx={{ fontSize: "1.8rem" }} />
-            )}
-          </Badge>
-        </IconButton>
+        </Tooltip>
 
         {/* Hamburger — profile pages only */}
         {isProfilePage && (

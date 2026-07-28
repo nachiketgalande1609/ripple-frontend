@@ -8,6 +8,7 @@ import {
     Typography,
     Drawer,
     Stack,
+    Tooltip,
     useTheme,
     useMediaQuery,
 } from "@mui/material";
@@ -452,37 +453,43 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
 
                         {/* Pause / Mute / Close */}
                         <Stack direction="row" spacing={0.5} alignItems="center">
-                            <IconButton
-                                size="small"
-                                onClick={(e) => { e.stopPropagation(); handlePauseToggle(); }}
-                                sx={{ color: "rgba(255,255,255,0.85)", p: "6px" }}
-                            >
-                                {paused
-                                    ? <PlayArrow sx={{ fontSize: "1.15rem" }} />
-                                    : <Pause sx={{ fontSize: "1.15rem" }} />
-                                }
-                            </IconButton>
-
-                            {currentStory.media_type === "video" && (
+                            <Tooltip title={paused ? "Play" : "Pause"}>
                                 <IconButton
                                     size="small"
-                                    onClick={(e) => { e.stopPropagation(); handleVideoMute(); }}
+                                    onClick={(e) => { e.stopPropagation(); handlePauseToggle(); }}
                                     sx={{ color: "rgba(255,255,255,0.85)", p: "6px" }}
                                 >
-                                    {isMuted
-                                        ? <VolumeOff sx={{ fontSize: "1.15rem" }} />
-                                        : <VolumeUp sx={{ fontSize: "1.15rem" }} />
+                                    {paused
+                                        ? <PlayArrow sx={{ fontSize: "1.15rem" }} />
+                                        : <Pause sx={{ fontSize: "1.15rem" }} />
                                     }
                                 </IconButton>
+                            </Tooltip>
+
+                            {currentStory.media_type === "video" && (
+                                <Tooltip title={isMuted ? "Unmute" : "Mute"}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={(e) => { e.stopPropagation(); handleVideoMute(); }}
+                                        sx={{ color: "rgba(255,255,255,0.85)", p: "6px" }}
+                                    >
+                                        {isMuted
+                                            ? <VolumeOff sx={{ fontSize: "1.15rem" }} />
+                                            : <VolumeUp sx={{ fontSize: "1.15rem" }} />
+                                        }
+                                    </IconButton>
+                                </Tooltip>
                             )}
 
-                            <IconButton
-                                size="small"
-                                onClick={handleClose}
-                                sx={{ color: "rgba(255,255,255,0.85)", p: "6px" }}
-                            >
-                                <Close sx={{ fontSize: "1.15rem" }} />
-                            </IconButton>
+                            <Tooltip title="Close">
+                                <IconButton
+                                    size="small"
+                                    onClick={handleClose}
+                                    sx={{ color: "rgba(255,255,255,0.85)", p: "6px" }}
+                                >
+                                    <Close sx={{ fontSize: "1.15rem" }} />
+                                </IconButton>
+                            </Tooltip>
                         </Stack>
                     </Box>
 
@@ -651,50 +658,54 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
 
                         {/* Prev arrow */}
                         {currentIndex > 0 && showControls && (
-                            <IconButton
-                                sx={{
-                                    position: "absolute",
-                                    left: 10,
-                                    top: "50%",
-                                    transform: "translateY(-50%)",
-                                    color: "white",
-                                    background: "rgba(0,0,0,0.3)",
-                                    backdropFilter: "blur(6px)",
-                                    border: "1px solid rgba(255,255,255,0.12)",
-                                    width: 36,
-                                    height: 36,
-                                    zIndex: 10,
-                                    "&:hover": { background: "rgba(0,0,0,0.55)" },
-                                    transition: "all 0.15s",
-                                }}
-                                onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                            >
-                                <ArrowBackIos sx={{ fontSize: "0.95rem", ml: "4px" }} />
-                            </IconButton>
+                            <Tooltip title="Previous">
+                                <IconButton
+                                    sx={{
+                                        position: "absolute",
+                                        left: 10,
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        color: "white",
+                                        background: "rgba(0,0,0,0.3)",
+                                        backdropFilter: "blur(6px)",
+                                        border: "1px solid rgba(255,255,255,0.12)",
+                                        width: 36,
+                                        height: 36,
+                                        zIndex: 10,
+                                        "&:hover": { background: "rgba(0,0,0,0.55)" },
+                                        transition: "all 0.15s",
+                                    }}
+                                    onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                                >
+                                    <ArrowBackIos sx={{ fontSize: "0.95rem", ml: "4px" }} />
+                                </IconButton>
+                            </Tooltip>
                         )}
 
                         {/* Next arrow */}
                         {currentIndex < selectedUserStories.length - 1 && showControls && (
-                            <IconButton
-                                sx={{
-                                    position: "absolute",
-                                    right: 10,
-                                    top: "50%",
-                                    transform: "translateY(-50%)",
-                                    color: "white",
-                                    background: "rgba(0,0,0,0.3)",
-                                    backdropFilter: "blur(6px)",
-                                    border: "1px solid rgba(255,255,255,0.12)",
-                                    width: 36,
-                                    height: 36,
-                                    zIndex: 10,
-                                    "&:hover": { background: "rgba(0,0,0,0.55)" },
-                                    transition: "all 0.15s",
-                                }}
-                                onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                            >
-                                <ArrowForwardIos sx={{ fontSize: "0.95rem" }} />
-                            </IconButton>
+                            <Tooltip title="Next">
+                                <IconButton
+                                    sx={{
+                                        position: "absolute",
+                                        right: 10,
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        color: "white",
+                                        background: "rgba(0,0,0,0.3)",
+                                        backdropFilter: "blur(6px)",
+                                        border: "1px solid rgba(255,255,255,0.12)",
+                                        width: 36,
+                                        height: 36,
+                                        zIndex: 10,
+                                        "&:hover": { background: "rgba(0,0,0,0.55)" },
+                                        transition: "all 0.15s",
+                                    }}
+                                    onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                                >
+                                    <ArrowForwardIos sx={{ fontSize: "0.95rem" }} />
+                                </IconButton>
+                            </Tooltip>
                         )}
                     </Box>
 
@@ -787,9 +798,11 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                 {viewerCount} {viewerCount === 1 ? "View" : "Views"}
                             </Typography>
                         </Stack>
-                        <IconButton size="small" onClick={handleDrawerToggle} sx={{ color: "rgba(255,255,255,0.5)", p: "4px" }}>
-                            <Close sx={{ fontSize: "1rem" }} />
-                        </IconButton>
+                        <Tooltip title="Close">
+                            <IconButton size="small" onClick={handleDrawerToggle} sx={{ color: "rgba(255,255,255,0.5)", p: "4px" }}>
+                                <Close sx={{ fontSize: "1rem" }} />
+                            </IconButton>
+                        </Tooltip>
                     </Stack>
 
                     {/* Viewers list */}
