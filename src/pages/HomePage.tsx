@@ -382,8 +382,8 @@ const HomePage = () => {
                                     sx={{ animationDelay: `${index * 60}ms`, mb: "10px" }}
                                 >
                                     {item._type === "poll"
-                                        ? <PollCard poll={item} onDeleted={(id) => setPolls((prev) => prev.filter((p) => p.id !== id))} borderRadius="14px" />
-                                        : <Post post={item} fetchPosts={() => fetchPosts(true)} borderRadius="14px" />
+                                        ? <PollCard poll={item} onDeleted={(id) => setPolls((prev) => prev.filter((p) => p.id !== id))} borderRadius="20px" />
+                                        : <Post post={item} fetchPosts={() => fetchPosts(true)} borderRadius="20px" />
                                     }
                                 </Box>
                             ))}

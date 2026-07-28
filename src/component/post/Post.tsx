@@ -386,35 +386,39 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                     overflow: "hidden",
                     border: "1px solid",
                     borderColor: "divider",
+                    boxShadow: (th) => th.palette.mode === "dark"
+                        ? "0 2px 12px rgba(0,0,0,0.35)"
+                        : "0 2px 12px rgba(0,0,0,0.06)",
                 }}
             >
                 {/* ── Header ── */}
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 1.75, py: 1.25 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1.5 }}>
                     <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1.125, cursor: "pointer" }}
+                        sx={{ display: "flex", alignItems: "center", gap: 1.25, cursor: "pointer" }}
                         onClick={() => navigate(`/profile/${post.user_id}`)}
                     >
                         <Avatar
                             src={post.profile_picture || BlankProfileImage}
-                            sx={{ width: 34, height: 34, border: "1px solid", borderColor: (t) => t.palette.divider }}
+                            sx={{ width: 38, height: 38, border: "1px solid", borderColor: (th) => th.palette.divider }}
                         />
                         <Box>
                             <Typography
                                 sx={{
                                     fontFamily: "'Inter', -apple-system, sans-serif",
-                                    fontWeight: 500,
-                                    fontSize: "0.85rem",
-                                    color: (t) => t.palette.text.primary,
-                                    lineHeight: 1.25,
+                                    fontWeight: 600,
+                                    fontSize: "0.88rem",
+                                    color: (th) => th.palette.text.primary,
+                                    lineHeight: 1.2,
+                                    letterSpacing: "-0.01em",
                                 }}
                             >
                                 {post.username}
                             </Typography>
                             {post.location && (
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, mt: "1px" }}>
-                                    <LocationOn sx={{ fontSize: "0.75rem", color: (t) => t.palette.text.disabled }} />
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.3, mt: "3px" }}>
+                                    <LocationOn sx={{ fontSize: "0.7rem", color: (th) => th.palette.text.disabled }} />
                                     <Typography
-                                        sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.68rem", color: (t) => t.palette.text.disabled }}
+                                        sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.7rem", color: (th) => th.palette.text.disabled, letterSpacing: "0.01em" }}
                                     >
                                         {post.location}
                                     </Typography>
@@ -451,6 +455,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         const isVideo = /\.(mp4|mov|webm)$/i.test(currentSrc);
                         const height = postWidth ? (post.media_height / post.media_width) * postWidth : 400;
                         return (
+                            <Box sx={{ px: 1.5, pb: 1 }}>
                             <Box
                                 ref={postRef}
                                 sx={{
@@ -458,9 +463,8 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                     width: "100%",
                                     height: isVideo ? height || 400 : height,
                                     overflow: "hidden",
-                                    backgroundColor: (t) => t.palette.background.default,
-                                    mb: 1,
-                                    borderRadius: "12px",
+                                    backgroundColor: (th) => th.palette.background.default,
+                                    borderRadius: "14px",
                                 }}
                             >
                                 {isVideo ? (
@@ -482,7 +486,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                             src={currentSrc}
                                             alt="Post"
                                             onDoubleClick={async () => { if (!isLiked) await handleLike(); }}
-                                            sx={{ width: "100%", height: "100%", objectFit: "contain", opacity: isImageLoading ? 0 : 1, transition: "opacity 0.3s ease", display: "block", cursor: "default" }}
+                                            sx={{ width: "100%", height: "100%", objectFit: "cover", opacity: isImageLoading ? 0 : 1, transition: "opacity 0.3s ease", display: "block", cursor: "default" }}
                                             onLoad={() => setIsImageLoading(false)}
                                         />
                                     </>
@@ -536,130 +540,68 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                     </Box>
                                 )}
                             </Box>
+                            </Box>
                         );
                     })()}
 
                 {/* ── Actions ── */}
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 1.25, pt: 0.625, pb: 0.25 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, pt: 0.5, pb: 0.25 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                         {/* Like */}
                         <Tooltip title={isLiked ? t("post.unlike") : t("post.like")} placement="top">
-                            <IconButton
-                                onClick={handleLike}
-                                disableRipple
-                                className={likeAnimating ? "like-pop" : ""}
-                                sx={{
-                                    p: 0.75,
-                                    color: isLiked ? (t) => t.palette.error.main : (t) => t.palette.text.disabled,
-                                    transition: "color 0.15s",
-                                    "&:hover": {
-                                        backgroundColor: "transparent",
-                                        color: isLiked ? (t) => t.palette.error.main : (t) => t.palette.text.primary,
-                                    },
-                                }}
-                            >
-                                {isLiked ? <Favorite sx={{ fontSize: 21 }} /> : <FavoriteBorder sx={{ fontSize: 21 }} />}
-                            </IconButton>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, cursor: "pointer" }} onClick={handleLike}>
+                                <IconButton disableRipple className={likeAnimating ? "like-pop" : ""}
+                                    sx={{ p: 0.5, color: isLiked ? (th) => th.palette.error.main : (th) => th.palette.text.secondary, transition: "color 0.15s", "&:hover": { backgroundColor: "transparent", color: isLiked ? (th) => th.palette.error.main : (th) => th.palette.text.primary } }}>
+                                    {isLiked ? <Favorite sx={{ fontSize: 20 }} /> : <FavoriteBorder sx={{ fontSize: 20 }} />}
+                                </IconButton>
+                                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", fontWeight: 500, color: (th) => th.palette.text.secondary }}>
+                                    {likeCount}
+                                </Typography>
+                            </Box>
                         </Tooltip>
-                        <Typography
-                            sx={{
-                                fontFamily: "'Inter', sans-serif",
-                                fontSize: "0.75rem",
-                                color: (t) => t.palette.text.disabled,
-                                mr: 0.5,
-                                minWidth: "14px",
-                            }}
-                        >
-                            {likeCount}
-                        </Typography>
 
                         {/* Comment */}
                         <Tooltip title={t("post.comment")} placement="top">
-                            <IconButton
-                                disableRipple
-                                onClick={() => {
-                                    commentInputRef.current?.focus();
-                                    setDrawerOpen(true);
-                                }}
-                                sx={{
-                                    p: 0.75,
-                                    color: (t) => t.palette.text.disabled,
-                                    "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
-                                }}
-                            >
-                                <ChatBubbleOutline sx={{ fontSize: 20 }} />
-                            </IconButton>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, cursor: "pointer" }} onClick={() => { commentInputRef.current?.focus(); setDrawerOpen(true); }}>
+                                <IconButton disableRipple
+                                    sx={{ p: 0.5, color: (th) => th.palette.text.secondary, "&:hover": { backgroundColor: "transparent", color: (th) => th.palette.text.primary } }}>
+                                    <ChatBubbleOutline sx={{ fontSize: 20 }} />
+                                </IconButton>
+                                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", fontWeight: 500, color: (th) => th.palette.text.secondary }}>
+                                    {post.comment_count}
+                                </Typography>
+                            </Box>
                         </Tooltip>
-                        <Typography
-                            sx={{
-                                fontFamily: "'Inter', sans-serif",
-                                fontSize: "0.75rem",
-                                color: (t) => t.palette.text.disabled,
-                                mr: 0.5,
-                                minWidth: "14px",
-                            }}
-                        >
-                            {post.comment_count}
-                        </Typography>
 
                         {/* Repost */}
                         <Tooltip title={isReposted ? t("post.undoRepost") : t("post.repost")} placement="top">
-                            <IconButton
-                                disableRipple
-                                onClick={handleRepost}
-                                sx={{
-                                    p: 0.75,
-                                    color: isReposted ? "#22c55e" : (t) => t.palette.text.disabled,
-                                    transition: "color 0.15s",
-                                    "&:hover": { backgroundColor: "transparent", color: isReposted ? "#22c55e" : (t) => t.palette.text.primary },
-                                }}
-                            >
-                                <RepeatRounded className={repostAnimating ? "repost-spin" : ""} sx={{ fontSize: 21 }} />
-                            </IconButton>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, cursor: "pointer" }} onClick={handleRepost}>
+                                <IconButton disableRipple
+                                    sx={{ p: 0.5, color: isReposted ? "#22c55e" : (th) => th.palette.text.secondary, transition: "color 0.15s", "&:hover": { backgroundColor: "transparent", color: isReposted ? "#22c55e" : (th) => th.palette.text.primary } }}>
+                                    <RepeatRounded className={repostAnimating ? "repost-spin" : ""} sx={{ fontSize: 20 }} />
+                                </IconButton>
+                                <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.78rem", fontWeight: 500, color: (th) => th.palette.text.secondary }}>
+                                    {repostCount}
+                                </Typography>
+                            </Box>
                         </Tooltip>
-                        <Typography
-                            sx={{
-                                fontFamily: "'Inter', sans-serif",
-                                fontSize: "0.75rem",
-                                color: (t) => t.palette.text.disabled,
-                                mr: 0.5,
-                                minWidth: "14px",
-                            }}
-                        >
-                            {repostCount}
-                        </Typography>
 
                         {/* Share */}
                         <Tooltip title={t("post.share")} placement="top">
-                            <IconButton
-                                disableRipple
-                                onClick={handlePaperPlaneClick}
-                                sx={{
-                                    p: 0.75,
-                                    color: (t) => t.palette.text.disabled,
-                                    "&:hover": { backgroundColor: "transparent", color: (t) => t.palette.text.primary },
-                                }}
-                            >
-                                <SendRounded sx={{ fontSize: 20 }} />
+                            <IconButton disableRipple onClick={handlePaperPlaneClick}
+                                sx={{ p: 0.5, color: (th) => th.palette.text.secondary, "&:hover": { backgroundColor: "transparent", color: (th) => th.palette.text.primary } }}>
+                                <SendRounded sx={{ fontSize: 19 }} />
                             </IconButton>
                         </Tooltip>
                     </Box>
 
                     {/* Save */}
                     <Tooltip title={isSaved ? t("post.unsave") : t("post.saved")} placement="top">
-                        <IconButton
-                            disableRipple
-                            onClick={handleSavePost}
-                            sx={{
-                                p: 0.75,
-                                color: isSaved ? "#f59e0b" : (t) => t.palette.text.disabled,
-                                transition: "color 0.15s",
-                                "&:hover": { backgroundColor: "transparent", color: isSaved ? "#f59e0b" : (t) => t.palette.text.primary },
-                            }}
-                        >
+                        <IconButton disableRipple onClick={handleSavePost}
+                            sx={{ p: 0.5, color: isSaved ? (th) => th.palette.text.primary : (th) => th.palette.text.secondary, transition: "color 0.15s", "&:hover": { backgroundColor: "transparent", color: (th) => th.palette.text.primary } }}>
                             {isSaved
-                                ? <Bookmark className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 21 }} />
-                                : <BookmarkBorderOutlined className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 21 }} />}
+                                ? <Bookmark className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 20 }} />
+                                : <BookmarkBorderOutlined className={saveAnimating ? "bookmark-pop" : ""} sx={{ fontSize: 20 }} />}
                         </IconButton>
                     </Tooltip>
                 </Box>
@@ -672,7 +614,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                             sx={{
                                 fontFamily: "'Inter', -apple-system, sans-serif",
                                 fontSize: "0.84rem",
-                                color: (t) => t.palette.text.secondary,
+                                color: (th) => th.palette.text.secondary,
                                 lineHeight: 1.55,
                             }}
                         >
@@ -680,10 +622,10 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                 component="span"
                                 onClick={() => navigate(`/profile/${post.user_id}`)}
                                 sx={{
-                                    fontWeight: 500,
+                                    fontWeight: 600,
                                     mr: 0.625,
                                     cursor: "pointer",
-                                    color: (t) => t.palette.text.primary,
+                                    color: (th) => th.palette.text.primary,
                                     "&:hover": { textDecoration: "underline" },
                                 }}
                             >
@@ -702,10 +644,11 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                         <Typography
                             sx={{
                                 fontFamily: "'Inter', sans-serif",
-                                fontSize: "0.75rem",
-                                color: (t) => t.palette.text.disabled,
-                                mt: 0.625,
+                                fontSize: "0.72rem",
+                                color: (th) => th.palette.text.disabled,
+                                mt: 0.5,
                                 cursor: "default",
+                                letterSpacing: "0.2px",
                             }}
                         >
                             {post.timeAgo}
