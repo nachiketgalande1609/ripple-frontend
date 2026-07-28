@@ -179,7 +179,7 @@ export default {
         profileDetailsTitle: "प्रोफ़ाइल विवरण", profileDetailsSubtitle: "अपनी सार्वजनिक पहचान प्रबंधित करें",
         clickToChange: "फ़ोटो बदलने के लिए क्लिक करें",
         changePhoto: "फ़ोटो बदलें",
-        username: "उपयोगकर्ता नाम", bio: "बायो",
+        username: "उपयोगकर्ता नाम", bio: "बायो", website: "वेबसाइट",
         usernameEmpty: "उपयोगकर्ता नाम खाली नहीं हो सकता।", usernameInvalid: "केवल अक्षर, संख्या और अंडरस्कोर।",
         profileUpdated: "आपकी प्रोफ़ाइल अपडेट हो गई।",
         unsavedChanges: "असहेजे परिवर्तन", saveChanges: "परिवर्तन सहेजें",

@@ -439,7 +439,7 @@ const AppContent = () => {
     };
   }, [pc, localStream]);
 
-  const isPublicRoute = ["/login", "/register", "/verify-account", "/reset-password", "/reels", "/about"].includes(location.pathname) || location.pathname.startsWith("/messages");
+  const isPublicRoute = ["/login", "/register", "/verify-account", "/reset-password", "/about"].includes(location.pathname) || location.pathname.startsWith("/messages");
 
   return (
     <Box

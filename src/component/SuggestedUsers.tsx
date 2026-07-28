@@ -79,43 +79,30 @@ export default function SuggestedUsers({ bare }: SuggestedUsersProps = {}) {
                       const isRequested = requested.has(user.id);
                       return (
                           <Box key={user.id}>
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, py: 1.25 }}>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, py: 1 }}>
                                   <Avatar
                                       src={user.profile_picture || BlankProfileImage}
-                                      sx={{ width: 36, height: 36, cursor: "pointer", flexShrink: 0 }}
+                                      sx={{ width: 34, height: 34, cursor: "pointer", flexShrink: 0 }}
                                       onClick={() => navigate(`/profile/${user.id}`)}
                                       onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }}
                                   />
-                                  <Box
-                                      sx={{ flex: 1, minWidth: 0, cursor: "pointer" }}
-                                      onClick={() => navigate(`/profile/${user.id}`)}
-                                  >
-                                      <Typography noWrap sx={{ fontWeight: 600, fontSize: "0.82rem", lineHeight: 1.3, color: "text.primary" }}>
+                                  <Box sx={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={() => navigate(`/profile/${user.id}`)}>
+                                      <Typography noWrap sx={{ fontWeight: 600, fontSize: "0.8rem", lineHeight: 1.3, color: "text.primary" }}>
                                           {user.username}
                                       </Typography>
-                                      <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3 }}>
+                                      <Typography sx={{ fontSize: "0.68rem", color: "text.disabled", lineHeight: 1.3 }}>
                                           {user.mutual_count > 0 ? `${user.mutual_count} ${t("common.mutual")}` : `${user.follower_count} ${t("profile.followers")}`}
                                       </Typography>
                                   </Box>
                                   {isRequested ? (
-                                      <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "text.disabled", flexShrink: 0 }}>
+                                      <Typography sx={{ fontSize: "0.68rem", fontWeight: 600, color: "text.disabled", flexShrink: 0 }}>
                                           {t("common.requested")}
                                       </Typography>
                                   ) : (
-                                      <button
-                                          onClick={() => handleFollow(user.id)}
-                                          style={{
-                                              display: "inline-flex", alignItems: "center", justifyContent: "center",
-                                              padding: "0 12px", height: "28px", borderRadius: "12px", border: "none",
-                                              background: "var(--nav-bg)",
-                                              boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-                                              color: "inherit", fontSize: "0.72rem", fontWeight: 600, cursor: "pointer",
-                                              whiteSpace: "nowrap", userSelect: "none", outline: "none", flexShrink: 0,
-                                              transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
-                                          }}
-                                      >
+                                      <Box component="button" onClick={() => handleFollow(user.id)}
+                                          sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", px: "12px", height: "28px", borderRadius: "10px", border: "none", background: "var(--nav-bg)", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", color: "text.primary", fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", userSelect: "none", outline: "none", flexShrink: 0, transition: "box-shadow 0.25s", fontFamily: "'Inter', sans-serif" }}>
                                           {t("common.follow")}
-                                      </button>
+                                      </Box>
                                   )}
                               </Box>
                               {i < users.length - 1 && <Box sx={{ borderTop: "1px solid", borderColor: "divider" }} />}

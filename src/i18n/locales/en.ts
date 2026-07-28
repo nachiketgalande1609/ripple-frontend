@@ -188,7 +188,7 @@ export default {
         profileDetailsTitle: "Profile details", profileDetailsSubtitle: "Manage your public-facing identity",
         clickToChange: "Click your photo to change it",
         changePhoto: "Change photo",
-        username: "Username", bio: "Bio",
+        username: "Username", bio: "Bio", website: "Website",
         usernameEmpty: "Username cannot be empty.", usernameInvalid: "Only letters, numbers, and underscores.",
         profileUpdated: "Your profile has been updated.",
         unsavedChanges: "Unsaved changes", saveChanges: "Save changes",

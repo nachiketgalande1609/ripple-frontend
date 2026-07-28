@@ -179,7 +179,7 @@ export default {
         profileDetailsTitle: "Détails du profil", profileDetailsSubtitle: "Gérez votre identité publique",
         clickToChange: "Cliquez sur votre photo pour la changer",
         changePhoto: "Changer de photo",
-        username: "Nom d'utilisateur", bio: "Bio",
+        username: "Nom d'utilisateur", bio: "Bio", website: "Site web",
         usernameEmpty: "Le nom d'utilisateur ne peut pas être vide.", usernameInvalid: "Uniquement des lettres, chiffres et underscores.",
         profileUpdated: "Votre profil a été mis à jour.",
         unsavedChanges: "Modifications non enregistrées", saveChanges: "Enregistrer les modifications",

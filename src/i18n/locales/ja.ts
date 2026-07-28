@@ -179,7 +179,7 @@ export default {
         profileDetailsTitle: "プロフィール詳細", profileDetailsSubtitle: "公開プロフィールを管理",
         clickToChange: "写真をクリックして変更",
         changePhoto: "写真を変更",
-        username: "ユーザー名", bio: "自己紹介",
+        username: "ユーザー名", bio: "自己紹介", website: "ウェブサイト",
         usernameEmpty: "ユーザー名は空にできません。", usernameInvalid: "文字、数字、アンダースコアのみ使用可能。",
         profileUpdated: "プロフィールが更新されました。",
         unsavedChanges: "未保存の変更", saveChanges: "変更を保存",

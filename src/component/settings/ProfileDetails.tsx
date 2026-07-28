@@ -70,6 +70,8 @@ const ProfileDetails = () => {
   const [newProfilePic, setNewProfilePic] = useState<File | null>(null);
   const [newUsername, setNewUsername] = useState("");
   const [newBio, setNewBio] = useState("");
+  const [newWebsite, setNewWebsite] = useState("");
+  const [websiteError, setWebsiteError] = useState("");
   const [profileUpdating, setProfileUpdating] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -90,12 +92,13 @@ const ProfileDetails = () => {
     if (profileData) {
       setIsModified(
         newUsername !== profileData.username ||
-          newBio !== (profileData.bio ?? ""),
+          newBio !== (profileData.bio ?? "") ||
+          newWebsite !== ((profileData as any).website ?? ""),
       );
       setSaveSuccess(false);
       setSaveError("");
     }
-  }, [newUsername, newBio, profileData]);
+  }, [newUsername, newBio, newWebsite, profileData]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -127,6 +130,7 @@ const ProfileDetails = () => {
         setProfileData(res.data);
         setNewUsername(res.data.username);
         setNewBio(res.data.bio ?? "");
+        setNewWebsite(res.data.website ?? "");
       }
     } catch (e) {
       console.error(e);
@@ -190,14 +194,19 @@ const ProfileDetails = () => {
     setSaveSuccess(false);
     setSaveError("");
     try {
-      await updateProfileDetails({ username: newUsername, bio: newBio });
+      const normalizedWebsite = newWebsite.trim()
+        ? newWebsite.trim().startsWith("http") ? newWebsite.trim() : `https://${newWebsite.trim()}`
+        : "";
+      await updateProfileDetails({ username: newUsername, bio: newBio, website: normalizedWebsite });
       const updatedUser = { ...user, username: newUsername };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
+      setNewWebsite(normalizedWebsite);
       setProfileData((p) =>
-        p ? { ...p, username: newUsername, bio: newBio } : p,
+        p ? { ...p, username: newUsername, bio: newBio, website: normalizedWebsite } as any : p,
       );
       setSaveSuccess(true);
+      notifications.show(t("settings.profileUpdated"), { severity: "success", autoHideDuration: 3000 });
     } catch (error: any) {
       setSaveError(
         error?.response?.data?.error ||
@@ -634,6 +643,35 @@ const ProfileDetails = () => {
                   <EmojiIcon sx={{ fontSize: 15 }} />
                 </IconButton>
               </Box>
+            )}
+          </Box>
+
+          {/* Website / Link in bio */}
+          <Box>
+            <Typography component="label" sx={labelSx}>
+              {t("settings.website")}
+            </Typography>
+            {profileLoading ? (
+              <Skeleton variant="rounded" height={42} sx={{ borderRadius: "10px", bgcolor: (t) => t.palette.action.hover }} />
+            ) : (
+              <>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  value={newWebsite}
+                  placeholder="https://yoursite.com"
+                  onChange={(e) => {
+                    setNewWebsite(e.target.value);
+                    setWebsiteError("");
+                  }}
+                  sx={inputSx}
+                />
+                <Collapse in={!!websiteError}>
+                  <Alert severity="error" icon={<ErrorOutlineIcon sx={{ fontSize: 15 }} />} sx={{ ...errorAlertSx, mt: 0.875 }}>
+                    {websiteError}
+                  </Alert>
+                </Collapse>
+              </>
             )}
           </Box>
         </Box>

@@ -96,6 +96,7 @@ interface ProfileData {
     username?: string;
     profile_picture_url?: string;
     bio?: string;
+    website?: string;
 }
 
 interface StoryData {
