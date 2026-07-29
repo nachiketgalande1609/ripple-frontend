@@ -18,6 +18,7 @@ import {
 } from "../../services/api";
 import { useGlobalStore } from "../../store/store";
 import NotificationCard from "./NotificationCard";
+import GroupedNotificationCard from "./GroupedNotificationCard";
 import { useTranslation } from "react-i18next";
 
 interface Notification {
@@ -151,11 +152,28 @@ const NotificationsPage = () => {
     }
   };
 
+  const groupNotifications = (list: Notification[]) => {
+    const groups: Record<string, Notification[]> = {};
+    list.forEach((n) => {
+      // likes/comments/tags group by type+post, follows group together
+      const key = (n.type === "like" || n.type === "comment" || n.type === "tag")
+        ? `${n.type}__${n.post_id}`
+        : n.type === "follow"
+          ? "follow"
+          : `solo__${n.id}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(n);
+    });
+    // Sort each group newest-first, then sort groups by their latest notification
+    return Object.values(groups)
+      .map((g) => g.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()))
+      .sort((a, b) => new Date(b[0].created_at).getTime() - new Date(a[0].created_at).getTime());
+  };
+
   const allNotifications = useMemo(
-    () =>
-      notifications.filter(
-        (n) => n.type !== "follow_request" || n.request_status === "accepted",
-      ),
+    () => groupNotifications(
+      notifications.filter((n) => n.type !== "follow_request" || n.request_status === "accepted")
+    ),
     [notifications],
   );
 
@@ -172,8 +190,7 @@ const NotificationsPage = () => {
     [followRequests],
   );
 
-  const visibleNotifications =
-    activeTab === 0 ? allNotifications : followRequests;
+  const visibleNotifications = followRequests;
 
   return (
     <Container
@@ -259,7 +276,7 @@ const NotificationsPage = () => {
       <Box>
         {loading ? (
           [...Array(5)].map((_, i) => <NotificationSkeleton key={i} />)
-        ) : visibleNotifications.length === 0 ? (
+        ) : (activeTab === 0 ? allNotifications : visibleNotifications).length === 0 ? (
           <Box
             sx={{
               mt: 8,
@@ -280,16 +297,28 @@ const NotificationsPage = () => {
           </Box>
         ) : (
           <List disablePadding>
-            {visibleNotifications.map((notification) => (
-              <NotificationCard
-                key={notification.id}
-                notification={notification}
-                onFollowBack={handleFollowBack}
-                onFollowRequestResponse={handleFollowRequestResponse}
-                followRequestAcceptLoading={followRequestAcceptLoading}
-                followRequestRejectLoading={followRequestRejectLoading}
-              />
-            ))}
+            {activeTab === 0
+              ? (allNotifications as Notification[][]).map((group) => (
+                  <GroupedNotificationCard
+                    key={group.map((n) => n.id).join("-")}
+                    notifications={group}
+                    onFollowBack={handleFollowBack}
+                    onFollowRequestResponse={handleFollowRequestResponse}
+                    followRequestAcceptLoading={followRequestAcceptLoading}
+                    followRequestRejectLoading={followRequestRejectLoading}
+                  />
+                ))
+              : (visibleNotifications as Notification[]).map((notification) => (
+                  <NotificationCard
+                    key={notification.id}
+                    notification={notification}
+                    onFollowBack={handleFollowBack}
+                    onFollowRequestResponse={handleFollowRequestResponse}
+                    followRequestAcceptLoading={followRequestAcceptLoading}
+                    followRequestRejectLoading={followRequestRejectLoading}
+                  />
+                ))
+            }
           </List>
         )}
       </Box>
