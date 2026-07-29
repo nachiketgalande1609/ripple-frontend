@@ -107,10 +107,6 @@ const staticStyles = `
   .nav-item:hover:not(.active) .nav-label { color: var(--nav-text-active); }
 
   .nav-item.create-btn { background: transparent; margin-top: 4px; }
-  .nav-item.create-btn .nav-icon { color: #64748B !important; }
-  .nav-item.create-btn:hover { background: rgba(100,116,139,0.08); }
-  .nav-item.create-btn:hover .nav-icon { color: #475569 !important; }
-  .nav-item.create-btn .nav-label { background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%); -webkit-background-clip: text; background-clip: text; color: transparent !important; font-weight: 600; }
 
   .nav-item.danger .nav-icon,
   .nav-item.danger .nav-label { color: var(--nav-danger) !important; }
@@ -1051,11 +1047,12 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                 onMouseEnter={handleNavEnter}
                 onMouseLeave={handleNavLeave}
                 sx={{
-                    width: DRAWER_CLOSED,
-                    minWidth: DRAWER_CLOSED,
+                    width: 0,
+                    minWidth: 0,
                     flexShrink: 0,
                     backgroundColor: "transparent",
                     "& .MuiDrawer-paper": {
+                        position: "fixed",
                         width: hovered ? DRAWER_OPEN : DRAWER_CLOSED,
                         minWidth: DRAWER_CLOSED,
                         transition: "width 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.28s ease, border-color 0.28s ease",
