@@ -101,3 +101,6 @@ export const VOTE_POLL_ENDPOINT: string = "/api/polls/vote";
 export const FETCH_POLL_ENDPOINT: string = "/api/polls/fetch";
 export const FETCH_POLLS_FEED_ENDPOINT: string = "/api/polls/feed";
 export const DELETE_POLL_ENDPOINT: string = "/api/polls/delete";
+
+// Mention lookup
+export const BY_USERNAME_ENDPOINT: string = "/api/users/by-username";

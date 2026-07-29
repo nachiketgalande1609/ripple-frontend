@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import TranslateButton from "../TranslateButton";
 import {
-  Typography, IconButton, Avatar, Box, TextField,
+  Typography, IconButton, Avatar, Box,
   SwipeableDrawer, useMediaQuery, useTheme,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
@@ -15,8 +16,9 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
-import { toggleLikeComment } from "../../services/api";
+import { toggleLikeComment, getUserByUsername } from "../../services/api";
 import BlankProfileImage from "../../static/profile_blank.png";
+import MentionInput, { renderMentions } from "./MentionInput";
 
 const ACCENT = "#64748B";
 
@@ -57,10 +59,18 @@ export default function ScrollableCommentsDrawer({
   handleDeleteComment,
 }: ScrollableCommentsDrawerProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isDark = theme.palette.mode === "dark";
   const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
+
+  const handleMentionClick = async (username: string) => {
+    try {
+      const res = await getUserByUsername(username);
+      if (res?.data?.id) navigate(`/profile/${res.data.id}`);
+    } catch {}
+  };
 
   const [activeCommentMenu, setActiveCommentMenu] = useState<number | null>(null);
   const [translatedComments, setTranslatedComments] = useState<Record<number, string | null>>({});
@@ -192,7 +202,7 @@ export default function ScrollableCommentsDrawer({
 
             <Box sx={{ display: "inline-block", backgroundColor: (t) => t.palette.action.hover, borderRadius: isReply ? "4px 12px 12px 12px" : "4px 14px 14px 14px", px: 1.5, py: 0.85, maxWidth: "100%" }}>
               <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: isReply ? "0.8rem" : "0.83rem", color: (t) => t.palette.text.primary, lineHeight: 1.5, wordBreak: "break-word" }}>
-                {translatedComments[comment.id] ?? comment.content}
+                {renderMentions(translatedComments[comment.id] ?? comment.content, handleMentionClick)}
               </Typography>
             </Box>
             <TranslateButton
@@ -372,16 +382,15 @@ export default function ScrollableCommentsDrawer({
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box sx={{ flex: 1, display: "flex", alignItems: "center", backgroundColor: "var(--nav-bg)", borderRadius: "14px", border: "none", boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)", pl: 2, pr: 0.875, py: 0.875, transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)", "&:focus-within": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)" } }}>
-              <TextField
-                fullWidth variant="standard"
+              <MentionInput
                 placeholder={replyingTo ? t("post.replyPlaceholder", { username: replyingTo.username }) : t("post.addComment")}
                 value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && canSend) { e.preventDefault(); handleSend(); } }}
+                onChange={setCommentText}
+                onSubmit={() => { if (canSend) handleSend(); }}
                 inputRef={commentInputRef}
                 InputProps={{
                   disableUnderline: true,
-                  sx: { fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", color: (t) => t.palette.text.primary, "& input::placeholder": { color: (t) => t.palette.text.disabled } },
+                  sx: { fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", color: (t: any) => t.palette.text.primary, "& input::placeholder": { color: (t: any) => t.palette.text.disabled } },
                 }}
               />
             </Box>

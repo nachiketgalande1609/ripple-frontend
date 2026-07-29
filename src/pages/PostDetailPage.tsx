@@ -54,8 +54,10 @@ import {
   unpinPost,
   archivePost,
   unarchivePost,
+  getUserByUsername,
 } from "../services/api";
 import { useAppNotifications } from "../hooks/useNotification";
+import MentionInput, { renderMentions } from "../component/post/MentionInput";
 
 /* ─── Theme-derived tokens ───────────────────────────────────── */
 function useTokens() {
@@ -181,6 +183,13 @@ function CommentItem({
   const [repliesOpen, setRepliesOpen] = useState(false);
   const [liked, setLiked] = useState<boolean>(!!comment.liked_by_user);
   const [likeCount, setLikeCount] = useState<number>(comment.likes_count ?? 0);
+
+  const handleMentionClick = async (username: string) => {
+    try {
+      const res = await getUserByUsername(username);
+      if (res?.data?.id) navigate(`/profile/${res.data.id}`);
+    } catch {}
+  };
   const [likeAnimating, setLikeAnimating] = useState(false);
 
   const handleLike = async () => {
@@ -228,7 +237,7 @@ function CommentItem({
               <Box component="span" onClick={() => navigate(`/profile/${comment.user_id}`)} sx={{ fontWeight: 600, color: (t) => t.palette.text.primary, mr: 0.7, cursor: "pointer", "&:hover": { color: "#64748B" }, transition: "color 0.15s" }}>
                 {comment.commenter_username}
               </Box>
-              {comment.content}
+              {renderMentions(comment.content, handleMentionClick)}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 0.35 }}>
               <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.68rem", color: (t) => t.palette.text.disabled }}>
@@ -1140,27 +1149,20 @@ const PostDetailPage = () => {
               },
             }}
           >
-            <TextField
+            <MentionInput
               inputRef={commentInputRef}
-              fullWidth
-              variant="standard"
               placeholder={replyingTo ? `${t("post.replyingTo")} @${replyingTo.username}…` : t("post.addComment")}
               value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleComment();
-                }
-              }}
+              onChange={setCommentText}
+              onSubmit={handleComment}
               InputProps={{
                 disableUnderline: true,
                 sx: {
                   fontFamily: "'DM Sans', sans-serif",
                   fontSize: "0.82rem",
-                  color: (t) => t.palette.text.primary,
+                  color: (t: any) => t.palette.text.primary,
                   "& input::placeholder": {
-                    color: (t) => t.palette.text.disabled,
+                    color: (t: any) => t.palette.text.disabled,
                     fontSize: "0.82rem",
                   },
                 },
