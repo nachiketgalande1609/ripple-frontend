@@ -109,9 +109,8 @@ const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
             right: 14,
             backgroundColor: "var(--nav-bg)",
             borderRadius: cardRadius,
-            boxShadow: isDark
-              ? "0 6px 6px -4px rgba(0,0,0,0.55)"
-              : "0 6px 6px -4px rgba(0,0,0,0.14)",
+            border: "1px solid",
+            borderColor: (t) => t.palette.divider,
             zIndex: 0,
           }}
         />
@@ -127,9 +126,8 @@ const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
             right: 7,
             backgroundColor: "var(--nav-bg)",
             borderRadius: cardRadius,
-            boxShadow: isDark
-              ? "0 5px 5px -3px rgba(0,0,0,0.45)"
-              : "0 5px 5px -3px rgba(0,0,0,0.11)",
+            border: "1px solid",
+            borderColor: (t) => t.palette.divider,
             zIndex: 1,
           }}
         />
@@ -149,10 +147,6 @@ const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
           boxShadow: "none",
           overflow: "hidden",
           cursor: "pointer",
-          transition: "box-shadow 0.3s ease, border-radius 0.2s",
-          "&:hover": {
-            boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
-          },
         }}
       >
         <Box sx={{ px: isMobile ? 1.5 : 2, py: isMobile ? 1.25 : 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
