@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, Box, Paper, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { ExpandMoreRounded, ExpandLessRounded } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,25 @@ interface GroupedNotificationCardProps {
   followRequestRejectLoading: boolean;
 }
 
+const STYLE_ID = "grouped-notif-unstack-styles";
+
+function injectStyles() {
+  if (document.getElementById(STYLE_ID)) return;
+  const el = document.createElement("style");
+  el.id = STYLE_ID;
+  el.textContent = `
+    @keyframes notif-unstack {
+      0%   { opacity: 0; transform: translateY(var(--unstack-from, -20px)) scaleX(0.96); }
+      55%  { opacity: 1; }
+      100% { opacity: 1; transform: translateY(0) scaleX(1); }
+    }
+    .notif-unstack-item {
+      animation: notif-unstack 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+  `;
+  document.head.appendChild(el);
+}
+
 const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
   notifications,
   onFollowBack,
@@ -23,6 +42,9 @@ const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
   followRequestRejectLoading,
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [animKey, setAnimKey] = useState(0);
+
+  useEffect(() => { injectStyles(); }, []);
   const theme = useTheme();
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -73,8 +95,6 @@ const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
   const wrapperPb = expanded ? 0 : stackCount * peekGap;
 
   const isDark = theme.palette.mode === "dark";
-  const layer1Bg = isDark ? "#2e2e2e" : "#e2e2e2";
-  const layer2Bg = isDark ? "#252525" : "#d4d4d4";
 
   return (
     <Box sx={{ mb: 1.2, pb: `${wrapperPb}px`, position: "relative" }}>
@@ -87,10 +107,11 @@ const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
             bottom: 0,
             left: 14,
             right: 14,
-            backgroundColor: layer2Bg,
-            border: "1px solid",
-            borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.10)",
+            backgroundColor: "var(--nav-bg)",
             borderRadius: cardRadius,
+            boxShadow: isDark
+              ? "0 6px 6px -4px rgba(0,0,0,0.55)"
+              : "0 6px 6px -4px rgba(0,0,0,0.14)",
             zIndex: 0,
           }}
         />
@@ -101,14 +122,14 @@ const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
           sx={{
             position: "absolute",
             top: 0,
-            // Stop peekGap above wrapper bottom when layer 2 exists, so layer 2 peeks below
             bottom: stackCount >= 2 ? `${peekGap}px` : 0,
             left: 7,
             right: 7,
-            backgroundColor: layer1Bg,
-            border: "1px solid",
-            borderColor: isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.08)",
+            backgroundColor: "var(--nav-bg)",
             borderRadius: cardRadius,
+            boxShadow: isDark
+              ? "0 5px 5px -3px rgba(0,0,0,0.45)"
+              : "0 5px 5px -3px rgba(0,0,0,0.11)",
             zIndex: 1,
           }}
         />
@@ -117,14 +138,13 @@ const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
       {/* Main card */}
       <Paper
         elevation={0}
-        onClick={() => setExpanded((v) => !v)}
+        onClick={() => { setExpanded((v) => { if (!v) setAnimKey((k) => k + 1); return !v; }); }}
         sx={{
           position: "relative",
           zIndex: 2,
-          borderRadius: expanded ? `${cardRadius} ${cardRadius} 0 0` : cardRadius,
+          borderRadius: cardRadius,
           border: "1px solid",
           borderColor: (t) => t.palette.divider,
-          borderBottom: expanded ? "none" : undefined,
           backgroundColor: "var(--nav-bg)",
           boxShadow: "none",
           overflow: "hidden",
@@ -218,33 +238,27 @@ const GroupedNotificationCard: React.FC<GroupedNotificationCardProps> = ({
         </Box>
       </Paper>
 
-      {/* Expanded list */}
+      {/* Expanded list — no container, cards animate out directly */}
       {expanded && (
-        <Box
-          sx={{
-            position: "relative",
-            zIndex: 2,
-            border: "1px solid",
-            borderColor: (t) => t.palette.divider,
-            borderTop: "none",
-            borderRadius: `0 0 ${cardRadius} ${cardRadius}`,
-            overflow: "hidden",
-            backgroundColor: (t) => t.palette.background.paper,
-            px: 0.75,
-            pt: 0.5,
-            pb: 0.75,
-          }}
-        >
-          {notifications.map((n) => (
-            <NotificationCard
-              key={n.id}
-              notification={n}
-              onFollowBack={onFollowBack}
-              onFollowRequestResponse={onFollowRequestResponse}
-              followRequestAcceptLoading={followRequestAcceptLoading}
-              followRequestRejectLoading={followRequestRejectLoading}
-              compact
-            />
+        <Box sx={{ position: "relative", zIndex: 2, mt: 0.75 }}>
+          {notifications.map((n, i) => (
+            <Box
+              key={`${animKey}-${n.id}`}
+              className="notif-unstack-item"
+              style={{
+                animationDelay: `${i * 75}ms`,
+                ["--unstack-from" as string]: `-${16 + i * 8}px`,
+              }}
+            >
+              <NotificationCard
+                notification={n}
+                onFollowBack={onFollowBack}
+                onFollowRequestResponse={onFollowRequestResponse}
+                followRequestAcceptLoading={followRequestAcceptLoading}
+                followRequestRejectLoading={followRequestRejectLoading}
+                compact
+              />
+            </Box>
           ))}
         </Box>
       )}
