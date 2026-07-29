@@ -358,7 +358,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
     if (!selectedUserStories.length || !selectedUserStories[currentIndex]) return null;
 
     const currentStory = selectedUserStories[currentIndex];
-    const currentGroup = stories[selectedStoryIndex];
+    const currentGroup = stories[currentGroupIndex];
     const viewerCount = currentStory?.viewers?.length || 0;
 
     return (
@@ -630,7 +630,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                             alignItems: "center",
                             justifyContent: "center",
                             overflow: "hidden",
-                            borderRadius: isLarge || isTablet ? "18px" : 0,
+                            borderRadius: "18px",
                         }}
                         onPointerDown={handlePointerDown}
                         onPointerUp={handlePointerUp}
@@ -648,6 +648,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                     width: "100%",
                                     height: "100%",
                                     objectFit: "contain",
+                                    borderRadius: "18px",
                                     display: isMediaLoaded ? "block" : "none",
                                     opacity: isMediaLoaded ? 1 : 0,
                                     transition: "opacity 0.3s ease",
