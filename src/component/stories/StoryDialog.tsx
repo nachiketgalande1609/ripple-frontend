@@ -320,7 +320,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
     useEffect(() => {
         if (!open || !isMediaLoaded || paused) return;
         cancelAnimation();
-        const startTime = performance.now();
+        const startTime = performance.now() - (progress / 100) * STORY_DURATION;
 
         const tick = () => {
             const elapsed = performance.now() - startTime;
@@ -631,6 +631,10 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                             justifyContent: "center",
                             overflow: "hidden",
                             borderRadius: "18px",
+                            mx: { xs: 1, sm: 0 },
+                            mb: { xs: 1, sm: 0 },
+                            transform: "translateZ(0)",
+                            WebkitTransform: "translateZ(0)",
                         }}
                         onPointerDown={handlePointerDown}
                         onPointerUp={handlePointerUp}
@@ -701,7 +705,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                             />
                         )}
 
-                        {/* Tap zones: left = prev, right = next */}
+                        {/* Tap zones: left = prev, center = pause/resume, right = next */}
                         <Box
                             sx={{
                                 position: "absolute",
@@ -716,7 +720,11 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                 onClick={(e) => { e.stopPropagation(); if (!isLongPressRef.current) handlePrev(); }}
                             />
                             <Box
-                                sx={{ flex: 2, pointerEvents: "auto", cursor: "pointer" }}
+                                sx={{ flex: 1, pointerEvents: "auto", cursor: "pointer" }}
+                                onClick={(e) => { e.stopPropagation(); if (!isLongPressRef.current) handlePauseToggle(); }}
+                            />
+                            <Box
+                                sx={{ flex: 1, pointerEvents: "auto", cursor: "pointer" }}
                                 onClick={(e) => { e.stopPropagation(); if (!isLongPressRef.current) handleNext(); }}
                             />
                         </Box>
@@ -724,6 +732,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                         {/* Paused overlay */}
                         {paused && (
                             <Box
+                                onClick={(e) => { e.stopPropagation(); handlePauseToggle(); }}
                                 sx={{
                                     position: "absolute",
                                     inset: 0,
@@ -732,6 +741,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    cursor: "pointer",
                                     animation: "fadeIn 0.15s ease",
                                     "@keyframes fadeIn": { from: { opacity: 0 }, to: { opacity: 1 } },
                                 }}

@@ -43,9 +43,15 @@ const injectStyles = () => {
       position: absolute; inset: 0;
       background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%);
     }
-    .story-card-ring {
-      outline: 2.5px solid ${ACCENT}; outline-offset: 4px;
-      margin: 5px;
+    .story-card-ring-wrap {
+      padding: 3px;
+      border-radius: 17px;
+      background: linear-gradient(135deg, #f97316, #ec4899, #8b5cf6);
+    }
+    .story-card-ring-gap {
+      padding: 2px;
+      border-radius: 15px;
+      background: var(--hp-surface);
     }
     .story-card-username {
       position: relative; z-index: 1;
@@ -114,18 +120,23 @@ function StoryCard({
 }) {
     return (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, animation: `popIn .3s ease ${delay}ms both` }}>
-            <div
-                className={`story-card${hasRing ? " story-card-ring" : ""}`}
-                style={{ width: 90, height: 130, position: "relative" }}
-                onClick={onClick}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); }}
-            >
-                <img src={src || BlankProfileImage} alt={username} onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }} />
-                <div className="story-card-gradient" />
+            <div className={hasRing ? "story-card-ring-wrap" : ""} style={{ position: "relative" }}>
+                <div className={hasRing ? "story-card-ring-gap" : ""}>
+                    <div
+                        className="story-card"
+                        style={{ width: 90, height: 130, position: "relative" }}
+                        onClick={onClick}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); }}
+                    >
+                        <img src={src || BlankProfileImage} alt={username} onError={(e) => { (e.target as HTMLImageElement).src = BlankProfileImage; }} />
+                        <div className="story-card-gradient" />
+                    </div>
+                </div>
                 {showAddButton && (
-                    <div className="add-story-btn" onClick={(e) => { e.stopPropagation(); onAddClick?.(); }}>
+                    <div className="add-story-btn" onClick={(e) => { e.stopPropagation(); onAddClick?.(); }}
+                        style={{ position: "absolute", bottom: "10px", right: "10px" }}>
                         <Add sx={{ fontSize: 12, color: "#fff" }} />
                     </div>
                 )}
@@ -290,9 +301,7 @@ const HomePage = () => {
                             display: "flex",
                             gap: "16px",
                             overflowX: "auto",
-                            pb: "6px",
-                            pt: "4px",
-                            px: isMobile ? "12px" : "4px",
+                            px: isMobile ? "12px" : 0,
                             "&::-webkit-scrollbar": { display: "none" },
                             scrollbarWidth: "none",
                         }}

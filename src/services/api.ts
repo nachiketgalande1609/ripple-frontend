@@ -108,6 +108,11 @@ export const getMyStoryArchive = async () => {
     return response.data;
 };
 
+export const getUserStories = async (userId: number) => {
+    const response = await api.get(`/api/stories/user/${userId}`);
+    return response.data;
+};
+
 export const deleteStory = async (storyId: number) => {
     const response = await api.delete(`/api/stories/${storyId}`);
     return response.data;

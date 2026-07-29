@@ -19,7 +19,7 @@ import { ACCENT_COLOR } from "../../theme";
 const ACCENT = ACCENT_COLOR;
 const PROFILE_POSTS_PER_PAGE = 9;
 
-import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts, getUserReels, getMutualFollowers, getPinnedPosts, pinPost, unpinPost, getHighlights, deleteHighlight } from "../../services/api";
+import { getProfile, getUserPosts, followUser, cancelFollowRequest, getSavedPosts, unfollowUser, getTaggedPosts, getBlockedUsers, recordProfileView, getUserReposts, getUserReels, getMutualFollowers, getPinnedPosts, pinPost, unpinPost, getHighlights, deleteHighlight, getUserStories } from "../../services/api";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import EndOfFeed from "../../component/EndOfFeed";
 import {
@@ -406,6 +406,8 @@ const ProfilePage = () => {
     const [viewingHighlight, setViewingHighlight] = useState<Highlight | null>(null);
     const [createHighlightOpen, setCreateHighlightOpen] = useState(false);
     const [editingHighlight, setEditingHighlight] = useState<Highlight | null>(null);
+    const [profileStories, setProfileStories] = useState<any[]>([]);
+    const [storyDialogOpen, setStoryDialogOpen] = useState(false);
 
     const isOwnProfile = currentUser?.id == userId;
 
@@ -610,6 +612,7 @@ const ProfilePage = () => {
         checkBlockedStatus();
         fetchPinnedPostsFn();
         fetchHighlightsFn();
+        if (userId) getUserStories(Number(userId)).then(res => setProfileStories(res.data ?? [])).catch(() => setProfileStories([]));
         offsetRef.current = 0;
         hasMoreRef.current = true;
         setHasMore(true);
@@ -766,15 +769,30 @@ const ProfilePage = () => {
             <Box sx={{ maxWidth: 900, mx: "auto", px: "8px" }}>
                 {/* Avatar + action buttons row */}
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mt: 2 }}>
-                    <Avatar
-                        src={profileData?.profile_picture || BlankProfileImage}
+                    <Box
+                        onClick={() => profileStories.length > 0 && setStoryDialogOpen(true)}
                         sx={{
-                            width: { xs: 82, sm: 92 },
-                            height: { xs: 82, sm: 92 },
-                            fontSize: "1.8rem",
                             flexShrink: 0,
+                            cursor: profileStories.length > 0 ? "pointer" : "default",
+                            p: "3px",
+                            borderRadius: "50%",
+                            background: profileStories.length > 0
+                                ? "linear-gradient(135deg, #f97316, #ec4899, #8b5cf6)"
+                                : "transparent",
+                            display: "inline-flex",
                         }}
-                    />
+                    >
+                        <Box sx={{
+                            p: "2px", borderRadius: "50%",
+                            background: "var(--nav-bg)",
+                            display: "inline-flex",
+                        }}>
+                            <Avatar
+                                src={profileData?.profile_picture || BlankProfileImage}
+                                sx={{ width: { xs: 82, sm: 92 }, height: { xs: 82, sm: 92 }, fontSize: "1.8rem" }}
+                            />
+                        </Box>
+                    </Box>
 
                     {/* Action buttons */}
                     <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ pb: 0.5 }}>
@@ -1482,6 +1500,26 @@ const ProfilePage = () => {
                         media_type: item.media_type,
                         created_at: item.created_at ?? new Date().toISOString(),
                         viewers: [],
+                    })),
+                }] : []}
+            />
+
+            {/* Profile story viewer */}
+            <StoryDialog
+                open={storyDialogOpen}
+                onClose={() => setStoryDialogOpen(false)}
+                selectedStoryIndex={0}
+                stories={profileStories.length > 0 ? [{
+                    user_id: profileData?.id ?? 0,
+                    username: profileData?.username ?? "",
+                    profile_picture: profileData?.profile_picture ?? "",
+                    stories: profileStories.map(s => ({
+                        story_id: s.story_id,
+                        media_url: s.media_url,
+                        media_type: s.media_type,
+                        created_at: s.created_at,
+                        caption: s.caption,
+                        viewers: s.viewers ?? [],
                     })),
                 }] : []}
             />
