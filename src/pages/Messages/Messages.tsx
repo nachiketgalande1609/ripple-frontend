@@ -114,6 +114,7 @@ const Messages: React.FC<MessageProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const fetchedForUserIdRef = useRef<number | null>(null);
   const [mutedUserIds, setMutedUserIds] = useState<Set<number>>(new Set());
 
   const [users, setUsers] = useState<User[]>([]);
@@ -388,35 +389,36 @@ const Messages: React.FC<MessageProps> = ({
     if (location.pathname === "/messages") {
       setSelectedUser(null);
       setMessages([]);
+      fetchedForUserIdRef.current = null;
       return;
     }
 
     if (userId) {
       const user = users.find((user) => user.id === parseInt(userId));
-      // Only update if user actually changed
-      if (user && (!selectedUser || user.id !== selectedUser.id)) {
+      // Use a ref to track which user's messages were last fetched on this mount.
+      // This handles the case where selectedUser (lifted parent state) is already set
+      // to the same user after a remount, which would fool the identity check.
+      if (user && fetchedForUserIdRef.current !== user.id) {
+        fetchedForUserIdRef.current = user.id;
         setSelectedUser(user);
         setMessages([]);
         fetchMessagesForSelectedUser(parseInt(userId));
       }
     }
-  }, [location.pathname, userId]);
+  }, [location.pathname, userId, users]);
 
   useEffect(() => {
-    if (
-      navigatedUser &&
-      navigatedUser.id &&
-      !users.some((user) => user.id === navigatedUser.id)
-    ) {
-      setUsers((prevUsers) => [...prevUsers, navigatedUser]);
-    }
+    if (!navigatedUser?.id) return;
 
-    if (navigatedUser && navigatedUser.id) {
-      setSelectedUser(navigatedUser);
-      setMessages([]);
-      fetchMessagesForSelectedUser(navigatedUser.id);
-    }
-  }, [navigatedUser.id, users.length]);
+    setUsers((prevUsers) =>
+      prevUsers.some((u) => u.id === navigatedUser.id)
+        ? prevUsers
+        : [...prevUsers, navigatedUser]
+    );
+    setSelectedUser(navigatedUser);
+    setMessages([]);
+    fetchMessagesForSelectedUser(navigatedUser.id);
+  }, [navigatedUser.id]);
 
   // Socket for receiving messages
   useEffect(() => {
