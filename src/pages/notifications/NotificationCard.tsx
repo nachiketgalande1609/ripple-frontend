@@ -169,9 +169,27 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
           </Box>
         )}
 
-        {(notification.type === "like" || notification.type === "comment" || notification.type === "tag") && notification.file_url && (
-          <Box onClick={handlePostClick} sx={{ flexShrink: 0, ml: 0.5, borderRadius: "8px", overflow: "hidden", border: "1px solid", borderColor: (t) => t.palette.divider, cursor: "pointer", "&:hover": { opacity: 0.85 } }}>
-            <img src={notification.file_url} alt="Post" style={{ width: compact ? 36 : (isMobile ? 44 : 50), height: compact ? 36 : (isMobile ? 44 : 50), objectFit: "cover", display: "block" }} />
+        {(notification.type === "like" || notification.type === "comment" || notification.type === "tag" || notification.type === "mention") && notification.file_url && (
+          <Box
+            onClick={handlePostClick}
+            sx={{ flexShrink: 0, ml: 0.5, borderRadius: "8px", overflow: "hidden", border: "1px solid", borderColor: (t) => t.palette.divider, cursor: "pointer", position: "relative", "&:hover": { opacity: 0.85 } }}
+          >
+            {/\.(mp4|mov|webm|ogg)(\?|$)/i.test(notification.file_url) ? (
+              <>
+                <video
+                  src={notification.file_url}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  style={{ width: compact ? 36 : (isMobile ? 44 : 50), height: compact ? 36 : (isMobile ? 44 : 50), objectFit: "cover", display: "block" }}
+                />
+                <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(0,0,0,0.25)" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                </Box>
+              </>
+            ) : (
+              <img src={notification.file_url} alt="Post" style={{ width: compact ? 36 : (isMobile ? 44 : 50), height: compact ? 36 : (isMobile ? 44 : 50), objectFit: "cover", display: "block" }} />
+            )}
           </Box>
         )}
       </ListItem>
