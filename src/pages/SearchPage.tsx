@@ -15,6 +15,7 @@ import {
   Fade,
   Tabs,
   Tab,
+  Button,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
@@ -166,6 +167,22 @@ export default function SearchPage() {
     }
   };
 
+  const handleClearAllUserHistory = () => {
+    const snapshot = history;
+    setHistory([]);
+    Promise.all(snapshot.map((item) => deleteSearchHistoryItem(item.history_id))).catch(() => {
+      setHistory(snapshot);
+    });
+  };
+
+  const handleClearAllTagHistory = () => {
+    const snapshot = tagHistory;
+    setTagHistory([]);
+    Promise.all(snapshot.map((item) => deleteHashtagSearchHistoryItem(item.history_id))).catch(() => {
+      setTagHistory(snapshot);
+    });
+  };
+
   // ── Style tokens (theme-aware) ───────────────────────────────
 
   const baseInputSx = {
@@ -264,9 +281,11 @@ export default function SearchPage() {
   const SectionHeader = ({
     icon,
     label,
+    onClearAll,
   }: {
     icon: React.ReactNode;
     label: string;
+    onClearAll?: () => void;
   }) => (
     <Box
       sx={{
@@ -287,10 +306,31 @@ export default function SearchPage() {
           fontWeight: 600,
           textTransform: "uppercase",
           letterSpacing: "0.06em",
+          flexGrow: 1,
         }}
       >
         {label}
       </Typography>
+      {onClearAll && (
+        <Button
+          size="small"
+          onClick={onClearAll}
+          sx={{
+            fontSize: "0.73rem",
+            fontWeight: 500,
+            textTransform: "none",
+            color: (t) => t.palette.text.disabled,
+            px: 1,
+            py: 0,
+            minWidth: 0,
+            lineHeight: 1.5,
+            "&:hover": { color: (t) => t.palette.text.primary, bgcolor: "transparent" },
+          }}
+          disableRipple
+        >
+          Clear all
+        </Button>
+      )}
     </Box>
   );
 
@@ -586,6 +626,7 @@ export default function SearchPage() {
                   />
                 }
                 label={t("search.recent")}
+                onClearAll={handleClearAllUserHistory}
               />
               <List disablePadding sx={{ mt: 0.5 }}>
                 {history.map((item) => (
@@ -666,6 +707,7 @@ export default function SearchPage() {
                   />
                 }
                 label={t("search.recent")}
+                onClearAll={handleClearAllTagHistory}
               />
               <List disablePadding sx={{ mt: 0.5 }}>
                 {tagHistory.map((item) => (
