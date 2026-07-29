@@ -397,6 +397,7 @@ const FollowersPage = () => {
                 bgcolor: "background.default",
                 minHeight: "100vh",
                 fontFamily: "'Inter', -apple-system, sans-serif",
+                pl: { xs: 0, sm: "68px" },
             }}
         >
             {/* ── Sticky header ── */}

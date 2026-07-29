@@ -572,7 +572,8 @@ const PostDetailPage = () => {
     return (
       <Box
         sx={{
-          minHeight: "100vh",
+          height: { sm: "100vh" },
+          overflow: { sm: "hidden" },
           bgcolor: (t) => t.palette.background.default,
           display: "flex",
           flexDirection: "column",
@@ -581,77 +582,93 @@ const PostDetailPage = () => {
         <style>{heartAnimStyle}</style>
         <Box
           sx={{
-            height: 56,
-            display: "flex",
-            alignItems: "center",
-            gap: 1.5,
-            px: 2,
-            borderBottom: "1px solid",
-            borderColor: (t) => t.palette.divider,
-          }}
-        >
-          <Skeleton
-            variant="circular"
-            width={34}
-            height={34}
-            sx={{ bgcolor: (t) => t.palette.action.hover }}
-          />
-          <Skeleton
-            variant="text"
-            width={80}
-            height={18}
-            sx={{ bgcolor: (t) => t.palette.action.hover }}
-          />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
             flex: 1,
-            flexDirection: { xs: "column", md: "row" },
+            display: "flex",
+            flexDirection: "column",
+            py: { xs: 2, md: 3 },
+            px: { xs: 1, md: 3 },
+            overflow: { sm: "hidden" },
           }}
         >
-          <Skeleton
-            variant="rectangular"
-            sx={{
-              flex: { xs: "none", md: 1 },
-              height: { xs: 320, md: "calc(100vh - 56px)" },
-              bgcolor: (t) => t.palette.action.hover,
-            }}
-          />
-          <Box
-            sx={{
-              width: { xs: "100%", md: 380 },
-              p: 2.5,
-              bgcolor: (t) => t.palette.background.paper,
-            }}
-          >
-            <Box sx={{ display: "flex", gap: 1.5, mb: 2.5 }}>
+          <Box sx={{ maxWidth: 1100, width: "100%", mx: "auto", display: "flex", flexDirection: "column", height: "100%" }}>
+            {/* Floating back button */}
+            <Skeleton variant="rounded" width={34} height={34} sx={{ mb: 1.5, borderRadius: "10px", bgcolor: (t) => t.palette.action.hover }} />
+
+            {/* Main card */}
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                borderRadius: "16px",
+                overflow: "hidden",
+              }}
+            >
+              {/* Image area */}
               <Skeleton
-                variant="circular"
-                width={42}
-                height={42}
-                sx={{ bgcolor: (t) => t.palette.action.hover }}
+                variant="rectangular"
+                sx={{
+                  flex: { xs: "none", md: 1 },
+                  height: { xs: 320, md: "100%" },
+                  bgcolor: (t) => t.palette.action.hover,
+                }}
               />
-              <Box sx={{ flex: 1 }}>
-                <Skeleton
-                  variant="text"
-                  width="45%"
-                  sx={{ bgcolor: (t) => t.palette.action.hover, mb: 0.5 }}
-                />
-                <Skeleton
-                  variant="text"
-                  width="30%"
-                  sx={{ bgcolor: (t) => t.palette.action.hover }}
-                />
+
+              {/* Side panel */}
+              <Box
+                sx={{
+                  width: { xs: "100%", md: 360 },
+                  flexShrink: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  bgcolor: (t) => t.palette.background.paper,
+                  height: { xs: "auto", md: "100%" },
+                  overflow: "hidden",
+                }}
+              >
+                {/* Author header */}
+                <Box sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1.25, borderBottom: "1px solid", borderColor: (t) => t.palette.divider }}>
+                  <Skeleton variant="circular" width={36} height={36} sx={{ bgcolor: (t) => t.palette.action.hover, flexShrink: 0 }} />
+                  <Box sx={{ flex: 1 }}>
+                    <Skeleton variant="text" width="48%" sx={{ bgcolor: (t) => t.palette.action.hover }} />
+                    <Skeleton variant="text" width="28%" sx={{ bgcolor: (t) => t.palette.action.hover, mt: 0.25 }} />
+                  </Box>
+                </Box>
+
+                {/* Caption */}
+                <Box sx={{ px: 2, py: 1.5, borderBottom: "1px solid", borderColor: (t) => t.palette.divider }}>
+                  {[92, 100, 68].map((w, i) => (
+                    <Skeleton key={i} variant="text" width={`${w}%`} sx={{ bgcolor: (t) => t.palette.action.hover }} />
+                  ))}
+                </Box>
+
+                {/* Comments */}
+                <Box sx={{ flex: 1, px: 1.5, py: 1 }}>
+                  {[...Array(4)].map((_, i) => (
+                    <Box key={i} sx={{ display: "flex", gap: 1.5, py: 1, px: 1 }}>
+                      <Skeleton variant="circular" width={30} height={30} sx={{ bgcolor: (t) => t.palette.action.hover, flexShrink: 0 }} />
+                      <Box sx={{ flex: 1 }}>
+                        <Skeleton variant="text" width={`${55 + (i % 3) * 18}%`} sx={{ bgcolor: (t) => t.palette.action.hover }} />
+                        <Skeleton variant="text" width="22%" sx={{ bgcolor: (t) => t.palette.action.hover, mt: 0.25 }} />
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+
+                {/* Action bar + comment input */}
+                <Box sx={{ borderTop: "1px solid", borderColor: (t) => t.palette.divider, px: 2, pt: 1, pb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pb: 1 }}>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Skeleton variant="circular" width={26} height={26} sx={{ bgcolor: (t) => t.palette.action.hover }} />
+                      <Skeleton variant="circular" width={26} height={26} sx={{ bgcolor: (t) => t.palette.action.hover }} />
+                    </Box>
+                    <Skeleton variant="circular" width={26} height={26} sx={{ bgcolor: (t) => t.palette.action.hover }} />
+                  </Box>
+                  <Skeleton variant="rounded" height={36} sx={{ bgcolor: (t) => t.palette.action.hover, borderRadius: "14px" }} />
+                </Box>
               </Box>
             </Box>
-            {[...Array(6)].map((_, i) => (
-              <Skeleton
-                key={i}
-                variant="text"
-                sx={{ bgcolor: (t) => t.palette.action.hover, mb: 0.75 }}
-              />
-            ))}
           </Box>
         </Box>
       </Box>
@@ -891,24 +908,12 @@ const PostDetailPage = () => {
       {/* ── Caption ── */}
       {post.content && (
         <Box sx={{ px: 2, py: 1.5, flexShrink: 0, borderBottom: "1px solid", borderColor: (t) => t.palette.divider }}>
-          <Box sx={{ display: "flex", gap: 1.25, alignItems: "flex-start" }}>
-            <Avatar
-              src={post.profile_picture || BlankProfileImage}
-              onClick={() => navigate(`/profile/${post.user_id}`)}
-              sx={{ width: 28, height: 28, cursor: "pointer", flexShrink: 0, mt: 0.2 }}
-            />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.84rem", color: (t) => t.palette.text.secondary, lineHeight: 1.65 }}>
-                <Box component="span" onClick={() => navigate(`/profile/${post.user_id}`)} sx={{ fontWeight: 700, color: (t) => t.palette.text.primary, mr: 0.75, cursor: "pointer", "&:hover": { color: tokens.accent } }}>
-                  {post.username}
-                </Box>
-                {post.content}
-              </Typography>
-              <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.62rem", color: (t) => t.palette.text.disabled, mt: 0.5, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                {post.timeAgo}
-              </Typography>
-            </Box>
-          </Box>
+          <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.84rem", color: (t) => t.palette.text.secondary, lineHeight: 1.65 }}>
+            {post.content}
+          </Typography>
+          <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.62rem", color: (t) => t.palette.text.disabled, mt: 0.5, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+            {post.timeAgo}
+          </Typography>
         </Box>
       )}
 
