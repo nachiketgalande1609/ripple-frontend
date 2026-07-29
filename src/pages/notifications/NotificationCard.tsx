@@ -55,8 +55,14 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
 
-  const handleNotificationClick = () =>
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     navigate(`/profile/${notification.sender_id}`);
+  };
+  const handlePostClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (notification.post_id) navigate(`/posts/${notification.post_id}`);
+  };
   const timeLabel = timeAgo(notification.created_at);
 
   const isAccepted = notification.request_status === "accepted";
@@ -82,9 +88,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
     >
       <ListItem
         component="div"
-        onClick={handleNotificationClick}
         sx={{
-          cursor: "pointer",
           px: isMobile ? 1.5 : 2,
           py: isMobile ? 1.25 : 1.8,
           display: "flex",
@@ -93,7 +97,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
         }}
       >
         {/* Avatar */}
-        <ListItemAvatar sx={{ minWidth: "unset" }}>
+        <ListItemAvatar sx={{ minWidth: "unset", cursor: "pointer" }} onClick={handleProfileClick}>
           <Avatar
             src={notification.profile_picture || BlankProfileImage}
             alt={notification.username}
@@ -117,7 +121,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                 lineHeight: 1.4,
               }}
             >
-              <span style={{ fontWeight: 600 }}>{notification.username}</span>{" "}
+              <span style={{ fontWeight: 600, cursor: "pointer" }} onClick={handleProfileClick}>{notification.username}</span>{" "}
               <span style={{ color: theme.palette.text.secondary }}>
                 {notification.message}
               </span>
@@ -285,6 +289,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
         {(notification.type === "like" || notification.type === "comment" || notification.type === "tag") &&
           notification.file_url && (
             <Box
+              onClick={handlePostClick}
               sx={{
                 flexShrink: 0,
                 ml: 0.5,
@@ -292,6 +297,8 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                 overflow: "hidden",
                 border: "1px solid",
                 borderColor: (t) => t.palette.divider,
+                cursor: "pointer",
+                "&:hover": { opacity: 0.85 },
               }}
             >
               <img
