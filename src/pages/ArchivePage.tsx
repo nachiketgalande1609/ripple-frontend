@@ -95,12 +95,28 @@ export default function ArchivePage() {
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [loadingStories, setLoadingStories] = useState(false);
     const [storiesFetched, setStoriesFetched] = useState(false);
-    const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+    const [viewingInitialIndex, setViewingInitialIndex] = useState(0);
     const [activeStoryIndex, setActiveStoryIndex] = useState(0);
 
-    const openStory = (index: number) => {
-        setActiveStoryIndex(index);
-        setViewingStoryIndex(index);
+    // Group flat stories list by calendar day
+    const storiesByDay = useMemo(() => {
+        const groups: { label: string; stories: any[] }[] = [];
+        const map = new Map<string, any[]>();
+        for (const s of stories) {
+            const day = s.created_at ? new Date(s.created_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) : "Unknown";
+            if (!map.has(day)) { map.set(day, []); groups.push({ label: day, stories: map.get(day)! }); }
+            map.get(day)!.push(s);
+        }
+        return groups;
+    }, [stories]);
+
+    const openStory = (dayIndex: number, indexInGroup: number) => {
+        setSelectedDayIndex(dayIndex);
+        setViewingInitialIndex(indexInGroup);
+        setActiveStoryIndex(indexInGroup);
+        setDialogOpen(true);
     };
 
     useEffect(() => {
@@ -132,31 +148,28 @@ export default function ArchivePage() {
         })();
     }, [tab, storiesFetched]);
 
-    // All archive stories as one group so next/prev plays them sequentially
-    // useMemo so the reference only changes when stories array changes, not on every render
-    const storyDialogData = useMemo(() => stories.length > 0
-        ? [{
-            user_id: currentUser?.id ?? 0,
-            username: currentUser?.username ?? "",
-            profile_picture: currentUser?.profile_picture_url ?? "",
-            stories: stories.map((s) => ({
-                story_id: s.id,
-                media_url: s.media_url,
-                media_type: s.media_type,
-                created_at: s.created_at,
-                caption: s.caption,
-                viewers: [],
-            })),
-        }]
-        : [], [stories, currentUser?.id, currentUser?.username, currentUser?.profile_picture_url]);
+    // All days as separate groups — StoryDialog advances between them for cross-day navigation
+    const storyDialogData = useMemo(() => storiesByDay.map((group) => ({
+        user_id: currentUser?.id ?? 0,
+        username: currentUser?.username ?? "",
+        profile_picture: currentUser?.profile_picture_url ?? "",
+        stories: group.stories.map((s: any) => ({
+            story_id: s.id,
+            media_url: s.media_url,
+            media_type: s.media_type,
+            created_at: s.created_at,
+            caption: s.caption,
+            viewers: [],
+        })),
+    })), [storiesByDay, currentUser?.id, currentUser?.username, currentUser?.profile_picture_url]);
 
     const handleDeleteStory = async () => {
-        const story = stories[activeStoryIndex];
+        const story = storiesByDay[selectedDayIndex]?.stories[activeStoryIndex];
         if (!story) return;
         try {
             await deleteStory(story.id);
-            setStories(prev => prev.filter((_, i) => i !== activeStoryIndex));
-            if (stories.length <= 1) setViewingStoryIndex(null);
+            setStories(prev => prev.filter((s) => s.id !== story.id));
+            if (storiesByDay[selectedDayIndex]?.stories.length <= 1) setDialogOpen(false);
         } catch {
             // silent
         }
@@ -257,9 +270,14 @@ export default function ArchivePage() {
                                     <AutoStoriesOutlined sx={{ fontSize: 44, color: "text.disabled" }} />
                                     <Typography sx={{ fontWeight: 600, color: "text.primary" }}>{t("profile.noArchivedStories")}</Typography>
                                 </Box>
-                            ) : (
-                                <StoryGrid stories={stories} onStoryClick={openStory} />
-                            )}
+                            ) : storiesByDay.map((group, dayIdx) => (
+                                <Box key={group.label}>
+                                    <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: "text.disabled", px: { xs: "3px", sm: "8px" }, pt: 1.5, pb: 0.5 }}>
+                                        {group.label}
+                                    </Typography>
+                                    <StoryGrid stories={group.stories} onStoryClick={(i) => openStory(dayIdx, i)} />
+                                </Box>
+                            ))}
                         </div>
                     </Fade>
                 )}
@@ -267,10 +285,10 @@ export default function ArchivePage() {
 
             {/* Story viewer */}
             <StoryDialog
-                open={viewingStoryIndex !== null}
-                onClose={() => setViewingStoryIndex(null)}
-                selectedStoryIndex={0}
-                initialStoryIndex={viewingStoryIndex ?? 0}
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                selectedStoryIndex={selectedDayIndex}
+                initialStoryIndex={viewingInitialIndex}
                 onCurrentIndexChange={setActiveStoryIndex}
                 stories={storyDialogData}
                 onDelete={handleDeleteStory}

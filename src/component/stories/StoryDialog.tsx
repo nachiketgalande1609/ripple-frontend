@@ -154,6 +154,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
     const isLarge = useMediaQuery(theme.breakpoints.up("lg"));
 
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentGroupIndex, setCurrentGroupIndex] = useState(selectedStoryIndex);
 
     useEffect(() => {
         onCurrentIndexChange?.(currentIndex);
@@ -173,6 +174,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
     const containerRef = useRef<HTMLDivElement>(null);
     const longPressRef = useRef<NodeJS.Timeout>();
     const isLongPressRef = useRef(false);
+    const goToLastOnGroupChangeRef = useRef(false);
 
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : {};
 
@@ -190,25 +192,30 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
 
     const handleNext = useCallback(() => {
         cancelAnimation();
+        setProgress(0);
+        setIsMediaLoaded(false);
+        setPaused(false);
         if (currentIndex < selectedUserStories.length - 1) {
-            setProgress(0);
-            setIsMediaLoaded(false);
-            setPaused(false);
             setCurrentIndex((p) => p + 1);
+        } else if (currentGroupIndex < stories.length - 1) {
+            setCurrentGroupIndex((g) => g + 1);
         } else {
             handleClose();
         }
-    }, [currentIndex, selectedUserStories.length, handleClose, cancelAnimation]);
+    }, [currentIndex, selectedUserStories.length, currentGroupIndex, stories.length, handleClose, cancelAnimation]);
 
     const handlePrev = useCallback(() => {
         cancelAnimation();
+        setProgress(0);
+        setIsMediaLoaded(false);
+        setPaused(false);
         if (currentIndex > 0) {
-            setProgress(0);
-            setIsMediaLoaded(false);
-            setPaused(false);
             setCurrentIndex((p) => p - 1);
+        } else if (currentGroupIndex > 0) {
+            goToLastOnGroupChangeRef.current = true;
+            setCurrentGroupIndex((g) => g - 1);
         }
-    }, [currentIndex, cancelAnimation]);
+    }, [currentIndex, currentGroupIndex, cancelAnimation]);
 
     const handlePauseToggle = useCallback(() => {
         setPaused((p) => !p);
@@ -262,12 +269,21 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
         return "100%";
     }, [isLarge, isTablet]);
 
-    // Story group change
+    // Sync currentGroupIndex when the dialog opens at a new selectedStoryIndex
     useEffect(() => {
-        if (open && stories.length && selectedStoryIndex < stories.length) {
-            const group = stories[selectedStoryIndex];
+        if (open) setCurrentGroupIndex(selectedStoryIndex);
+    }, [open, selectedStoryIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Story group change — driven by currentGroupIndex
+    useEffect(() => {
+        if (open && stories.length && currentGroupIndex < stories.length) {
+            const group = stories[currentGroupIndex];
             setSelectedUserStories(group.stories);
-            const startIdx = initialStoryIndex ?? 0;
+            const goToLast = goToLastOnGroupChangeRef.current;
+            goToLastOnGroupChangeRef.current = false;
+            const startIdx = goToLast
+                ? group.stories.length - 1
+                : currentGroupIndex === selectedStoryIndex ? (initialStoryIndex ?? 0) : 0;
             setCurrentIndex(startIdx);
             onCurrentIndexChange?.(startIdx);
             setIsMediaLoaded(false);
@@ -282,7 +298,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                 });
             }
         }
-    }, [open, selectedStoryIndex, stories, currentUser?.id]);
+    }, [open, currentGroupIndex, stories, currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Media preload
     useEffect(() => {
@@ -317,6 +333,9 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                     setCurrentIndex((p) => p + 1);
                     setIsMediaLoaded(false);
                     setProgress(0);
+                } else if (currentGroupIndex < stories.length - 1) {
+                    setProgress(0);
+                    setCurrentGroupIndex((g) => g + 1);
                 } else {
                     handleClose();
                 }
@@ -325,7 +344,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
 
         animationFrameRef.current = requestAnimationFrame(tick);
         return cancelAnimation;
-    }, [currentIndex, open, isMediaLoaded, paused, selectedUserStories.length, handleClose, cancelAnimation]);
+    }, [currentIndex, currentGroupIndex, open, isMediaLoaded, paused, selectedUserStories.length, stories.length, handleClose, cancelAnimation]);
 
     // Controls auto-hide
     useEffect(() => {
