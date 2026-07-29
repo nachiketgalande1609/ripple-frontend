@@ -36,6 +36,7 @@ import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PushPinRoundedIcon from "@mui/icons-material/PushPinRounded";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import BlankProfileImage from "../static/profile_blank.png";
 import VideoPlayer from "../component/VideoPlayer";
 import {
@@ -51,6 +52,8 @@ import {
   updatePostTags,
   pinPost,
   unpinPost,
+  archivePost,
+  unarchivePost,
 } from "../services/api";
 import { useAppNotifications } from "../hooks/useNotification";
 
@@ -371,6 +374,7 @@ const PostDetailPage = () => {
   const [tagSearchLoading, setTagSearchLoading] = useState(false);
   const [savingTags, setSavingTags] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+  const [isArchived, setIsArchived] = useState(false);
   const tagSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isOwner = currentUser?.id == post?.user_id;
@@ -424,6 +428,7 @@ const PostDetailPage = () => {
       setTaggedUsers(data.tagged_users || []);
       setMediaFiles(data.media_files || []);
       setIsPinned(Boolean(data.is_pinned));
+      setIsArchived(Boolean(data.is_archived));
     } catch (err) {
       console.error(err);
     } finally {
@@ -1305,6 +1310,29 @@ const PostDetailPage = () => {
                     if (e?.response?.data?.error === "max_pins_reached") {
                       notifications.show(t("profile.maxPinsReached"), { severity: "warning", autoHideDuration: 3000 });
                     }
+                  }
+                }}
+              />
+              <SheetButton
+                icon={<Inventory2OutlinedIcon sx={{ fontSize: "1rem" }} />}
+                label={isArchived ? t("profile.unarchive") : t("profile.archive")}
+                onClick={async () => {
+                  setOptionsOpen(false);
+                  setConfirmDelete(false);
+                  try {
+                    if (isArchived) {
+                      await unarchivePost(Number(post.id));
+                      setIsArchived(false);
+                      notifications.show(t("profile.postUnarchived"), { severity: "success", autoHideDuration: 3000 });
+                    } else {
+                      await archivePost(Number(post.id));
+                      setIsArchived(true);
+                      setIsPinned(false);
+                      notifications.show(t("profile.postArchived"), { severity: "success", autoHideDuration: 3000 });
+                      navigate(-1);
+                    }
+                  } catch {
+                    notifications.show(t("common.error"), { severity: "error", autoHideDuration: 3000 });
                   }
                 }}
               />

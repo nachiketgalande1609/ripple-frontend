@@ -40,6 +40,7 @@ import FollowingPage from "./pages/FollowingPage";
 import MobileTopBar from "./component/navbar/MobileTopBar";
 import ReelsPage from "./pages/ReelsPage";
 import SavedPage from "./pages/SavedPage";
+import ArchivePage from "./pages/ArchivePage";
 import AboutPage from "./pages/AboutPage";
 
 type User = {
@@ -582,6 +583,14 @@ const AppContent = () => {
             element={
               <PrivateRoute>
                 <SavedPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/archive"
+            element={
+              <PrivateRoute>
+                <ArchivePage />
               </PrivateRoute>
             }
           />

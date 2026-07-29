@@ -9,6 +9,7 @@ export interface HighlightItem {
     media_url: string;
     media_type: "image" | "video";
     order_index: number;
+    created_at?: string;
 }
 
 export interface Highlight {

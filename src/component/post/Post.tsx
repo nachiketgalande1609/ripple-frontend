@@ -26,7 +26,8 @@ import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PushPinRoundedIcon from "@mui/icons-material/PushPinRounded";
 import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
-import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, getFollowingUsers, repostPost, unrepostPost, pinPost, unpinPost, sharePostAsStory } from "../../services/api";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import { deletePost, likePost, addComment, updatePost, savePost, deleteComment, getFollowingUsers, repostPost, unrepostPost, pinPost, unpinPost, sharePostAsStory, archivePost, unarchivePost } from "../../services/api";
 import ScrollableCommentsDrawer from "./ScrollableCommentsDrawer";
 import { useNavigate } from "react-router-dom";
 import { useAppNotifications } from "../../hooks/useNotification";
@@ -60,6 +61,7 @@ interface Post {
     repost_count?: number;
     is_reposted?: boolean;
     is_pinned?: boolean;
+    is_archived?: boolean;
     comments: Array<{
         id: number;
         post_id: string;
@@ -191,6 +193,7 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
     const [isReposted, setIsReposted] = useState(Boolean(post.is_reposted));
     const [repostCount, setRepostCount] = useState(post.repost_count || 0);
     const [isPinned, setIsPinned] = useState(Boolean(post.is_pinned));
+    const [isArchived, setIsArchived] = useState(Boolean(post.is_archived));
 
     const filteredUsers = usersList.filter((u: User) => u.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -846,6 +849,28 @@ const Post: React.FC<PostProps> = ({ post, fetchPosts, borderRadius }) => {
                                 }}
                             />
                         )}
+                        <DialogBtn
+                            icon={<Inventory2OutlinedIcon sx={{ fontSize: "1rem" }} />}
+                            label={isArchived ? t("profile.unarchive") : t("profile.archive")}
+                            onClick={async () => {
+                                setOptionsDialogOpen(false);
+                                setConfirmDelete(false);
+                                try {
+                                    if (isArchived) {
+                                        await unarchivePost(Number(post.id));
+                                        setIsArchived(false);
+                                        notifications.show(t("profile.postUnarchived"), { severity: "success", autoHideDuration: 3000 });
+                                    } else {
+                                        await archivePost(Number(post.id));
+                                        setIsArchived(true);
+                                        setIsPinned(false);
+                                        notifications.show(t("profile.postArchived"), { severity: "success", autoHideDuration: 3000 });
+                                    }
+                                } catch {
+                                    notifications.show(t("common.error"), { severity: "error", autoHideDuration: 3000 });
+                                }
+                            }}
+                        />
                         <DialogBtn
                             icon={confirmDelete ? <WarningRoundedIcon sx={{ fontSize: "1rem" }} /> : <DeleteRoundedIcon sx={{ fontSize: "1rem" }} />}
                             label={confirmDelete ? t("post.confirmDelete") : t("post.deletePost")}

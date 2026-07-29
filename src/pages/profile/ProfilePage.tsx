@@ -167,8 +167,10 @@ const postCardCss = `
 .pc .ovl { position:absolute; inset:0; opacity:0; transition:opacity 0.22s ease;
   background:linear-gradient(135deg,rgba(100,116,139,0.45) 0%,rgba(0,0,0,0.55) 100%);
   display:flex; align-items:center; justify-content:center; gap:16px; }
-.pc:hover .ovl { opacity:1; }
-.pc:hover .pi { transform:scale(1.06); }
+@media (hover: hover) {
+  .pc:hover .ovl { opacity:1; }
+  .pc:hover .pi { transform:scale(1.06); }
+}
 .med { display:flex; align-items:center; gap:4px; }
 `;
 
@@ -184,9 +186,11 @@ const masonryCss = `
 .masonry-item .ovl { position:absolute; inset:0; opacity:0; transition:opacity 0.22s ease;
   background:linear-gradient(135deg,rgba(100,116,139,0.45) 0%,rgba(0,0,0,0.55) 100%);
   display:flex; align-items:center; justify-content:center; gap:16px; border-radius:14px; }
-.masonry-item:hover .ovl { opacity:1; }
+@media (hover: hover) {
+  .masonry-item:hover .ovl { opacity:1; }
+  .masonry-item:hover img { transform: scale(1.04); }
+}
 .masonry-item img { transition: transform 0.35s ease; }
-.masonry-item:hover img { transform: scale(1.04); }
 `;
 
 const PostGrid = ({ posts, username, profilePicture, imageErrors, onImageError, onPostClick, pinnedIds }: {
@@ -1055,59 +1059,63 @@ const ProfilePage = () => {
                             scrollbarWidth: "none",
                         }}
                     >
-                        {/* Add New highlight circle — own profile only */}
+                        {/* Add New highlight card — own profile only */}
                         {isOwnProfile && (
                             <Box
                                 onClick={() => setCreateHighlightOpen(true)}
-                                sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75, cursor: "pointer", flexShrink: 0 }}
+                                sx={{
+                                    position: "relative", flexShrink: 0, cursor: "pointer",
+                                    width: 90, height: 130, borderRadius: "14px", overflow: "hidden",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    backgroundColor: "action.hover",
+                                    border: "2px dashed", borderColor: "divider",
+                                    transition: "opacity 0.2s, border-color 0.2s",
+                                    "&:hover": { opacity: 0.85, borderColor: "text.secondary" },
+                                }}
                             >
-                                <Box
-                                    sx={{
-                                        width: 64, height: 64, borderRadius: "50%",
-                                        border: "2px dashed", borderColor: "divider",
-                                        display: "flex", alignItems: "center", justifyContent: "center",
-                                        backgroundColor: "action.hover",
-                                        transition: "border-color 0.2s, background-color 0.2s",
-                                        "&:hover": { borderColor: "text.secondary", backgroundColor: "action.selected" },
-                                    }}
-                                >
-                                    <AddRoundedIcon sx={{ fontSize: 22, color: "text.secondary" }} />
+                                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
+                                    <AddRoundedIcon sx={{ fontSize: 26, color: "text.secondary" }} />
+                                    <Typography sx={{ fontSize: "0.62rem", color: "text.disabled", whiteSpace: "nowrap" }}>
+                                        {t("profile.addHighlight")}
+                                    </Typography>
                                 </Box>
-                                <Typography sx={{ fontSize: "0.65rem", color: "text.disabled", whiteSpace: "nowrap" }}>
-                                    {t("profile.addHighlight")}
-                                </Typography>
                             </Box>
                         )}
 
-                        {/* Highlight circles */}
+                        {/* Highlight cards */}
                         {highlights.map(highlight => (
                             <Box
                                 key={highlight.id}
-                                sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75, flexShrink: 0, position: "relative" }}
+                                onClick={() => highlight.items.length > 0 && setViewingHighlight(highlight)}
+                                sx={{
+                                    position: "relative", flexShrink: 0,
+                                    width: 90, height: 130, borderRadius: "14px", overflow: "hidden",
+                                    cursor: highlight.items.length > 0 ? "pointer" : "default",
+                                    display: "flex", alignItems: "flex-end",
+                                    boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                                    transition: "opacity 0.2s",
+                                    "&:hover": { opacity: 0.85 },
+                                }}
                             >
-                                <Box
-                                    onClick={() => highlight.items.length > 0 && setViewingHighlight(highlight)}
-                                    sx={{
-                                        width: 64, height: 64, borderRadius: "50%", overflow: "hidden",
-                                        border: "2px solid", borderColor: "divider",
-                                        cursor: highlight.items.length > 0 ? "pointer" : "default",
-                                        transition: "transform 0.2s",
-                                        "&:hover": { transform: "scale(1.06)" },
-                                    }}
-                                >
-                                    {highlight.cover_url || highlight.items[0]?.media_url ? (
-                                        <Box component="img" src={highlight.cover_url || highlight.items[0].media_url}
-                                            sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                    ) : (
-                                        <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "action.hover" }}>
-                                            <AutoAwesomeRoundedIcon sx={{ fontSize: 24, color: "text.disabled" }} />
-                                        </Box>
-                                    )}
-                                </Box>
+                                {highlight.cover_url || highlight.items[0]?.media_url ? (
+                                    <Box component="img"
+                                        src={highlight.cover_url || highlight.items[0].media_url}
+                                        sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                                    />
+                                ) : (
+                                    <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "action.hover" }}>
+                                        <AutoAwesomeRoundedIcon sx={{ fontSize: 28, color: "text.disabled" }} />
+                                    </Box>
+                                )}
+                                {/* gradient overlay */}
+                                <Box sx={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 55%)" }} />
+                                {/* title */}
                                 <Typography sx={{
-                                    fontSize: "0.65rem", color: "text.secondary",
-                                    whiteSpace: "nowrap", maxWidth: 72,
-                                    overflow: "hidden", textOverflow: "ellipsis", textAlign: "center",
+                                    position: "relative", zIndex: 1,
+                                    px: "7px", pb: "7px",
+                                    fontSize: "0.68rem", fontWeight: 600,
+                                    color: "#fff", whiteSpace: "nowrap",
+                                    overflow: "hidden", textOverflow: "ellipsis", width: "100%",
                                 }}>
                                     {highlight.title}
                                 </Typography>
@@ -1472,7 +1480,7 @@ const ProfilePage = () => {
                         story_id: item.id,
                         media_url: item.media_url,
                         media_type: item.media_type,
-                        created_at: new Date().toISOString(),
+                        created_at: item.created_at ?? new Date().toISOString(),
                         viewers: [],
                     })),
                 }] : []}

@@ -88,8 +88,28 @@ export const unpinPost = async (postId: number) => {
     return response.data;
 };
 
+export const archivePost = async (postId: number) => {
+    const response = await api.put(`/api/posts/archive/${postId}`);
+    return response.data;
+};
+
+export const unarchivePost = async (postId: number) => {
+    const response = await api.put(`/api/posts/unarchive/${postId}`);
+    return response.data;
+};
+
+export const getArchivedPosts = async () => {
+    const response = await api.get(`/api/posts/archived`);
+    return response.data;
+};
+
 export const getMyStoryArchive = async () => {
     const response = await api.get(`/api/stories/my-archive`);
+    return response.data;
+};
+
+export const deleteStory = async (storyId: number) => {
+    const response = await api.delete(`/api/stories/${storyId}`);
     return response.data;
 };
 

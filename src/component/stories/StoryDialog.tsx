@@ -65,6 +65,7 @@ interface StoryDialogProps {
     selectedStoryIndex: number;
     onDelete?: () => void;
     onEdit?: () => void;
+    deleteLabel?: string;
 }
 
 const STORY_DURATION = 8000;
@@ -142,7 +143,7 @@ const ViewerRow = ({
     </Stack>
 );
 
-const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selectedStoryIndex, onDelete, onEdit }) => {
+const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selectedStoryIndex, onDelete, onEdit, deleteLabel }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const theme = useTheme();
@@ -160,6 +161,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
     const [showControls, setShowControls] = useState(true);
     const [isMuted, setIsMuted] = useState(true);
     const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState(false);
     const controlsTimeoutRef = useRef<NodeJS.Timeout>();
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -512,7 +514,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                         <Menu
                             open={!!menuAnchor}
                             anchorEl={menuAnchor}
-                            onClose={() => { setMenuAnchor(null); setPaused(false); }}
+                            onClose={() => { setMenuAnchor(null); setPaused(false); setConfirmDelete(false); }}
                             anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                             transformOrigin={{ vertical: "top", horizontal: "right" }}
                             MenuListProps={{ disablePadding: true }}
@@ -558,24 +560,34 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                             )}
                             {onDelete && (
                                 <MenuItem
-                                    onClick={() => { setMenuAnchor(null); onDelete(); handleClose(); }}
+                                    onClick={() => {
+                                        if (confirmDelete) {
+                                            setMenuAnchor(null);
+                                            setConfirmDelete(false);
+                                            onDelete();
+                                            handleClose();
+                                        } else {
+                                            setConfirmDelete(true);
+                                        }
+                                    }}
                                     sx={{
                                         borderRadius: "12px",
                                         p: 1.25,
                                         color: "error.main",
+                                        backgroundColor: confirmDelete ? "rgba(239,68,68,0.1)" : "transparent",
                                         "&:hover": {
-                                            backgroundColor: "var(--nav-bg)",
-                                            boxShadow: "inset 2px 2px 6px var(--nav-neo-shadow1), inset -2px -2px 6px var(--nav-neo-shadow2)",
+                                            backgroundColor: confirmDelete ? "rgba(239,68,68,0.18)" : "var(--nav-bg)",
+                                            boxShadow: confirmDelete ? "none" : "inset 2px 2px 6px var(--nav-neo-shadow1), inset -2px -2px 6px var(--nav-neo-shadow2)",
                                         },
-                                        transition: "box-shadow 0.2s",
+                                        transition: "background-color 0.2s, box-shadow 0.2s",
                                     }}
                                 >
                                     <ListItemIcon sx={{ minWidth: "unset", color: "error.main" }}>
                                         <DeleteOutlineRounded sx={{ fontSize: "1.1rem" }} />
                                     </ListItemIcon>
                                     <ListItemText
-                                        primary={t("profile.deleteHighlight")}
-                                        primaryTypographyProps={{ fontSize: "0.875rem", fontWeight: 500 }}
+                                        primary={confirmDelete ? t("post.tapToConfirmDelete") : (deleteLabel ?? t("profile.deleteHighlight"))}
+                                        primaryTypographyProps={{ fontSize: "0.875rem", fontWeight: confirmDelete ? 700 : 500 }}
                                     />
                                 </MenuItem>
                             )}

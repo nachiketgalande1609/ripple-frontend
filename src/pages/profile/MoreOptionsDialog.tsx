@@ -15,6 +15,7 @@ import BlockRoundedIcon from "@mui/icons-material/BlockRounded";
 import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import StyleRoundedIcon from "@mui/icons-material/StyleRounded";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 
 import BlankProfileImage from "../../static/profile_blank.png";
 
@@ -305,6 +306,15 @@ export default function MoreOptionsDialog({
                     />
                 )}
 
+
+                {/* Archive — own profile only */}
+                {isOwnProfile && (
+                    <DialogButton
+                        icon={<Inventory2OutlinedIcon sx={{ fontSize: "1.1rem" }} />}
+                        label={t("profile.archiveTitle")}
+                        onClick={() => { navigate("/archive"); handleCloseDialog(); }}
+                    />
+                )}
 
                 {/* Share Profile as Card — own profile only */}
                 {isOwnProfile && onShareCard && (
