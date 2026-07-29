@@ -1083,20 +1083,15 @@ const ProfilePage = () => {
                                 onClick={() => setCreateHighlightOpen(true)}
                                 sx={{
                                     position: "relative", flexShrink: 0, cursor: "pointer",
-                                    width: 90, height: 130, borderRadius: "14px", overflow: "hidden",
+                                    width: 90, height: 130, borderRadius: "14px",
                                     display: "flex", alignItems: "center", justifyContent: "center",
-                                    backgroundColor: "action.hover",
-                                    border: "2px dashed", borderColor: "divider",
-                                    transition: "opacity 0.2s, border-color 0.2s",
-                                    "&:hover": { opacity: 0.85, borderColor: "text.secondary" },
+                                    backgroundColor: "var(--nav-bg)",
+                                    boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                    transition: "box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s ease",
+                                    "&:hover": { boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)" },
                                 }}
                             >
-                                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
-                                    <AddRoundedIcon sx={{ fontSize: 26, color: "text.secondary" }} />
-                                    <Typography sx={{ fontSize: "0.62rem", color: "text.disabled", whiteSpace: "nowrap" }}>
-                                        {t("profile.addHighlight")}
-                                    </Typography>
-                                </Box>
+                                <AddRoundedIcon sx={{ fontSize: 36, color: "text.secondary" }} />
                             </Box>
                         )}
 
