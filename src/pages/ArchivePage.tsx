@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, IconButton, Fade, useTheme, Skeleton } from "@mui/material";
@@ -96,6 +96,12 @@ export default function ArchivePage() {
     const [loadingStories, setLoadingStories] = useState(false);
     const [storiesFetched, setStoriesFetched] = useState(false);
     const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
+    const [activeStoryIndex, setActiveStoryIndex] = useState(0);
+
+    const openStory = (index: number) => {
+        setActiveStoryIndex(index);
+        setViewingStoryIndex(index);
+    };
 
     useEffect(() => {
         (async () => {
@@ -126,33 +132,31 @@ export default function ArchivePage() {
         })();
     }, [tab, storiesFetched]);
 
-    // Build UserStories shape expected by StoryDialog, with a single entry per story
-    // so each story opens individually at index 0
-    const storyDialogData = viewingStoryIndex !== null && stories[viewingStoryIndex]
+    // All archive stories as one group so next/prev plays them sequentially
+    // useMemo so the reference only changes when stories array changes, not on every render
+    const storyDialogData = useMemo(() => stories.length > 0
         ? [{
             user_id: currentUser?.id ?? 0,
             username: currentUser?.username ?? "",
             profile_picture: currentUser?.profile_picture_url ?? "",
-            stories: [
-                {
-                    story_id: stories[viewingStoryIndex].id,
-                    media_url: stories[viewingStoryIndex].media_url,
-                    media_type: stories[viewingStoryIndex].media_type,
-                    created_at: stories[viewingStoryIndex].created_at,
-                    caption: stories[viewingStoryIndex].caption,
-                    viewers: [],
-                },
-            ],
+            stories: stories.map((s) => ({
+                story_id: s.id,
+                media_url: s.media_url,
+                media_type: s.media_type,
+                created_at: s.created_at,
+                caption: s.caption,
+                viewers: [],
+            })),
         }]
-        : [];
+        : [], [stories, currentUser?.id, currentUser?.username, currentUser?.profile_picture_url]);
 
     const handleDeleteStory = async () => {
-        if (viewingStoryIndex === null) return;
-        const story = stories[viewingStoryIndex];
+        const story = stories[activeStoryIndex];
+        if (!story) return;
         try {
             await deleteStory(story.id);
-            setStories(prev => prev.filter((_, i) => i !== viewingStoryIndex));
-            setViewingStoryIndex(null);
+            setStories(prev => prev.filter((_, i) => i !== activeStoryIndex));
+            if (stories.length <= 1) setViewingStoryIndex(null);
         } catch {
             // silent
         }
@@ -254,7 +258,7 @@ export default function ArchivePage() {
                                     <Typography sx={{ fontWeight: 600, color: "text.primary" }}>{t("profile.noArchivedStories")}</Typography>
                                 </Box>
                             ) : (
-                                <StoryGrid stories={stories} onStoryClick={(i) => setViewingStoryIndex(i)} />
+                                <StoryGrid stories={stories} onStoryClick={openStory} />
                             )}
                         </div>
                     </Fade>
@@ -266,6 +270,8 @@ export default function ArchivePage() {
                 open={viewingStoryIndex !== null}
                 onClose={() => setViewingStoryIndex(null)}
                 selectedStoryIndex={0}
+                initialStoryIndex={viewingStoryIndex ?? 0}
+                onCurrentIndexChange={setActiveStoryIndex}
                 stories={storyDialogData}
                 onDelete={handleDeleteStory}
                 deleteLabel={t("profile.deleteStory")}

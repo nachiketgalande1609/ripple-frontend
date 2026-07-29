@@ -63,6 +63,8 @@ interface StoryDialogProps {
     onClose: () => void;
     stories: UserStories[];
     selectedStoryIndex: number;
+    initialStoryIndex?: number;
+    onCurrentIndexChange?: (index: number) => void;
     onDelete?: () => void;
     onEdit?: () => void;
     deleteLabel?: string;
@@ -143,7 +145,7 @@ const ViewerRow = ({
     </Stack>
 );
 
-const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selectedStoryIndex, onDelete, onEdit, deleteLabel }) => {
+const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selectedStoryIndex, initialStoryIndex, onCurrentIndexChange, onDelete, onEdit, deleteLabel }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const theme = useTheme();
@@ -152,6 +154,10 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
     const isLarge = useMediaQuery(theme.breakpoints.up("lg"));
 
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        onCurrentIndexChange?.(currentIndex);
+    }, [currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
     const [progress, setProgress] = useState(0);
     const animationFrameRef = useRef<number | null>(null);
     const [selectedUserStories, setSelectedUserStories] = useState<Story[]>([]);
@@ -261,7 +267,9 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
         if (open && stories.length && selectedStoryIndex < stories.length) {
             const group = stories[selectedStoryIndex];
             setSelectedUserStories(group.stories);
-            setCurrentIndex(0);
+            const startIdx = initialStoryIndex ?? 0;
+            setCurrentIndex(startIdx);
+            onCurrentIndexChange?.(startIdx);
             setIsMediaLoaded(false);
             setPaused(false);
             setShowControls(true);
@@ -270,7 +278,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
             if (group.user_id !== currentUser?.id) {
                 socket.emit("viewStory", {
                     user_id: currentUser?.id,
-                    story_id: group.stories[0]?.story_id,
+                    story_id: group.stories[startIdx]?.story_id,
                 });
             }
         }
