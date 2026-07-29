@@ -503,8 +503,6 @@ const LoginPage: React.FC = () => {
         const { token, user } = response.data;
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
-        sessionStorage.setItem("_kp", password);
-        localStorage.setItem("_kp", password);
         saveAccount(user, token);
         socket.emit("registerUser", user.id);
         setUser(user);

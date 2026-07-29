@@ -6,7 +6,6 @@ import socket from "../../services/socket";
 import { getAllMessageUsersData, getMessagesDataForSelectedUser } from "../../services/api";
 import BlankProfileImage from "../../static/profile_blank.png";
 import { timeAgo } from "../../utils/utils";
-import { loadPrivateKey, getOrCreateDeviceId, decryptMessage } from "../../utils/crypto";
 
 const ACCENT = "#64748B";
 const MSG_PAGE = 30;
@@ -51,20 +50,8 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
     const hasMoreRef = useRef(true);
     const fetchingOlderRef = useRef(false);
     const selectedUserRef = useRef<User | null>(null);
-    const privateKeyRef = useRef<CryptoKey | null>(null);
-    const deviceIdRef = useRef<string>("");
-
     const { t } = useTranslation();
     const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "{}") : null;
-
-    // Load private key once on mount
-    useEffect(() => {
-        (async () => {
-            const deviceId = getOrCreateDeviceId();
-            deviceIdRef.current = deviceId;
-            privateKeyRef.current = await loadPrivateKey(deviceId);
-        })();
-    }, []);
 
     // Keep ref in sync so socket handler can read latest selected user
     useEffect(() => {
@@ -82,18 +69,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
             setLoadingUsers(true);
             try {
                 const res = await getAllMessageUsersData();
-                const rawUsers: any[] = res.data || [];
-                if (!privateKeyRef.current) { setUsers(rawUsers); return; }
-                const decrypted = await Promise.all(rawUsers.map(async (u) => {
-                    if (!u.latest_message_encrypted_keys || !u.latest_message) return u;
-                    const entry = u.latest_message_encrypted_keys.keys?.find((k: any) => k.deviceId === deviceIdRef.current);
-                    if (!entry) return { ...u, latest_message: t("messages.encryptedMessage") };
-                    try {
-                        const plain = await decryptMessage(u.latest_message, u.latest_message_encrypted_keys.iv, entry.encryptedKey, privateKeyRef.current!);
-                        return { ...u, latest_message: plain };
-                    } catch { return { ...u, latest_message: t("messages.encryptedMessage") }; }
-                }));
-                setUsers(decrypted);
+                setUsers(res.data || []);
             } catch (e) {
                 console.error(e);
             } finally {
@@ -115,16 +91,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
 
             try {
                 const res = await getMessagesDataForSelectedUser(userId, offset, MSG_PAGE);
-                const raw: Message[] = (res.data || []).slice().reverse();
-                const batch: Message[] = await Promise.all(raw.map(async (msg) => {
-                    if (!(msg as any).encrypted_keys || !privateKeyRef.current) return msg;
-                    const entry = (msg as any).encrypted_keys.keys?.find((k: any) => k.deviceId === deviceIdRef.current);
-                    if (!entry) return { ...msg, message_text: t("messages.encryptedOtherDevice") };
-                    try {
-                        const plain = await decryptMessage(msg.message_text, (msg as any).encrypted_keys.iv, entry.encryptedKey, privateKeyRef.current!);
-                        return { ...msg, message_text: plain };
-                    } catch { return { ...msg, message_text: t("messages.failedToDecrypt") }; }
-                }));
+                const batch: Message[] = (res.data || []).slice().reverse();
                 hasMoreRef.current = res.data?.length === MSG_PAGE;
 
                 if (offset === 0) {
@@ -172,14 +139,7 @@ export default function MessagesPip({ unreadMessagesCount }: MessagesPipProps) {
         const onReceive = async (data: any) => {
             if (data.senderId === currentUser.id) return;
 
-            let messageText = data.message_text;
-            if (data.encrypted_keys && privateKeyRef.current) {
-                const entry = data.encrypted_keys.keys?.find((k: any) => k.deviceId === deviceIdRef.current);
-                if (entry) {
-                    try { messageText = await decryptMessage(data.message_text, data.encrypted_keys.iv, entry.encryptedKey, privateKeyRef.current!); }
-                    catch { messageText = t("messages.failedToDecrypt"); }
-                } else { messageText = t("messages.encryptedOtherDevice"); }
-            }
+            const messageText = data.message_text;
 
             const active = selectedUserRef.current;
             if (active && data.senderId === active.id) {

@@ -11,28 +11,9 @@ import {
   getMessagesDataForSelectedUser,
   getMutedUsers,
   shareChatMedia,
-  registerDeviceKey,
-  getDeviceKeys,
-  backupDeviceKey,
-  fetchKeyBackup,
   getBlockedUsers,
   unblockUser,
 } from "../../services/api";
-import {
-  generateKeyPair,
-  exportPublicKey,
-  exportPrivateKey,
-  importPublicKey,
-  importPrivateKey,
-  storePrivateKey,
-  loadPrivateKey,
-  getOrCreateDeviceId,
-  encryptMessage,
-  decryptMessage,
-  encryptPrivateKeyWithPassword,
-  decryptPrivateKeyWithPassword,
-  EncryptedPayload,
-} from "../../utils/crypto";
 import ImageDialog from "../../component/ImageDialog";
 import MessagesContainer from "./messageContainer/MessagesContainer";
 import MessageInput from "./MessageInput";
@@ -46,7 +27,6 @@ type Message = {
   receiver_id: number;
   sender_id: number;
   message_text: string;
-  encrypted_keys?: EncryptedPayload | null;
   timestamp: string;
   delivered?: boolean;
   read?: boolean;
@@ -138,15 +118,6 @@ const Messages: React.FC<MessageProps> = ({
   const [initialMessageLoading, setInitialMessageLoading] = useState(false);
   const [isBlockedUser, setIsBlockedUser] = useState(false);
 
-  // E2E encryption state
-  const [myDeviceId, setMyDeviceId] = useState(() => getOrCreateDeviceId());
-  const myDeviceIdRef = useRef(myDeviceId);
-  const myPrivateKeyRef = useRef<CryptoKey | null>(null);
-  const myPublicKeyRef = useRef<CryptoKey | null>(null);
-  const receiverKeysRef = useRef<{ deviceId: string; publicKey: CryptoKey }[]>([]);
-  const [cryptoReady, setCryptoReady] = useState(false);
-
-
   const handleReply = (msg: Message) => {
     setSelectedMessageForReply(msg);
   };
@@ -163,42 +134,13 @@ const Messages: React.FC<MessageProps> = ({
 
   const [loadingUsers, setLoadingUsers] = useState(true);
 
-  // Fetch users and decrypt their latest_message previews inline
   const fetchUsersData = async () => {
     setLoadingUsers(true);
     try {
       const res = await getAllMessageUsersData();
-      const rawUsers: any[] = res.data;
-
-      if (!myPrivateKeyRef.current) {
-        setUsers(rawUsers);
-        return;
-      }
-
-      const decrypted = await Promise.all(
-        rawUsers.map(async (user) => {
-          if (!user.latest_message_encrypted_keys || !user.latest_message) return user;
-          const myEntry = user.latest_message_encrypted_keys.keys?.find(
-            (k: { deviceId: string }) => k.deviceId === myDeviceIdRef.current,
-          );
-          if (!myEntry) return { ...user, latest_message: t("messages.encryptedMessage"), latest_message_encrypted_keys: null };
-          try {
-            const plaintext = await decryptMessage(
-              user.latest_message,
-              user.latest_message_encrypted_keys.iv,
-              myEntry.encryptedKey,
-              myPrivateKeyRef.current!,
-            );
-            return { ...user, latest_message: plaintext, latest_message_encrypted_keys: null };
-          } catch {
-            return { ...user, latest_message: t("messages.encryptedMessage"), latest_message_encrypted_keys: null };
-          }
-        }),
-      );
-
-      setUsers(decrypted);
+      setUsers(res.data);
     } catch (error) {
-      console.error("Failed to fetch users and messages:", error);
+      console.error("Failed to fetch users:", error);
     } finally {
       setLoadingUsers(false);
     }
@@ -215,102 +157,7 @@ const Messages: React.FC<MessageProps> = ({
 
   useEffect(() => {
     fetchMutedUsers();
-  }, []);
-
-  // Initialize E2E crypto: load or generate key pair, register public key with server
-  useEffect(() => {
-    const initCrypto = async () => {
-      try {
-        const deviceId = getOrCreateDeviceId();
-        setMyDeviceId(deviceId);
-        myDeviceIdRef.current = deviceId;
-
-        // Password: prefer sessionStorage (set at login), fall back to localStorage (persisted for cross-session restore)
-        const password = sessionStorage.getItem('_kp') || localStorage.getItem('_kp');
-        sessionStorage.removeItem('_kp');
-
-        let privateKey = await loadPrivateKey(deviceId);
-
-        if (!privateKey) {
-          const backupRes = await fetchKeyBackup();
-
-          if (backupRes.data && password) {
-            // Restore silently using the login password
-            try {
-              const pkcs8 = await decryptPrivateKeyWithPassword(
-                backupRes.data.encrypted_private_key,
-                backupRes.data.salt,
-                backupRes.data.iv,
-                password,
-              );
-              const restoredKey = await importPrivateKey(pkcs8);
-              const restoredDeviceId = backupRes.data.device_id;
-              localStorage.setItem('ripple_device_id', restoredDeviceId);
-              localStorage.removeItem('_kp');
-              setMyDeviceId(restoredDeviceId);
-              myDeviceIdRef.current = restoredDeviceId;
-              await storePrivateKey(restoredDeviceId, restoredKey);
-              myPrivateKeyRef.current = restoredKey;
-              const existingKeys = await getDeviceKeys(currentUser.id);
-              const myKeyEntry = existingKeys.find((k: any) => k.device_id === restoredDeviceId);
-              if (myKeyEntry) {
-                myPublicKeyRef.current = await importPublicKey(myKeyEntry.public_key);
-              }
-            } catch {
-              // Wrong password or corrupt backup — fall through to fresh keypair
-              console.warn('Key restore failed, generating fresh keypair');
-              localStorage.removeItem('_kp');
-              const keyPair = await generateKeyPair();
-              await storePrivateKey(deviceId, keyPair.privateKey);
-              const pubKeyB64 = await exportPublicKey(keyPair.publicKey);
-              await registerDeviceKey(deviceId, pubKeyB64);
-              myPrivateKeyRef.current = keyPair.privateKey;
-              myPublicKeyRef.current = keyPair.publicKey;
-            }
-          } else {
-            // No backup or no password available — generate fresh keypair
-            const keyPair = await generateKeyPair();
-            await storePrivateKey(deviceId, keyPair.privateKey);
-            const pubKeyB64 = await exportPublicKey(keyPair.publicKey);
-            await registerDeviceKey(deviceId, pubKeyB64);
-            myPrivateKeyRef.current = keyPair.privateKey;
-            myPublicKeyRef.current = keyPair.publicKey;
-
-            // Back up with password if available, and keep password in localStorage for future cross-session restores
-            if (password) {
-              try {
-                const pkcs8 = await exportPrivateKey(keyPair.privateKey);
-                const { encryptedPrivateKey, salt, iv } = await encryptPrivateKeyWithPassword(pkcs8, password);
-                await backupDeviceKey({ deviceId, encryptedPrivateKey, salt, iv });
-              } catch {
-                console.warn('Key backup failed silently');
-              }
-            }
-          }
-        } else {
-          // Key already in IndexedDB — load it and re-register if needed
-          myPrivateKeyRef.current = privateKey;
-          const keys = await getDeviceKeys(currentUser.id);
-          const myKeyData = keys.find((k: any) => k.device_id === deviceId);
-          if (myKeyData) {
-            myPublicKeyRef.current = await importPublicKey(myKeyData.public_key);
-          } else {
-            const keyPair = await generateKeyPair();
-            await storePrivateKey(deviceId, keyPair.privateKey);
-            const pubKeyB64 = await exportPublicKey(keyPair.publicKey);
-            await registerDeviceKey(deviceId, pubKeyB64);
-            myPrivateKeyRef.current = keyPair.privateKey;
-            myPublicKeyRef.current = keyPair.publicKey;
-          }
-        }
-
-        setCryptoReady(true);
-      } catch (err) {
-        console.error('E2E crypto init failed:', err);
-        setCryptoReady(true);
-      }
-    };
-    initCrypto();
+    fetchUsersData();
   }, []);
 
   const fetchMessagesForSelectedUser = async (
@@ -319,70 +166,16 @@ const Messages: React.FC<MessageProps> = ({
     limit = 20,
   ) => {
     setInitialMessageLoading(true);
-
     try {
       const res = await getMessagesDataForSelectedUser(userId, offset, limit);
-      const rawMessages: Message[] = res.data.slice().reverse();
-
-      // Decrypt messages that have encrypted_keys; leave legacy messages as-is
-      const decrypted = await Promise.all(
-        rawMessages.map(async (msg) => {
-          if (!msg.encrypted_keys || !myPrivateKeyRef.current) return msg;
-          const myEntry = msg.encrypted_keys.keys.find(
-            (k) => k.deviceId === myDeviceIdRef.current,
-          );
-          if (!myEntry) return { ...msg, message_text: t("messages.encryptedOtherDevice") };
-          try {
-            const plaintext = await decryptMessage(
-              msg.message_text,        // ciphertext is in message_text
-              msg.encrypted_keys.iv,
-              myEntry.encryptedKey,
-              myPrivateKeyRef.current,
-            );
-            return { ...msg, message_text: plaintext };
-          } catch {
-            return { ...msg, message_text: t("messages.failedToDecrypt") };
-          }
-        }),
-      );
-
-      setMessages((prevMessages) =>
-        offset === 0 ? decrypted : [...decrypted, ...prevMessages],
-      );
+      const messages: Message[] = res.data.slice().reverse();
+      setMessages((prev) => offset === 0 ? messages : [...messages, ...prev]);
     } catch (error) {
-      console.error("Failed to fetch users and messages:", error);
+      console.error("Failed to fetch messages:", error);
     } finally {
       setInitialMessageLoading(false);
     }
   };
-
-  // Wait for crypto to be ready before fetching users so previews can be decrypted inline
-  useEffect(() => {
-    if (cryptoReady) fetchUsersData();
-  }, [cryptoReady]);
-
-  // Fetch all public keys for the selected receiver so we can encrypt for all their devices
-  useEffect(() => {
-    if (!selectedUser) {
-      receiverKeysRef.current = [];
-      return;
-    }
-    const fetchReceiverKeys = async () => {
-      try {
-        const keys = await getDeviceKeys(selectedUser.id);
-        receiverKeysRef.current = await Promise.all(
-          keys.map(async (k) => ({
-            deviceId: k.device_id,
-            publicKey: await importPublicKey(k.public_key),
-          }))
-        );
-      } catch (err) {
-        console.error("Failed to fetch receiver device keys:", err);
-        receiverKeysRef.current = [];
-      }
-    };
-    fetchReceiverKeys();
-  }, [selectedUser?.id]);
 
   // Setting selected user
   useEffect(() => {
@@ -425,27 +218,7 @@ const Messages: React.FC<MessageProps> = ({
     socket.on("receiveMessage", async (data) => {
       if (data.senderId === currentUser.id) return;
 
-      // Decrypt if the message is encrypted
-      let messageText = data.message_text;
-      if (data.encrypted_keys && myPrivateKeyRef.current) {
-        const myEntry = data.encrypted_keys.keys.find(
-          (k: { deviceId: string }) => k.deviceId === myDeviceIdRef.current,
-        );
-        if (myEntry) {
-          try {
-            messageText = await decryptMessage(
-              data.message_text,        // ciphertext is in message_text
-              data.encrypted_keys.iv,
-              myEntry.encryptedKey,
-              myPrivateKeyRef.current,
-            );
-          } catch {
-            messageText = t("messages.failedToDecrypt");
-          }
-        } else {
-          messageText = t("messages.encryptedOtherDevice");
-        }
-      }
+      const messageText = data.message_text;
 
       // Update user list preview and unread count
       setUsers((prevUsers) =>
@@ -609,35 +382,13 @@ const Messages: React.FC<MessageProps> = ({
     }
 
     const tempMessageId = Date.now() + Math.floor(Math.random() * 1000);
-    const plaintext = inputMessage;
-
-    // Encrypt the message text if we have keys for the receiver and ourselves
-    let encryptedPayload: EncryptedPayload | null = null;
-    let textToSend = plaintext;
-
-    if (
-      plaintext.trim() &&
-      myPrivateKeyRef.current &&
-      myPublicKeyRef.current &&
-      receiverKeysRef.current.length > 0
-    ) {
-      try {
-        const allRecipients = [
-          ...receiverKeysRef.current,
-          { deviceId: myDeviceIdRef.current, publicKey: myPublicKeyRef.current },
-        ];
-        encryptedPayload = await encryptMessage(plaintext, allRecipients);
-        textToSend = encryptedPayload.ciphertext;
-      } catch (err) {
-        console.error("Encryption failed, sending plaintext:", err);
-      }
-    }
+    const messageText = inputMessage;
 
     const newMessage: Message = {
       message_id: tempMessageId,
       sender_id: currentUser.id,
       receiver_id: selectedUser.id,
-      message_text: plaintext, // always show plaintext in own UI
+      message_text: messageText,
       file_url: fileUrl,
       file_name: fileName,
       file_size: fileSize,
@@ -664,10 +415,7 @@ const Messages: React.FC<MessageProps> = ({
       tempId: tempMessageId,
       senderId: currentUser.id,
       receiverId: selectedUser.id,
-      text: textToSend,
-      encryptedKeys: encryptedPayload
-        ? { iv: encryptedPayload.iv, keys: encryptedPayload.keys }
-        : null,
+      text: messageText,
       fileUrl,
       fileName,
       fileSize,
@@ -688,7 +436,7 @@ const Messages: React.FC<MessageProps> = ({
     setUsers((prev) =>
       prev.map((u) =>
         u.id === selectedUser.id
-          ? { ...u, latest_message: plaintext || "", latest_message_timestamp: new Date().toISOString() }
+          ? { ...u, latest_message: messageText || "", latest_message_timestamp: new Date().toISOString() }
           : u,
       ),
     );
