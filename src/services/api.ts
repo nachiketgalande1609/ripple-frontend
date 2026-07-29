@@ -72,6 +72,9 @@ import {
     REPOST_ENDPOINT,
     USER_REPOSTS_ENDPOINT,
     REELS_ENDPOINT,
+    PROFILE_VIEWS_ENDPOINT,
+    GRANT_PREMIUM_ENDPOINT,
+    CANCEL_PREMIUM_ENDPOINT,
 } from "./apiEndpoints";
 
 export const getPinnedPosts = async (userId: string) => {
@@ -1230,6 +1233,21 @@ export const getInsights = async () => {
 
 export const recordProfileView = async (profileUserId: string) => {
     try { await api.post(`/api/users/record-view/${profileUserId}`); } catch {}
+};
+
+export const getProfileViews = async () => {
+    const response = await api.get(PROFILE_VIEWS_ENDPOINT);
+    return response.data;
+};
+
+export const grantPremium = async (duration_months = 1) => {
+    const response = await api.post(GRANT_PREMIUM_ENDPOINT, { duration_months });
+    return response.data;
+};
+
+export const cancelPremium = async () => {
+    const response = await api.delete(CANCEL_PREMIUM_ENDPOINT);
+    return response.data;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////

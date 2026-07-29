@@ -20,6 +20,7 @@ import ChangePassword from "../component/settings/ChangePassword";
 import AccountManagement from "../component/settings/AccountManagement";
 import Timezone from "../component/settings/Timezone";
 import LanguageSettings from "../component/settings/LanguageSettings";
+import PremiumSettings from "../component/settings/PremiumSettings";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useTranslation } from "react-i18next";
 
@@ -33,6 +34,7 @@ const menuItems = [
   { label: "Language" },
   { label: "Linked Devices" },
   { label: "Blocked" },
+  { label: "Premium" },
   { label: "Account" },
 ];
 
@@ -101,6 +103,7 @@ const SettingsPage = () => {
     if (currentSetting === "changepassword") return <ChangePassword />;
     if (currentSetting === "timezone") return <Timezone />;
     if (currentSetting === "language") return <LanguageSettings />;
+    if (currentSetting === "premium") return <PremiumSettings />;
     if (currentSetting === "account") return <AccountManagement />;
     return (
       <Box sx={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
@@ -338,6 +341,7 @@ const SettingsPage = () => {
         minHeight: "100vh",
         backgroundColor: (t) => t.palette.background.default,
         fontFamily: "'DM Sans', sans-serif",
+        pl: { xs: 0, sm: "68px" },
       }}
     >
       {/* Sidebar */}

@@ -84,6 +84,9 @@ export const REGISTER_DEVICE_KEY_ENDPOINT: string = "/api/keys/register";
 export const GET_DEVICE_KEYS_ENDPOINT: string = "/api/keys";
 
 export const RECORD_PROFILE_VIEW_ENDPOINT: string = "/api/users/record-view";
+export const PROFILE_VIEWS_ENDPOINT: string = "/api/users/profile-views";
+export const GRANT_PREMIUM_ENDPOINT: string = "/api/users/grant-premium";
+export const CANCEL_PREMIUM_ENDPOINT: string = "/api/users/cancel-premium";
 
 // Insights Endpoints
 export const GET_INSIGHTS_ENDPOINT: string = "/api/insights/summary";

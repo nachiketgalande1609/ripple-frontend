@@ -52,6 +52,11 @@ import CreateHighlightModal from "../../component/stories/CreateHighlightModal";
 import StoryDialog from "../../component/stories/StoryDialog";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import PremiumBadge from "../../component/premium/PremiumBadge";
+import PremiumUpgradeModal from "../../component/premium/PremiumUpgradeModal";
+import ProfileViewsModal from "../../component/premium/ProfileViewsModal";
 
 interface Profile {
     id?: number;
@@ -72,6 +77,8 @@ interface Profile {
     created_at?: string;
     last_seen?: string | null;
     pronouns?: string;
+    is_premium?: boolean;
+    premium_expires_at?: string | null;
 }
 
 /* ─── Stat Column ─────────────────────────────────────────────── */
@@ -400,6 +407,8 @@ const ProfilePage = () => {
     const [scrolled, setScrolled] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [isBlocked, setIsBlocked] = useState(false);
+    const [premiumUpgradeOpen, setPremiumUpgradeOpen] = useState(false);
+    const [profileViewsOpen, setProfileViewsOpen] = useState(false);
     const [pinnedPosts, setPinnedPosts] = useState<any[]>([]);
     const [shareCardOpen, setShareCardOpen] = useState(false);
     const [highlights, setHighlights] = useState<Highlight[]>([]);
@@ -849,6 +858,45 @@ const ProfilePage = () => {
                         )}
                         {isOwnProfile && (
                             <>
+                                {/* Premium: view profile viewers */}
+                                {!!profileData?.is_premium && (
+                                    <Tooltip title="See who viewed your profile" placement="top">
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => setProfileViewsOpen(true)}
+                                            sx={{
+                                                border: "none", borderRadius: "14px",
+                                                width: 34, height: 34,
+                                                backgroundColor: "rgba(245,158,11,0.1)",
+                                                color: "#f59e0b",
+                                                transition: "background 0.2s, box-shadow 0.2s",
+                                                "&:hover": { backgroundColor: "rgba(245,158,11,0.18)", boxShadow: "0 0 12px rgba(245,158,11,0.3)" },
+                                            }}
+                                        >
+                                            <VisibilityOutlinedIcon sx={{ fontSize: 17 }} />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
+                                {/* Non-premium: upgrade CTA */}
+                                {!profileData?.is_premium && (
+                                    <Tooltip title="Unlock Premium features" placement="top">
+                                        <Button
+                                            size="small"
+                                            onClick={() => setPremiumUpgradeOpen(true)}
+                                            startIcon={<WorkspacePremiumRoundedIcon sx={{ fontSize: "15px !important" }} />}
+                                            sx={{
+                                                textTransform: "none", fontWeight: 600,
+                                                borderRadius: "14px", fontSize: "0.78rem",
+                                                px: 1.75, py: 0.75, border: "none",
+                                                background: "linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(217,119,6,0.1) 100%)",
+                                                color: "#f59e0b",
+                                                "&:hover": { background: "linear-gradient(135deg, rgba(245,158,11,0.25) 0%, rgba(217,119,6,0.18) 100%)" },
+                                            }}
+                                        >
+                                            Premium
+                                        </Button>
+                                    </Tooltip>
+                                )}
                                 <Button
                                     variant="outlined"
                                     size="small"
@@ -900,12 +948,13 @@ const ProfilePage = () => {
                     </Stack>
                 </Stack>
 
-                {/* Name + verified + online indicator */}
+                {/* Name + verified + premium + online indicator */}
                 <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mt: 1.75 }}>
                     <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.05rem", sm: "1.15rem" }, color: (t) => t.palette.text.primary }}>
                         {profileData?.username}
                     </Typography>
                     {profileData?.is_verified && <Verified sx={{ fontSize: 15, color: "#1d9bf0" }} />}
+                    {!!profileData?.is_premium && <PremiumBadge size={16} />}
                     {profileData && !isOwnProfile && !hideActivity && (() => {
                         const isOnline = onlineUsers.includes(String(profileData.id));
                         const label = !isOnline ? formatLastSeen(profileData.last_seen, false) : null;
@@ -1527,6 +1576,20 @@ const ProfilePage = () => {
             />
 
             <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />
+
+            <PremiumUpgradeModal
+                open={premiumUpgradeOpen}
+                onClose={() => setPremiumUpgradeOpen(false)}
+                onUpgraded={() => {
+                    setProfileData((p) => p ? { ...p, is_premium: true } : p);
+                    setPremiumUpgradeOpen(false);
+                }}
+            />
+
+            <ProfileViewsModal
+                open={profileViewsOpen}
+                onClose={() => setProfileViewsOpen(false)}
+            />
         </Box>
     );
 };
