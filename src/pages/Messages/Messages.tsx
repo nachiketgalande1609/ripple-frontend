@@ -703,13 +703,8 @@ const Messages: React.FC<MessageProps> = ({
       if (response?.success) {
         setMessages(
           (prevMessages: Message[]) =>
-            prevMessages.filter((msg) => msg.message_id !== message.message_id), // Remove message from array
+            prevMessages.filter((msg) => msg.message_id !== message.message_id),
         );
-
-        notifications.show(t("messages.messageDeleted"), {
-          severity: "success",
-          autoHideDuration: 3000,
-        });
       }
     } catch (error) {
       console.error("Failed to delete message:", error);

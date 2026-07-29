@@ -5,6 +5,25 @@ const injectReactionStyles = () => {
   const s = document.createElement("style");
   s.id = "msg-reaction-styles";
   s.textContent = `
+    @keyframes msg-slide-in-right {
+      0%   { opacity: 0; transform: translateX(24px) scale(0.95); }
+      60%  { transform: translateX(-4px) scale(1.01); }
+      100% { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes msg-slide-in-left {
+      0%   { opacity: 0; transform: translateX(-24px) scale(0.95); }
+      60%  { transform: translateX(4px) scale(1.01); }
+      100% { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes msg-exit {
+      0%   { opacity: 1; transform: scale(1); max-height: 200px; margin-bottom: 6px; }
+      40%  { transform: scale(1.03); }
+      100% { opacity: 0; transform: scale(0.85); max-height: 0; margin-bottom: 0; }
+    }
+    .msg-enter-right { animation: msg-slide-in-right 0.35s cubic-bezier(0.34,1.2,0.64,1) both; }
+    .msg-enter-left  { animation: msg-slide-in-left  0.35s cubic-bezier(0.34,1.2,0.64,1) both; }
+    .msg-exit        { animation: msg-exit 0.3s ease forwards; overflow: hidden; }
+
     @keyframes reaction-pop-in {
       0%   { opacity: 0; transform: scale(0.2) rotate(-20deg); }
       55%  { transform: scale(1.4) rotate(10deg); }
@@ -273,8 +292,29 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   >(null);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
   const [exitingReactions, setExitingReactions] = useState<Set<string>>(new Set());
+  const [exitingMessages, setExitingMessages] = useState<Set<number>>(new Set());
+  const [enteringMessages, setEnteringMessages] = useState<Set<number>>(new Set());
+  const seenMessageIdsRef = useRef<Set<number>>(new Set());
 
   useEffect(() => { injectReactionStyles(); }, []);
+
+  useEffect(() => {
+    const combined = [...olderMessages, ...messages];
+    const newIds: number[] = [];
+    combined.forEach((msg) => {
+      if (msg.message_id && !seenMessageIdsRef.current.has(msg.message_id)) {
+        seenMessageIdsRef.current.add(msg.message_id);
+        newIds.push(msg.message_id);
+      }
+    });
+    if (newIds.length === 0) return;
+    const toAnimate = newIds[newIds.length - 1];
+    setEnteringMessages((prev) => new Set([...prev, toAnimate]));
+    const timer = setTimeout(() => {
+      setEnteringMessages((prev) => { const s = new Set(prev); s.delete(toAnimate); return s; });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [messages.length, olderMessages.length]);
 
   const emojiPickerOpen = Boolean(emojiAnchorEl);
 
@@ -382,6 +422,15 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
 
   const isSelf = (msg: Message) => Number(msg.sender_id) === Number(currentUser.id);
 
+  const handleDeleteWithAnimation = (msg: Message | null) => {
+    if (!msg) return;
+    setExitingMessages((prev) => new Set([...prev, msg.message_id]));
+    setTimeout(() => {
+      handleDeleteMessage(msg);
+      setExitingMessages((prev) => { const s = new Set(prev); s.delete(msg.message_id); return s; });
+    }, 300);
+  };
+
   // ── Design tokens ─────────────────────────────────────────────────────────
   const ACCENT = "#64748B";
   const selfBg = ACCENT;
@@ -478,9 +527,13 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
               : null;
             const self = isSelf(msg);
 
+            const isEntering = enteringMessages.has(msg.message_id);
+            const isExitingMsg = exitingMessages.has(msg.message_id);
+
             return (
               <Box
                 key={msg.message_id ?? index}
+                className={isExitingMsg ? "msg-exit" : isEntering ? (self ? "msg-enter-right" : "msg-enter-left") : ""}
                 sx={{
                   display: "flex",
                   mb: "6px",
@@ -1297,7 +1350,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
         open={moreMenuOpen}
         onClose={() => setMoreMenuOpen(false)}
         onDelete={() => {
-          handleDeleteMessage(selectedMessageForAction);
+          handleDeleteWithAnimation(selectedMessageForAction);
           setMoreMenuOpen(false);
         }}
         onInfo={() => {
