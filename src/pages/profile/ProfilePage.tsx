@@ -47,8 +47,9 @@ import BlankProfileImage from "../../static/profile_blank.png";
 import CreatePostModal from "../../component/post/CreatePostModal";
 import { formatLastSeen } from "../../utils/lastSeen";
 import ShareProfileCardModal from "../../component/profile/ShareProfileCardModal";
-import HighlightViewer, { type Highlight } from "../../component/stories/HighlightViewer";
+import { type Highlight } from "../../component/stories/HighlightViewer";
 import CreateHighlightModal from "../../component/stories/CreateHighlightModal";
+import StoryDialog from "../../component/stories/StoryDialog";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
@@ -400,6 +401,7 @@ const ProfilePage = () => {
     const [highlights, setHighlights] = useState<Highlight[]>([]);
     const [viewingHighlight, setViewingHighlight] = useState<Highlight | null>(null);
     const [createHighlightOpen, setCreateHighlightOpen] = useState(false);
+    const [editingHighlight, setEditingHighlight] = useState<Highlight | null>(null);
 
     const isOwnProfile = currentUser?.id == userId;
 
@@ -1081,24 +1083,21 @@ const ProfilePage = () => {
                         {highlights.map(highlight => (
                             <Box
                                 key={highlight.id}
-                                onClick={() => highlight.items.length > 0 && setViewingHighlight(highlight)}
-                                sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75, cursor: highlight.items.length > 0 ? "pointer" : "default", flexShrink: 0 }}
+                                sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75, flexShrink: 0, position: "relative" }}
                             >
                                 <Box
+                                    onClick={() => highlight.items.length > 0 && setViewingHighlight(highlight)}
                                     sx={{
                                         width: 64, height: 64, borderRadius: "50%", overflow: "hidden",
                                         border: "2px solid", borderColor: "divider",
-                                        background: "action.hover", position: "relative",
+                                        cursor: highlight.items.length > 0 ? "pointer" : "default",
                                         transition: "transform 0.2s",
-                                        "&:hover": highlight.items.length > 0 ? { transform: "scale(1.06)" } : {},
+                                        "&:hover": { transform: "scale(1.06)" },
                                     }}
                                 >
                                     {highlight.cover_url || highlight.items[0]?.media_url ? (
-                                        <Box
-                                            component="img"
-                                            src={highlight.cover_url || highlight.items[0].media_url}
-                                            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                        />
+                                        <Box component="img" src={highlight.cover_url || highlight.items[0].media_url}
+                                            sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                     ) : (
                                         <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "action.hover" }}>
                                             <AutoAwesomeRoundedIcon sx={{ fontSize: 24, color: "text.disabled" }} />
@@ -1114,6 +1113,7 @@ const ProfilePage = () => {
                                 </Typography>
                             </Box>
                         ))}
+
                     </Box>
                 </Box>
             )}
@@ -1451,16 +1451,38 @@ const ProfilePage = () => {
                 profile={profileData}
             />
 
-            <HighlightViewer
+            <StoryDialog
                 open={!!viewingHighlight}
                 onClose={() => setViewingHighlight(null)}
-                highlight={viewingHighlight}
+                selectedStoryIndex={0}
+                onDelete={isOwnProfile && viewingHighlight ? async () => {
+                    await deleteHighlight(viewingHighlight.id);
+                    setHighlights(prev => prev.filter(h => h.id !== viewingHighlight.id));
+                    setViewingHighlight(null);
+                } : undefined}
+                onEdit={isOwnProfile && viewingHighlight ? () => {
+                    setEditingHighlight(viewingHighlight);
+                    setViewingHighlight(null);
+                } : undefined}
+                stories={viewingHighlight ? [{
+                    user_id: profileData?.id ?? 0,
+                    username: viewingHighlight.title,
+                    profile_picture: viewingHighlight.cover_url ?? viewingHighlight.items[0]?.media_url ?? "",
+                    stories: viewingHighlight.items.map(item => ({
+                        story_id: item.id,
+                        media_url: item.media_url,
+                        media_type: item.media_type,
+                        created_at: new Date().toISOString(),
+                        viewers: [],
+                    })),
+                }] : []}
             />
 
             <CreateHighlightModal
-                open={createHighlightOpen}
-                onClose={() => setCreateHighlightOpen(false)}
+                open={createHighlightOpen || !!editingHighlight}
+                onClose={() => { setCreateHighlightOpen(false); setEditingHighlight(null); }}
                 onCreated={fetchHighlightsFn}
+                editHighlight={editingHighlight}
             />
 
             <CreatePostModal open={modalOpen} handleClose={() => setModalOpen(false)} />

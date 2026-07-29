@@ -88,6 +88,11 @@ export const unpinPost = async (postId: number) => {
     return response.data;
 };
 
+export const getMyStoryArchive = async () => {
+    const response = await api.get(`/api/stories/my-archive`);
+    return response.data;
+};
+
 export const sharePostAsStory = async (postId: number, caption?: string) => {
     const response = await api.post(`/api/stories/share-post-as-story`, { post_id: postId, caption });
     return response.data;
@@ -103,7 +108,7 @@ export const createHighlight = async (title: string, items: { media_url: string;
     return response.data;
 };
 
-export const updateHighlight = async (id: number, data: { title?: string; cover_url?: string }) => {
+export const updateHighlight = async (id: number, data: { title?: string; cover_url?: string; items?: { media_url: string; media_type: string }[] }) => {
     const response = await api.put(`/api/highlights/${id}`, data);
     return response.data;
 };

@@ -11,6 +11,10 @@ import {
     Tooltip,
     useTheme,
     useMediaQuery,
+    Menu,
+    MenuItem,
+    ListItemIcon,
+    ListItemText,
 } from "@mui/material";
 import {
     ArrowBackIos,
@@ -21,6 +25,9 @@ import {
     Visibility,
     VolumeUp,
     VolumeOff,
+    DeleteOutlineRounded,
+    MoreVert,
+    EditRounded,
 } from "@mui/icons-material";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -56,6 +63,8 @@ interface StoryDialogProps {
     onClose: () => void;
     stories: UserStories[];
     selectedStoryIndex: number;
+    onDelete?: () => void;
+    onEdit?: () => void;
 }
 
 const STORY_DURATION = 8000;
@@ -133,7 +142,7 @@ const ViewerRow = ({
     </Stack>
 );
 
-const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selectedStoryIndex }) => {
+const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selectedStoryIndex, onDelete, onEdit }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const theme = useTheme();
@@ -150,6 +159,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [isMuted, setIsMuted] = useState(true);
+    const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
     const controlsTimeoutRef = useRef<NodeJS.Timeout>();
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -453,7 +463,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                             </Box>
                         </Stack>
 
-                        {/* Pause / Mute / Close */}
+                        {/* Pause / Mute / More / Close */}
                         <Stack direction="row" spacing={0.5} alignItems="center">
                             <Tooltip title={paused ? t("common.play") : t("common.pause")}>
                                 <IconButton
@@ -461,10 +471,7 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                     onClick={(e) => { e.stopPropagation(); handlePauseToggle(); }}
                                     sx={{ color: "rgba(255,255,255,0.85)", p: "6px" }}
                                 >
-                                    {paused
-                                        ? <PlayArrow sx={{ fontSize: "1.15rem" }} />
-                                        : <Pause sx={{ fontSize: "1.15rem" }} />
-                                    }
+                                    {paused ? <PlayArrow sx={{ fontSize: "1.15rem" }} /> : <Pause sx={{ fontSize: "1.15rem" }} />}
                                 </IconButton>
                             </Tooltip>
 
@@ -475,12 +482,19 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                         onClick={(e) => { e.stopPropagation(); handleVideoMute(); }}
                                         sx={{ color: "rgba(255,255,255,0.85)", p: "6px" }}
                                     >
-                                        {isMuted
-                                            ? <VolumeOff sx={{ fontSize: "1.15rem" }} />
-                                            : <VolumeUp sx={{ fontSize: "1.15rem" }} />
-                                        }
+                                        {isMuted ? <VolumeOff sx={{ fontSize: "1.15rem" }} /> : <VolumeUp sx={{ fontSize: "1.15rem" }} />}
                                     </IconButton>
                                 </Tooltip>
+                            )}
+
+                            {(onEdit || onDelete) && (
+                                <IconButton
+                                    size="small"
+                                    onClick={(e) => { e.stopPropagation(); setMenuAnchor(e.currentTarget); if (!paused) setPaused(true); }}
+                                    sx={{ color: "rgba(255,255,255,0.85)", p: "6px" }}
+                                >
+                                    <MoreVert sx={{ fontSize: "1.15rem" }} />
+                                </IconButton>
                             )}
 
                             <Tooltip title={t("common.close")}>
@@ -493,6 +507,79 @@ const StoryDialog: React.FC<StoryDialogProps> = ({ open, onClose, stories, selec
                                 </IconButton>
                             </Tooltip>
                         </Stack>
+
+                        {/* Edit / Delete dropdown */}
+                        <Menu
+                            open={!!menuAnchor}
+                            anchorEl={menuAnchor}
+                            onClose={() => { setMenuAnchor(null); setPaused(false); }}
+                            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                            transformOrigin={{ vertical: "top", horizontal: "right" }}
+                            MenuListProps={{ disablePadding: true }}
+                            slotProps={{
+                                paper: {
+                                    sx: {
+                                        borderRadius: "18px",
+                                        backgroundColor: "var(--nav-bg)",
+                                        boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+                                        border: "1px solid",
+                                        borderColor: "divider",
+                                        minWidth: 170,
+                                        overflow: "hidden",
+                                        py: 0.75,
+                                        px: 0.75,
+                                        gap: 0.5,
+                                    },
+                                },
+                            }}
+                        >
+                            {onEdit && (
+                                <MenuItem
+                                    onClick={() => { setMenuAnchor(null); onEdit(); }}
+                                    sx={{
+                                        borderRadius: "12px",
+                                        p: 1.25,
+                                        color: "text.primary",
+                                        "&:hover": {
+                                            backgroundColor: "var(--nav-bg)",
+                                            boxShadow: "inset 2px 2px 6px var(--nav-neo-shadow1), inset -2px -2px 6px var(--nav-neo-shadow2)",
+                                        },
+                                        transition: "box-shadow 0.2s",
+                                    }}
+                                >
+                                    <ListItemIcon sx={{ minWidth: "unset", color: "text.secondary" }}>
+                                        <EditRounded sx={{ fontSize: "1.1rem" }} />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary={t("profile.editHighlight")}
+                                        primaryTypographyProps={{ fontSize: "0.875rem", fontWeight: 500 }}
+                                    />
+                                </MenuItem>
+                            )}
+                            {onDelete && (
+                                <MenuItem
+                                    onClick={() => { setMenuAnchor(null); onDelete(); handleClose(); }}
+                                    sx={{
+                                        borderRadius: "12px",
+                                        p: 1.25,
+                                        color: "error.main",
+                                        "&:hover": {
+                                            backgroundColor: "var(--nav-bg)",
+                                            boxShadow: "inset 2px 2px 6px var(--nav-neo-shadow1), inset -2px -2px 6px var(--nav-neo-shadow2)",
+                                        },
+                                        transition: "box-shadow 0.2s",
+                                    }}
+                                >
+                                    <ListItemIcon sx={{ minWidth: "unset", color: "error.main" }}>
+                                        <DeleteOutlineRounded sx={{ fontSize: "1.1rem" }} />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary={t("profile.deleteHighlight")}
+                                        primaryTypographyProps={{ fontSize: "0.875rem", fontWeight: 500 }}
+                                    />
+                                </MenuItem>
+                            )}
+                        </Menu>
                     </Box>
 
                     {/* ── Media area ── */}
