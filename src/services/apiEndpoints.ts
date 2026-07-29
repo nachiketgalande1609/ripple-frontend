@@ -46,6 +46,7 @@ export const SAVE_POST_ENDPOINT: string = "/api/posts/save-post";
 export const REPOST_ENDPOINT: string = "/api/posts/repost";
 export const USER_REPOSTS_ENDPOINT: string = "/api/posts/reposts/user";
 export const REELS_ENDPOINT: string = "/api/posts/reels";
+export const SCHEDULED_POSTS_ENDPOINT: string = "/api/posts/scheduled";
 
 // Notifications Endpoints
 export const GET_NOTIFICATIONS_ENDPOINT: string = "/api/notifications/fetch-notifications";

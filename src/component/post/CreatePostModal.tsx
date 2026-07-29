@@ -14,10 +14,11 @@ import {
   SentimentSatisfiedAlt as EmojiIcon, LocationOn, Close,
   AddPhotoAlternate, ArrowForward as ArrowIcon,
   EditOutlined as EditIcon, DeleteOutline as DeleteIcon,
-  PersonAdd as TagIcon,
+  PersonAdd as TagIcon, AccessTime, CalendarMonth,
 } from "@mui/icons-material";
 import Popover from "@mui/material/Popover";
 import { useAppNotifications } from "../../hooks/useNotification";
+import ScheduledPostsModal from "./ScheduledPostsModal";
 
 interface TaggedUser { id: number; username: string; profile_picture?: string; }
 
@@ -51,6 +52,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
   const [tagResults, setTagResults] = useState<TaggedUser[]>([]);
   const [tagSearchLoading, setTagSearchLoading] = useState(false);
   const tagSearchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [scheduledAt, setScheduledAt] = useState<string>("");
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [scheduledPostsOpen, setScheduledPostsOpen] = useState(false);
 
   const notifications = useAppNotifications();
   const { user, setPostUploading } = useGlobalStore();
@@ -61,6 +65,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
   const hasCaption = postContent.trim().length > 0;
   const hasFile = imageFiles.length > 0;
   const isReady = hasCaption && hasFile;
+  const isScheduling = showScheduler && !!scheduledAt;
+
+  const formatScheduledLabel = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  };
 
   useEffect(() => {
     if (!open) {
@@ -68,6 +78,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
         setImageFiles([]); setActiveIndex(0); setPostContent(""); setLocation("");
         setIsDragging(false); setPosted(false);
         setTaggedUsers([]); setTagSearch(""); setTagResults([]);
+        setScheduledAt(""); setShowScheduler(false);
       }, 300);
     }
   }, [open]);
@@ -121,14 +132,22 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
     if (!isReady) return;
     try {
       setLoading(true); setPostUploading(true);
-      navigate(`/profile/${currentUser?.id}`);
+      if (!isScheduling) navigate(`/profile/${currentUser?.id}`);
       if (postContent.trim() && user) {
-        const res = await createPost({ user_id: user.id, content: postContent, media: imageFiles.length > 0 ? imageFiles : undefined, location, taggedUsers: taggedUsers.map((u) => u.id) });
+        const res = await createPost({
+          user_id: user.id, content: postContent,
+          media: imageFiles.length > 0 ? imageFiles : undefined,
+          location, taggedUsers: taggedUsers.map((u) => u.id),
+          scheduled_at: isScheduling ? new Date(scheduledAt).toISOString() : undefined,
+        });
         if (res?.success) {
           setPosted(true);
           setTimeout(() => {
             handleModalClose();
-            notifications.show(t("create.postShared"), { severity: "success", autoHideDuration: 3000 });
+            notifications.show(
+              isScheduling ? `Post scheduled for ${formatScheduledLabel(scheduledAt)}` : t("create.postShared"),
+              { severity: "success", autoHideDuration: 3000 }
+            );
           }, 800);
         }
       }
@@ -142,6 +161,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
   const bc = (th: any) => th.palette.divider;
 
   return (
+    <>
     <Modal
       open={open} onClose={handleModalClose} closeAfterTransition
       BackdropComponent={Backdrop}
@@ -369,8 +389,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                   <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.85rem", fontWeight: 600, color: (t) => t.palette.text.primary, lineHeight: 1.2 }}>
                     {currentUser?.username || "You"}
                   </Typography>
-                  <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.72rem", color: (t) => t.palette.text.disabled }}>
-                    {t("create.postingNow")}
+                  <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.72rem", color: isScheduling ? ACCENT : (t) => t.palette.text.disabled }}>
+                    {isScheduling ? `Scheduled for ${formatScheduledLabel(scheduledAt)}` : t("create.postingNow")}
                   </Typography>
                 </Box>
               </Box>
@@ -529,6 +549,57 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                   </Box>
                 )}
               </Box>
+
+              {/* Schedule */}
+              <Box sx={{ px: 2.25, pb: 1.75, borderTop: "1px solid", borderColor: bc, pt: 1.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <AccessTime sx={{ fontSize: 15, color: showScheduler ? ACCENT : (t) => t.palette.text.disabled }} />
+                    <Typography sx={{ fontFamily: "'Inter', sans-serif", fontSize: "0.855rem", color: showScheduler ? (t) => t.palette.text.primary : (t) => t.palette.text.secondary }}>
+                      Schedule post
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => { setShowScheduler((p) => !p); if (showScheduler) setScheduledAt(""); }}
+                    sx={{
+                      width: 26, height: 26, borderRadius: "7px",
+                      color: showScheduler ? ACCENT : (t) => t.palette.text.disabled,
+                      bgcolor: showScheduler ? `${ACCENT}12` : "transparent",
+                      border: "1px solid", borderColor: showScheduler ? `${ACCENT}30` : "transparent",
+                      "&:hover": { bgcolor: `${ACCENT}18`, color: ACCENT },
+                    }}
+                  >
+                    <CalendarMonth sx={{ fontSize: 14 }} />
+                  </IconButton>
+                </Box>
+                {showScheduler && (
+                  <Box sx={{ mt: 1.25 }}>
+                    <Box
+                      component="input"
+                      type="datetime-local"
+                      value={scheduledAt}
+                      min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScheduledAt(e.target.value)}
+                      sx={{
+                        width: "100%",
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: "0.84rem",
+                        padding: "6px 10px",
+                        borderRadius: "10px",
+                        border: "1px solid",
+                        borderColor: (t) => t.palette.divider,
+                        bgcolor: (t) => t.palette.background.paper,
+                        color: (t) => t.palette.text.primary,
+                        outline: "none",
+                        boxSizing: "border-box",
+                        "&:focus": { borderColor: ACCENT },
+                        colorScheme: isDark ? "dark" : "light",
+                      }}
+                    />
+                  </Box>
+                )}
+              </Box>
             </Box>
           </Box>
 
@@ -538,13 +609,29 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
             gap: 1.5, px: 2.5, py: 1.375,
             borderTop: "1px solid", borderColor: bc, flexShrink: 0,
           }}>
-            {!isReady && (
+            {!isReady ? (
               <Typography sx={{
                 fontFamily: "'Inter', sans-serif", fontSize: "0.78rem",
                 color: (t) => t.palette.text.disabled, mr: "auto",
               }}>
                 {!hasFile && !hasCaption ? t("create.addPhotoAndCaption") : !hasFile ? t("create.addPhotoToContinue") : t("create.writeCaptionToContinue")}
               </Typography>
+            ) : (
+              <Button
+                variant="text"
+                onClick={() => setScheduledPostsOpen(true)}
+                startIcon={<CalendarMonth sx={{ fontSize: "14px !important" }} />}
+                sx={{
+                  mr: "auto", borderRadius: "9px",
+                  color: (t) => t.palette.text.disabled,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "0.78rem", fontWeight: 500,
+                  textTransform: "none", px: 1.25, py: 0.5,
+                  "&:hover": { backgroundColor: (t) => t.palette.action.hover, color: ACCENT },
+                }}
+              >
+                View scheduled
+              </Button>
             )}
 
             <Button
@@ -565,11 +652,13 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
             <Button
               variant="contained"
               onClick={handleSubmit}
-              disabled={!isReady || loading || posted}
+              disabled={!isReady || loading || posted || (showScheduler && !scheduledAt)}
               endIcon={
                 loading
                   ? <CircularProgress size={13} thickness={4} sx={{ color: "#fff" }} />
                   : posted ? null
+                  : isScheduling
+                  ? <AccessTime sx={{ fontSize: "14px !important" }} />
                   : <ArrowIcon sx={{ fontSize: "14px !important" }} />
               }
               sx={{
@@ -588,7 +677,13 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
                 "&.Mui-disabled": { backgroundColor: `${ACCENT}35`, color: "rgba(255,255,255,0.5)" },
               }}
             >
-              {posted ? t("create.shared") : loading ? t("create.sharing") : t("create.share")}
+              {posted
+                ? (isScheduling ? "Scheduled!" : t("create.shared"))
+                : loading
+                ? (isScheduling ? "Scheduling…" : t("create.sharing"))
+                : isScheduling
+                ? "Schedule"
+                : t("create.share")}
             </Button>
           </Box>
 
@@ -609,6 +704,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, handleClose }) 
         </Box>
       </Fade>
     </Modal>
+
+    <ScheduledPostsModal open={scheduledPostsOpen} onClose={() => setScheduledPostsOpen(false)} />
+    </>
   );
 };
 

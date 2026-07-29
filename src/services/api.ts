@@ -33,6 +33,7 @@ import {
     DELETE_MESSAGE_ENDPOINT,
     CREATE_POST_ENDPOINT,
     DELETE_POST_ENDPOINT,
+    SCHEDULED_POSTS_ENDPOINT,
     FETCH_SEARCH_HISTORY_ENDPOINT,
     UPDATE_SEARCH_HISTORY_ENDPOINT,
     DELETE_SEARCH_HISTORY_ENDPOINT,
@@ -170,6 +171,7 @@ interface PostData {
     media?: File | File[];
     location: string;
     taggedUsers?: number[];
+    scheduled_at?: string;
 }
 
 interface ProfileData {
@@ -746,6 +748,9 @@ export const createPost = async (postData: PostData) => {
         if (postData.taggedUsers && postData.taggedUsers.length > 0) {
             formData.append("taggedUsers", JSON.stringify(postData.taggedUsers));
         }
+        if (postData.scheduled_at) {
+            formData.append("scheduled_at", postData.scheduled_at);
+        }
 
         const response = await api.post(CREATE_POST_ENDPOINT, formData, {
             headers: {
@@ -762,6 +767,11 @@ export const createPost = async (postData: PostData) => {
         }
         throw error;
     }
+};
+
+export const getScheduledPosts = async () => {
+    const response = await api.get(SCHEDULED_POSTS_ENDPOINT);
+    return response.data;
 };
 
 export const deletePost = async (postId: string) => {
