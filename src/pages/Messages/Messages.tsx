@@ -896,6 +896,7 @@ const Messages: React.FC<MessageProps> = ({
         display: "flex",
         height: isMobile ? "calc(100dvh - 52px - 54px)" : "100dvh",
         mt: isMobile ? "52px" : 0,
+        pl: { xs: 0, sm: "68px" },
       }}
     >
       {isMobile ? (
