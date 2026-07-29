@@ -1,4 +1,40 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
+
+const injectReactionStyles = () => {
+  if (document.getElementById("msg-reaction-styles")) return;
+  const s = document.createElement("style");
+  s.id = "msg-reaction-styles";
+  s.textContent = `
+    @keyframes reaction-pop-in {
+      0%   { opacity: 0; transform: scale(0.2) rotate(-20deg); }
+      55%  { transform: scale(1.4) rotate(10deg); }
+      75%  { transform: scale(0.85) rotate(-5deg); }
+      90%  { transform: scale(1.08) rotate(2deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    @keyframes reaction-pop-out {
+      0%   { opacity: 1; transform: scale(1) rotate(0deg); }
+      25%  { transform: scale(1.25) rotate(-8deg); }
+      100% { opacity: 0; transform: scale(0) rotate(25deg); }
+    }
+    @keyframes reaction-container-in {
+      0%   { opacity: 0; transform: scale(0.5); }
+      60%  { transform: scale(1.1); }
+      80%  { transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes reaction-container-out {
+      0%   { opacity: 1; transform: scale(1); }
+      30%  { transform: scale(1.1); }
+      100% { opacity: 0; transform: scale(0); }
+    }
+    .reaction-chip-enter     { animation: reaction-pop-in 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .reaction-chip-exit      { animation: reaction-pop-out 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    .reaction-container-enter { animation: reaction-container-in 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .reaction-container-exit  { animation: reaction-container-out 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  `;
+  document.head.appendChild(s);
+};
 import { useTranslation } from "react-i18next";
 import {
   Typography,
@@ -236,6 +272,9 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     ReactionDetail[] | null
   >(null);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
+  const [exitingReactions, setExitingReactions] = useState<Set<string>>(new Set());
+
+  useEffect(() => { injectReactionStyles(); }, []);
 
   const emojiPickerOpen = Boolean(emojiAnchorEl);
 
@@ -341,7 +380,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     setSelectedReactions(null);
   };
 
-  const isSelf = (msg: Message) => msg.sender_id === currentUser.id;
+  const isSelf = (msg: Message) => Number(msg.sender_id) === Number(currentUser.id);
 
   // ── Design tokens ─────────────────────────────────────────────────────────
   const ACCENT = "#64748B";
@@ -935,6 +974,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                   {/* ── Reactions ── */}
                   {msg.reactions?.length > 0 && (
                     <Box
+                      className="reaction-container-enter"
                       sx={{
                         display: "flex",
                         gap: "1px",
@@ -956,17 +996,19 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                         handleReactionPopoverOpen(e, msg.reactions);
                       }}
                     >
-                      {msg.reactions.map((r, i) => (
-                        <Typography
-                          key={i}
-                          sx={{
-                            fontSize: isMobile ? "0.85rem" : "1rem",
-                            lineHeight: 1.4,
-                          }}
-                        >
-                          {r.reaction}
-                        </Typography>
-                      ))}
+                      {msg.reactions.map((r: any) => {
+                        const key = `${msg.message_id}-${r.user_id}-${r.reaction}`;
+                        const isExiting = exitingReactions.has(key);
+                        return (
+                          <Typography
+                            key={key}
+                            className={isExiting ? "reaction-chip-exit" : "reaction-chip-enter"}
+                            sx={{ fontSize: isMobile ? "0.85rem" : "1rem", lineHeight: 1.4 }}
+                          >
+                            {r.reaction}
+                          </Typography>
+                        );
+                      })}
                     </Box>
                   )}
 
@@ -1048,21 +1090,16 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                                 }}
                                 onClick={() => {
                                   if (selectedMessageForReaction) {
-                                    handleReaction(
-                                      selectedMessageForReaction.message_id,
-                                      null,
-                                    );
-                                    setSelectedReactions((prev) =>
-                                      prev
-                                        ? prev.filter(
-                                            (x) =>
-                                              x.user_id !==
-                                              currentUser.id.toString(),
-                                          )
-                                        : prev,
-                                    );
-                                    if ((selectedReactions?.length ?? 0) <= 1)
-                                      handleReactionPopoverClose();
+                                    const exitKey = `${selectedMessageForReaction.message_id}-${currentUser.id}-${r.reaction}`;
+                                    setExitingReactions((prev) => new Set([...prev, exitKey]));
+                                    setTimeout(() => {
+                                      handleReaction(selectedMessageForReaction.message_id, null);
+                                      setExitingReactions((prev) => { const s = new Set(prev); s.delete(exitKey); return s; });
+                                      setSelectedReactions((prev) =>
+                                        prev ? prev.filter((x) => x.user_id !== currentUser.id.toString()) : prev,
+                                      );
+                                      if ((selectedReactions?.length ?? 0) <= 1) handleReactionPopoverClose();
+                                    }, 220);
                                   }
                                 }}
                               >

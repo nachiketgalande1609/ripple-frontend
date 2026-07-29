@@ -248,9 +248,10 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                                     onClick={() => handleUserClick(user.id)}
                                     sx={{
                                         px: 1.5,
-                                        py: 1.6,
+                                        py: 0,
                                         mx: 1,
                                         mb: 0.75,
+                                        height: 72,
                                         width: "calc(100% - 16px)",
                                         border: "none",
                                         cursor: "pointer",
