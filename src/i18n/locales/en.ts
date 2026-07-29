@@ -15,7 +15,7 @@ export default {
         remove: "Remove", block: "Block", unblock: "Unblock",
         search: "Search", update: "Update", upload: "Upload",
         requested: "Requested",
-        previous: "Previous", next: "Next",
+        previous: "Previous", next: "Next", update: "Update",
         play: "Play", pause: "Pause",
         mute: "Mute", unmute: "Unmute",
         tapToSwap: "Tap to swap",

@@ -15,7 +15,7 @@ export default {
         remove: "हटाएं", block: "ब्लॉक करें", unblock: "अनब्लॉक करें",
         search: "खोज", update: "अपडेट करें", upload: "अपलोड करें",
         requested: "अनुरोध किया",
-        previous: "पिछला", next: "अगला",
+        previous: "पिछला", next: "अगला", update: "अपडेट करें",
         play: "चलाएं", pause: "रोकें",
         mute: "म्यूट करें", unmute: "म्यूट हटाएं",
         tapToSwap: "बदलने के लिए टैप करें",

@@ -15,7 +15,7 @@ export default {
         remove: "削除", block: "ブロック", unblock: "ブロック解除",
         search: "検索", update: "更新", upload: "アップロード",
         requested: "リクエスト済み",
-        previous: "前へ", next: "次へ",
+        previous: "前へ", next: "次へ", update: "更新",
         play: "再生", pause: "一時停止",
         mute: "ミュート", unmute: "ミュート解除",
         tapToSwap: "タップして切り替え",
