@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import socket from "../../services/socket";
-import { removeAccount, switchAccount } from "../../utils/accounts";
+import { removeAccount, switchAccount, getAccounts, StoredAccount } from "../../utils/accounts";
+import AddAccountDialog from "../AddAccountDialog";
 import CreatePostModal from "../../component/post/CreatePostModal";
 import UploadStoryDialog from "../../component/stories/UploadStoryDialog";
 import CreatePollModal from "../../component/post/CreatePollModal";
@@ -23,8 +24,10 @@ import {
     AutoStories as AutoStoriesIcon,
     Poll as PollIcon,
     SlowMotionVideoRounded,
+    CheckRounded,
+    AddRounded,
 } from "@mui/icons-material";
-import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton, Popover, Tooltip } from "@mui/material";
+import { Box, Drawer, useMediaQuery, useTheme, Badge, Dialog, Button, Typography, IconButton, Popover, Tooltip, Avatar, Menu, MenuItem, Divider } from "@mui/material";
 import BlankProfileImage from "../../static/profile_blank.png";
 import LogoImage from "../../static/logo-transparent.png";
 import { faSignIn, faUserPlus } from "@fortawesome/free-solid-svg-icons";
@@ -614,6 +617,28 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
     const [createAnchor, setCreateAnchor] = useState<HTMLElement | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
     const [mobileCreateDialogOpen, setMobileCreateDialogOpen] = useState(false);
+    const [accountMenuAnchor, setAccountMenuAnchor] = useState<HTMLElement | null>(null);
+    const [accounts, setAccounts] = useState<StoredAccount[]>([]);
+    const [switchingId, setSwitchingId] = useState<string | null>(null);
+    const [addAccountOpen, setAddAccountOpen] = useState(false);
+    const profileLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleProfileLongPress = (e: React.TouchEvent | React.MouseEvent) => {
+        const target = e.currentTarget as HTMLElement;
+        profileLongPressTimer.current = setTimeout(() => {
+            setAccounts(getAccounts());
+            setAccountMenuAnchor(target);
+        }, 400);
+    };
+    const handleProfilePressEnd = () => {
+        if (profileLongPressTimer.current) clearTimeout(profileLongPressTimer.current);
+    };
+    const handleAccountSwitch = (id: string) => {
+        if (id === String(currentUser?.id)) return;
+        setSwitchingId(id);
+        switchAccount(id);
+        window.location.href = "/";
+    };
     const [panelTop, setPanelTop] = useState(0);
     const createBtnRef = useRef<HTMLDivElement>(null);
     const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -878,8 +903,6 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                             ))}
                             {/* Profile avatar */}
                             <Box
-                                component={Link}
-                                to={`/profile/${currentUser?.id}`}
                                 sx={{
                                     flex: 1,
                                     display: "flex",
@@ -888,7 +911,16 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                     py: 1,
                                     minHeight: 44,
                                     WebkitTapHighlightColor: "transparent",
+                                    cursor: "pointer",
+                                    userSelect: "none",
                                 }}
+                                onClick={() => { if (!accountMenuAnchor) navigate(`/profile/${currentUser?.id}`); }}
+                                onTouchStart={handleProfileLongPress}
+                                onTouchEnd={handleProfilePressEnd}
+                                onTouchMove={handleProfilePressEnd}
+                                onMouseDown={handleProfileLongPress}
+                                onMouseUp={handleProfilePressEnd}
+                                onMouseLeave={handleProfilePressEnd}
                             >
                                 <Box
                                     sx={{
@@ -908,6 +940,69 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                     />
                                 </Box>
                             </Box>
+
+                            {/* Account switcher popover (long-press on profile icon) */}
+                            <Menu
+                                anchorEl={accountMenuAnchor}
+                                open={Boolean(accountMenuAnchor)}
+                                onClose={() => setAccountMenuAnchor(null)}
+                                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                                transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+                                slotProps={{
+                                    paper: {
+                                        sx: {
+                                            borderRadius: "18px",
+                                            minWidth: 220,
+                                            border: "1px solid",
+                                            borderColor: "divider",
+                                            boxShadow: "0 8px 32px rgba(0,0,0,0.14)",
+                                            mb: 1,
+                                        },
+                                    },
+                                }}
+                            >
+                                {/* Current account */}
+                                {currentUser && (
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, px: 2, py: 1.25 }}>
+                                        <Avatar src={currentUser.profile_picture_url || BlankProfileImage} sx={{ width: 34, height: 34 }} />
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Typography noWrap sx={{ fontSize: "0.82rem", fontWeight: 600 }}>{currentUser.username}</Typography>
+                                            <Typography noWrap sx={{ fontSize: "0.68rem", color: "text.disabled" }}>{currentUser.email}</Typography>
+                                        </Box>
+                                        <CheckRounded sx={{ fontSize: 16, color: "text.secondary" }} />
+                                    </Box>
+                                )}
+                                {accounts.filter((a) => String(a.id) !== String(currentUser?.id)).length > 0 && (
+                                    <Divider sx={{ my: 0.5 }} />
+                                )}
+                                {accounts.filter((a) => String(a.id) !== String(currentUser?.id)).map((acc) => (
+                                    <MenuItem
+                                        key={acc.id}
+                                        onClick={() => { setAccountMenuAnchor(null); handleAccountSwitch(acc.id); }}
+                                        disabled={switchingId === acc.id}
+                                        sx={{ px: 2, py: 1, borderRadius: "10px", mx: 0.5, gap: 1.25 }}
+                                    >
+                                        <Avatar src={acc.profile_picture_url || BlankProfileImage} sx={{ width: 34, height: 34 }} />
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Typography noWrap sx={{ fontSize: "0.82rem", fontWeight: 600 }}>{acc.username}</Typography>
+                                            <Typography noWrap sx={{ fontSize: "0.68rem", color: "text.disabled" }}>{acc.email}</Typography>
+                                        </Box>
+                                    </MenuItem>
+                                ))}
+                                <Divider sx={{ my: 0.5 }} />
+                                <MenuItem
+                                    onClick={() => { setAccountMenuAnchor(null); setAddAccountOpen(true); }}
+                                    sx={{ px: 2, py: 1, borderRadius: "10px", mx: 0.5, gap: 1.25 }}
+                                >
+                                    <Box sx={{ width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px dashed", borderColor: "divider" }}>
+                                        <AddRounded sx={{ fontSize: 18, color: "text.disabled" }} />
+                                    </Box>
+                                    <Typography sx={{ fontSize: "0.82rem", fontWeight: 500, color: "text.secondary" }}>
+                                        Add account
+                                    </Typography>
+                                </MenuItem>
+                            </Menu>
+                            <AddAccountDialog open={addAccountOpen} onClose={() => setAddAccountOpen(false)} />
                         </>
                     ) : (
                         loggedOutItems.map((item) => <MobNavItem key={item.segment} item={item} />)
