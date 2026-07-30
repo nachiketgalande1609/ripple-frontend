@@ -13,6 +13,8 @@ import {
   shareChatMedia,
   getBlockedUsers,
   unblockUser,
+  getGroups,
+  getGroupMessages,
 } from "../../services/api";
 import ImageDialog from "../../component/ImageDialog";
 import MessagesContainer from "./messageContainer/MessagesContainer";
@@ -72,6 +74,34 @@ type User = {
   unread_count: number;
 };
 
+type Group = {
+  id: number;
+  name: string;
+  profile_picture: string | null;
+  member_count: number;
+  latest_message: string | null;
+  latest_message_sender: string | null;
+  latest_message_timestamp: string | null;
+};
+
+type GroupMessage = {
+  message_id: number;
+  group_id: number;
+  sender_id: number;
+  sender_username: string;
+  sender_profile_picture: string;
+  message_text: string;
+  file_url: string | null;
+  file_name: string | null;
+  file_size: number | null;
+  timestamp: string;
+  reply_to: number | null;
+  media_width: number | null;
+  media_height: number | null;
+  reactions: ReactionDetail[];
+  saved?: boolean;
+};
+
 interface MessageProps {
   onlineUsers: string[];
   selectedUser: User | null;
@@ -86,7 +116,7 @@ const Messages: React.FC<MessageProps> = ({
   handleVideoCall,
 }) => {
   const { t } = useTranslation();
-  const { userId } = useParams();
+  const { userId, groupId } = useParams();
   const notifications = useAppNotifications();
 
   const navigate = useNavigate();
@@ -98,6 +128,10 @@ const Messages: React.FC<MessageProps> = ({
   const [mutedUserIds, setMutedUserIds] = useState<Set<number>>(new Set());
 
   const [users, setUsers] = useState<User[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [groupMessages, setGroupMessages] = useState<GroupMessage[]>([]);
+  const fetchedForGroupIdRef = useRef<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUser, setTypingUser] = useState<number | null>(null);
@@ -146,6 +180,30 @@ const Messages: React.FC<MessageProps> = ({
     }
   };
 
+  const fetchGroupsData = async () => {
+    try {
+      const res = await getGroups();
+      if (res.success) setGroups(res.data);
+    } catch (error) {
+      console.error("Failed to fetch groups:", error);
+    }
+  };
+
+  const fetchGroupMessagesFor = async (gId: number, offset = 0) => {
+    setInitialMessageLoading(true);
+    try {
+      const res = await getGroupMessages(gId, offset, 30);
+      if (res.success) {
+        const batch: GroupMessage[] = res.data.slice().reverse();
+        setGroupMessages((prev) => offset === 0 ? batch : [...batch, ...prev]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch group messages:", error);
+    } finally {
+      setInitialMessageLoading(false);
+    }
+  };
+
   const fetchMutedUsers = async () => {
     try {
       const ids = await getMutedUsers();
@@ -158,6 +216,7 @@ const Messages: React.FC<MessageProps> = ({
   useEffect(() => {
     fetchMutedUsers();
     fetchUsersData();
+    fetchGroupsData();
   }, []);
 
   const fetchMessagesForSelectedUser = async (
@@ -177,28 +236,46 @@ const Messages: React.FC<MessageProps> = ({
     }
   };
 
+  // Handle group URL param
+  useEffect(() => {
+    if (!groupId) return;
+    const gIdNum = parseInt(groupId);
+    const group = groups.find((g) => g.id === gIdNum);
+    if (group && fetchedForGroupIdRef.current !== gIdNum) {
+      fetchedForGroupIdRef.current = gIdNum;
+      setSelectedGroup(group);
+      setGroupMessages([]);
+      setSelectedUser(null);
+      setMessages([]);
+      fetchGroupMessagesFor(gIdNum);
+    }
+  }, [groupId, groups]);
+
   // Setting selected user
   useEffect(() => {
     if (location.pathname === "/messages") {
       setSelectedUser(null);
+      setSelectedGroup(null);
       setMessages([]);
+      setGroupMessages([]);
       fetchedForUserIdRef.current = null;
+      fetchedForGroupIdRef.current = null;
       return;
     }
 
+    if (groupId) return; // handled by the group effect above
+
     if (userId) {
       const user = users.find((user) => user.id === parseInt(userId));
-      // Use a ref to track which user's messages were last fetched on this mount.
-      // This handles the case where selectedUser (lifted parent state) is already set
-      // to the same user after a remount, which would fool the identity check.
       if (user && fetchedForUserIdRef.current !== user.id) {
         fetchedForUserIdRef.current = user.id;
         setSelectedUser(user);
+        setSelectedGroup(null);
         setMessages([]);
         fetchMessagesForSelectedUser(parseInt(userId));
       }
     }
-  }, [location.pathname, userId, users]);
+  }, [location.pathname, userId, groupId, users]);
 
   useEffect(() => {
     if (!navigatedUser?.id) return;
@@ -272,6 +349,38 @@ const Messages: React.FC<MessageProps> = ({
     };
   }, [currentUser, selectedUser]);
 
+  // Group message socket handlers
+  useEffect(() => {
+    socket.on("receiveGroupMessage", (data: GroupMessage) => {
+      // If this group is open, append to messages
+      if (data.group_id === selectedGroup?.id) {
+        setGroupMessages((prev) => {
+          if (prev.some((m) => m.message_id === data.message_id)) return prev;
+          return [...prev, data];
+        });
+      }
+      // Update group preview in sidebar
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.id === data.group_id
+            ? { ...g, latest_message: data.message_text, latest_message_sender: data.sender_username, latest_message_timestamp: data.timestamp }
+            : g
+        )
+      );
+    });
+
+    socket.on("groupMessageSaved", (data: { tempId: number; messageId: number; timestamp: string }) => {
+      setGroupMessages((prev) =>
+        prev.map((m) => m.message_id === data.tempId ? { ...m, message_id: data.messageId, saved: true } : m)
+      );
+    });
+
+    return () => {
+      socket.off("receiveGroupMessage");
+      socket.off("groupMessageSaved");
+    };
+  }, [selectedGroup]);
+
   // Socket for catching typing activity
   useEffect(() => {
     socket.on("typing", (data) => {
@@ -321,8 +430,100 @@ const Messages: React.FC<MessageProps> = ({
     }
   };
 
+  const handleGroupClick = (gId: number) => {
+    const group = groups.find((g) => g.id === gId);
+    if (!group) return;
+    setSelectedGroup(group);
+    setSelectedUser(null);
+    setGroupMessages([]);
+    setMessages([]);
+    fetchedForGroupIdRef.current = gId;
+    fetchGroupMessagesFor(gId);
+    navigate(`/messages/group/${gId}`);
+  };
+
+  const handleGroupCreated = (group: Group) => {
+    setGroups((prev) => [...prev, group]);
+    handleGroupClick(group.id);
+  };
+
+  const handleSendGroupMessage = async () => {
+    if ((!inputMessage.trim() && !selectedFile) || !selectedGroup) return;
+
+    let fileUrl = null, fileName = null, fileSize = null, mediaWidth = null, mediaHeight = null;
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append("image", selectedFile);
+      try {
+        setIsSendingMessage(true);
+        const response = await shareChatMedia(formData);
+        fileUrl = response?.data?.fileUrl;
+        fileName = response?.data?.fileName;
+        fileSize = response?.data?.fileSize;
+        mediaWidth = response?.data?.mediaWidth;
+        mediaHeight = response?.data?.mediaHeight;
+      } catch (error) {
+        console.error("Media upload failed:", error);
+        setIsSendingMessage(false);
+        return;
+      }
+    }
+
+    const tempId = Date.now() + Math.floor(Math.random() * 1000);
+    const messageText = inputMessage;
+
+    const optimistic: GroupMessage = {
+      message_id: tempId,
+      group_id: selectedGroup.id,
+      sender_id: currentUser.id,
+      sender_username: currentUser.username,
+      sender_profile_picture: currentUser.profile_picture_url,
+      message_text: messageText,
+      file_url: fileUrl,
+      file_name: fileName,
+      file_size: fileSize,
+      media_width: mediaWidth,
+      media_height: mediaHeight,
+      timestamp: new Date().toISOString(),
+      reply_to: selectedMessageForReply?.message_id || null,
+      reactions: [],
+      saved: false,
+    };
+
+    setGroupMessages((prev) => [...prev, optimistic]);
+    setInputMessage("");
+    setSelectedFile(null);
+    setSelectedFileURL("");
+    setSelectedMessageForReply(null);
+    setIsSendingMessage(false);
+
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === selectedGroup.id
+          ? { ...g, latest_message: messageText || "", latest_message_sender: currentUser.username, latest_message_timestamp: new Date().toISOString() }
+          : g
+      )
+    );
+
+    socket.emit("sendGroupMessage", {
+      tempId,
+      groupId: selectedGroup.id,
+      senderId: currentUser.id,
+      text: messageText,
+      fileUrl,
+      fileName,
+      fileSize,
+      mediaWidth,
+      mediaHeight,
+      replyTo: selectedMessageForReply?.message_id || null,
+    });
+  };
+
   // Set selected user on clicking the user's chat
   const handleUserClick = (userId: number) => {
+    setSelectedGroup(null);
+    setGroupMessages([]);
+    fetchedForGroupIdRef.current = null;
     setMessages([]);
     setSelectedUser(users.find((user) => user.id === userId) || null);
     fetchMessagesForSelectedUser(userId);
@@ -650,7 +851,7 @@ const Messages: React.FC<MessageProps> = ({
       }}
     >
       {isMobile ? (
-        !selectedUser ? (
+        !selectedUser && !selectedGroup ? (
           <Box sx={{ display: "flex", justifyContent: "center", width: "100%", overflow: "hidden" }}>
             <Box
               sx={{
@@ -668,6 +869,47 @@ const Messages: React.FC<MessageProps> = ({
                 mutedUserIds={mutedUserIds}
               />
             </Box>
+          </Box>
+        ) : selectedGroup ? (
+          <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", color: "white", width: "100%", backgroundImage: chatTheme, backgroundSize: "cover", backgroundPosition: "center" }}>
+            <MessagesTopBar
+              selectedUser={null}
+              selectedGroup={selectedGroup}
+              chatTheme={chatTheme}
+              setChatTheme={setChatTheme}
+              openVideoCall={handleVideoCall}
+              setMessages={setMessages}
+              onMuteToggle={fetchMutedUsers}
+            />
+            <MessagesContainer
+              selectedUser={null}
+              messages={groupMessages as any}
+              currentUser={currentUser}
+              handleImageClick={handleImageClick}
+              messagesEndRef={messagesEndRef}
+              handleReply={handleReply}
+              setAnchorEl={setAnchorEl}
+              handleDeleteMessage={handleDeleteMessage}
+              handleReaction={handleReaction}
+              typingUser={null}
+              initialMessageLoading={initialMessageLoading}
+              isGroup
+            />
+            <MessageInput
+              selectedFile={selectedFile}
+              setSelectedFile={setSelectedFile}
+              selectedFileURL={selectedFileURL}
+              setSelectedFileURL={setSelectedFileURL}
+              inputMessage={inputMessage}
+              handleTyping={() => {}}
+              setInputMessage={setInputMessage}
+              handleSendMessage={handleSendGroupMessage}
+              handleFileChange={handleFileChange}
+              isSendingMessage={isSendingMessage}
+              selectedMessageForReply={selectedMessageForReply}
+              cancelReply={cancelReply}
+              selectedUser={null}
+            />
           </Box>
         ) : (
           <Box
@@ -748,12 +990,16 @@ const Messages: React.FC<MessageProps> = ({
         <>
           <MessagesDrawer
             users={users}
+            groups={groups}
             onlineUsers={onlineUsers}
             selectedUser={selectedUser}
+            selectedGroupId={selectedGroup?.id ?? null}
             handleUserClick={handleUserClick}
+            handleGroupClick={handleGroupClick}
             anchorEl={anchorEl}
             setAnchorEl={setAnchorEl}
             mutedUserIds={mutedUserIds}
+            onGroupCreated={handleGroupCreated}
           />
 
           {/* Messages Panel */}
@@ -764,16 +1010,57 @@ const Messages: React.FC<MessageProps> = ({
               flexDirection: "column",
               color: "white",
               width: "100px",
-              backgroundImage: selectedUser ? chatTheme : "none",
+              backgroundImage: (selectedUser || selectedGroup) ? chatTheme : "none",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
           >
-            {!selectedUser ? (
+            {!selectedUser && !selectedGroup ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 2, color: 'text.secondary' }}>
                 <ChatBubbleOutlineIcon sx={{ fontSize: 48, opacity: 0.5 }} />
                 <Typography variant="body2" sx={{ opacity: 0.6 }}>{t("messages.selectConversation")}</Typography>
               </Box>
+            ) : selectedGroup ? (
+              <>
+                <MessagesTopBar
+                  selectedUser={null}
+                  selectedGroup={selectedGroup}
+                  chatTheme={chatTheme}
+                  setChatTheme={setChatTheme}
+                  openVideoCall={handleVideoCall}
+                  setMessages={setMessages}
+                  onMuteToggle={fetchMutedUsers}
+                />
+                <MessagesContainer
+                  selectedUser={null}
+                  messages={groupMessages as any}
+                  currentUser={currentUser}
+                  handleImageClick={handleImageClick}
+                  messagesEndRef={messagesEndRef}
+                  handleReply={handleReply}
+                  setAnchorEl={setAnchorEl}
+                  handleDeleteMessage={handleDeleteMessage}
+                  handleReaction={handleReaction}
+                  typingUser={null}
+                  initialMessageLoading={initialMessageLoading}
+                  isGroup
+                />
+                <MessageInput
+                  selectedFile={selectedFile}
+                  setSelectedFile={setSelectedFile}
+                  selectedFileURL={selectedFileURL}
+                  setSelectedFileURL={setSelectedFileURL}
+                  inputMessage={inputMessage}
+                  handleTyping={() => {}}
+                  setInputMessage={setInputMessage}
+                  handleSendMessage={handleSendGroupMessage}
+                  handleFileChange={handleFileChange}
+                  isSendingMessage={isSendingMessage}
+                  selectedMessageForReply={selectedMessageForReply}
+                  selectedUser={null}
+                  cancelReply={cancelReply}
+                />
+              </>
             ) : (
               <>
                 {/* Top bar */}

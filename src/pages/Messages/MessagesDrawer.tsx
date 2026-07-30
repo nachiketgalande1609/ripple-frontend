@@ -2,6 +2,8 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { List, ListItem, ListItemAvatar, ListItemText, Typography, Box, IconButton, Skeleton, InputBase } from "@mui/material";
 import { PersonAdd as PersonAddIcon, Search as SearchIcon } from "@mui/icons-material";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import NotificationsOffRoundedIcon from "@mui/icons-material/NotificationsOffRounded";
 import { getFollowingUsers } from "../../services/api";
 import NewChatUsersList from "./NewChatUsersList";
@@ -9,15 +11,30 @@ import BlankProfileImage from "../../static/profile_blank.png";
 import { timeAgo } from "../../utils/utils";
 import { formatLastSeen } from "../../utils/lastSeen";
 import { useGlobalStore } from "../../store/store";
+import CreateGroupDialog from "./CreateGroupDialog";
+
+type Group = {
+    id: number;
+    name: string;
+    profile_picture: string | null;
+    member_count: number;
+    latest_message: string | null;
+    latest_message_sender: string | null;
+    latest_message_timestamp: string | null;
+};
 
 type MessagesDrawerProps = {
     users: User[];
+    groups: Group[];
     onlineUsers: string[];
     selectedUser: User | null;
+    selectedGroupId: number | null;
     handleUserClick: (userId: number) => void;
+    handleGroupClick: (groupId: number) => void;
     anchorEl: HTMLElement | null;
     setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
     mutedUserIds: Set<number>;
+    onGroupCreated: (group: Group) => void;
 };
 
 type User = {
@@ -65,20 +82,37 @@ const UserSkeleton = () => (
     </Box>
 );
 
+const AVATAR_GROUP_COLORS = [
+    { bg: "#E8F5E9", color: "#2E7D32" },
+    { bg: "#EDE7F6", color: "#4527A0" },
+    { bg: "#FFF3E0", color: "#E65100" },
+    { bg: "#E3F2FD", color: "#1565C0" },
+];
+
+const getGroupAvatarColor = (name: string) => {
+    const idx = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_GROUP_COLORS.length;
+    return AVATAR_GROUP_COLORS[idx];
+};
+
 const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
     users,
+    groups,
     onlineUsers,
     selectedUser,
+    selectedGroupId,
     handleUserClick,
+    handleGroupClick,
     anchorEl,
     setAnchorEl,
     mutedUserIds,
+    onGroupCreated,
 }) => {
     const { t } = useTranslation();
     const { hideActivity } = useGlobalStore();
     const [usersList, setUsersList] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
+    const [createGroupOpen, setCreateGroupOpen] = useState(false);
 
     const open = Boolean(anchorEl);
 
@@ -98,16 +132,31 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
         fetchUsersList();
     }, []);
 
-    const sortedUsers = useMemo(
-        () => [...users].sort((a, b) => new Date(b.latest_message_timestamp).getTime() - new Date(a.latest_message_timestamp).getTime()),
-        [users],
-    );
+    type ConversationItem =
+        | ({ kind: "user" } & User)
+        | ({ kind: "group" } & Group);
 
-    const filteredUsers = useMemo(() => {
+    const allItems = useMemo((): ConversationItem[] => {
+        const userItems: ConversationItem[] = users.map((u) => ({ kind: "user" as const, ...u }));
+        const groupItems: ConversationItem[] = groups.map((g) => ({ kind: "group" as const, ...g }));
+        return [...userItems, ...groupItems].sort((a, b) => {
+            const ta = a.kind === "user" ? a.latest_message_timestamp : a.latest_message_timestamp;
+            const tb = b.kind === "user" ? b.latest_message_timestamp : b.latest_message_timestamp;
+            if (!ta) return 1;
+            if (!tb) return -1;
+            return new Date(tb).getTime() - new Date(ta).getTime();
+        });
+    }, [users, groups]);
+
+    const filteredItems = useMemo(() => {
         const q = search.trim().toLowerCase();
-        if (!q) return sortedUsers;
-        return sortedUsers.filter((u) => u.username.toLowerCase().includes(q));
-    }, [sortedUsers, search]);
+        if (!q) return allItems;
+        return allItems.filter((item) =>
+            item.kind === "user"
+                ? item.username.toLowerCase().includes(q)
+                : item.name.toLowerCase().includes(q)
+        );
+    }, [allItems, search]);
 
     return (
         <Box
@@ -142,27 +191,52 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                 >
                     {t("messages.title")}
                 </Typography>
-                <IconButton
-                    onClick={(e) => setAnchorEl(e.currentTarget)}
-                    size="small"
-                    sx={{
-                        width: 38,
-                        height: 38,
-                        border: "none",
-                        borderRadius: "12px",
-                        backgroundColor: "var(--nav-bg)",
-                        boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
-                        color: (t) => t.palette.text.secondary,
-                        transition: "box-shadow 0.2s ease, color 0.2s ease",
-                        "&:hover": {
-                            color: (t) => t.palette.text.primary,
+                <Box sx={{ display: "flex", gap: 0.75 }}>
+                    <IconButton
+                        onClick={() => setCreateGroupOpen(true)}
+                        size="small"
+                        title="New group"
+                        sx={{
+                            width: 34,
+                            height: 34,
+                            border: "none",
+                            borderRadius: "11px",
                             backgroundColor: "var(--nav-bg)",
-                            boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
-                        },
-                    }}
-                >
-                    <PersonAddIcon sx={{ fontSize: 15 }} />
-                </IconButton>
+                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                            color: (t) => t.palette.text.secondary,
+                            transition: "box-shadow 0.2s ease, color 0.2s ease",
+                            "&:hover": {
+                                color: (t) => t.palette.text.primary,
+                                backgroundColor: "var(--nav-bg)",
+                                boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                            },
+                        }}
+                    >
+                        <GroupAddIcon sx={{ fontSize: 15 }} />
+                    </IconButton>
+                    <IconButton
+                        onClick={(e) => setAnchorEl(e.currentTarget)}
+                        size="small"
+                        title="New chat"
+                        sx={{
+                            width: 34,
+                            height: 34,
+                            border: "none",
+                            borderRadius: "11px",
+                            backgroundColor: "var(--nav-bg)",
+                            boxShadow: "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                            color: (t) => t.palette.text.secondary,
+                            transition: "box-shadow 0.2s ease, color 0.2s ease",
+                            "&:hover": {
+                                color: (t) => t.palette.text.primary,
+                                backgroundColor: "var(--nav-bg)",
+                                boxShadow: "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)",
+                            },
+                        }}
+                    >
+                        <PersonAddIcon sx={{ fontSize: 15 }} />
+                    </IconButton>
+                </Box>
             </Box>
 
             {/* Search */}
@@ -219,20 +293,69 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
             <Box sx={{ overflowY: "auto", flex: 1 }}>
                 {loading ? (
                     [...Array(6)].map((_, i) => <UserSkeleton key={i} />)
-                ) : filteredUsers.length === 0 ? (
+                ) : filteredItems.length === 0 ? (
                     <Box sx={{ mt: 6, textAlign: "center", px: 2 }}>
-                        <Typography
-                            sx={{
-                                color: (t) => t.palette.text.disabled,
-                                fontSize: "0.82rem",
-                            }}
-                        >
+                        <Typography sx={{ color: (t) => t.palette.text.disabled, fontSize: "0.82rem" }}>
                             {search ? t("messages.noResults") : t("messages.noConversations")}
                         </Typography>
                     </Box>
                 ) : (
                     <List disablePadding>
-                        {filteredUsers.map((user) => {
+                        {filteredItems.map((item) => {
+                            if (item.kind === "group") {
+                                const isSelected = selectedGroupId === item.id;
+                                const gc = getGroupAvatarColor(item.name);
+                                const ts = item.latest_message_timestamp ? timeAgo(item.latest_message_timestamp) : "";
+                                const preview = item.latest_message
+                                    ? (item.latest_message_sender ? `${item.latest_message_sender}: ${item.latest_message}` : item.latest_message)
+                                    : `${item.member_count} members`;
+                                return (
+                                    <ListItem
+                                        component="button"
+                                        key={`group-${item.id}`}
+                                        onClick={() => handleGroupClick(item.id)}
+                                        sx={{
+                                            px: 1.5, py: 0, mx: 1, mb: 0.75, height: 72,
+                                            width: "calc(100% - 16px)", border: "none", cursor: "pointer",
+                                            backgroundColor: isSelected ? "var(--nav-bg)" : "transparent",
+                                            boxShadow: isSelected ? "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)" : "none",
+                                            borderRadius: "28px", transition: "background-color 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
+                                            "&:hover": { backgroundColor: "transparent" }, "&:focus": { outline: "none" }, display: "flex", alignItems: "center",
+                                        }}
+                                    >
+                                        <ListItemAvatar sx={{ minWidth: "unset", mr: 1.5 }}>
+                                            {item.profile_picture ? (
+                                                <Box component="img" src={item.profile_picture} sx={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover" }} />
+                                            ) : (
+                                                <Box sx={{ width: 42, height: 42, borderRadius: "50%", bgcolor: gc.bg, color: gc.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                    <GroupsRoundedIcon sx={{ fontSize: 20 }} />
+                                                </Box>
+                                            )}
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            disableTypography
+                                            primary={
+                                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 1, mb: 0.25 }}>
+                                                    <Typography sx={{ fontSize: "0.845rem", fontWeight: 500, color: (t) => t.palette.text.primary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                        {item.name}
+                                                    </Typography>
+                                                    <Typography sx={{ fontSize: "0.68rem", color: (t) => t.palette.text.disabled, flexShrink: 0 }}>
+                                                        {ts}
+                                                    </Typography>
+                                                </Box>
+                                            }
+                                            secondary={
+                                                <Typography sx={{ fontSize: "0.76rem", color: (t) => t.palette.text.disabled, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                                    {preview}
+                                                </Typography>
+                                            }
+                                            sx={{ my: 0, overflow: "hidden" }}
+                                        />
+                                    </ListItem>
+                                );
+                            }
+
+                            const user = item;
                             const isOnline = !hideActivity && onlineUsers.includes(user.id.toString());
                             const unreadCount = user.unread_count || 0;
                             const isSelected = selectedUser?.id === user.id;
@@ -244,185 +367,62 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                             return (
                                 <ListItem
                                     component="button"
-                                    key={user.id}
+                                    key={`user-${user.id}`}
                                     onClick={() => handleUserClick(user.id)}
                                     sx={{
-                                        px: 1.5,
-                                        py: 0,
-                                        mx: 1,
-                                        mb: 0.75,
-                                        height: 72,
-                                        width: "calc(100% - 16px)",
-                                        border: "none",
-                                        cursor: "pointer",
+                                        px: 1.5, py: 0, mx: 1, mb: 0.75, height: 72,
+                                        width: "calc(100% - 16px)", border: "none", cursor: "pointer",
                                         backgroundColor: isSelected ? "var(--nav-bg)" : "transparent",
                                         boxShadow: isSelected ? "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)" : "none",
-                                        borderRadius: "28px",
-                                        borderBottom: "none",
+                                        borderRadius: "28px", borderBottom: "none",
                                         transition: "background-color 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
                                         "&:last-of-type": { borderBottom: "none" },
                                         "&:hover": { backgroundColor: "transparent" },
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 0,
+                                        "&:focus": { outline: "none" },
+                                        display: "flex", alignItems: "center",
                                     }}
                                 >
-                                    {/* Avatar */}
                                     <ListItemAvatar sx={{ position: "relative", minWidth: "unset", mr: 1.5 }}>
                                         {user.profile_picture ? (
-                                            <Box
-                                                component="img"
-                                                src={user.profile_picture || BlankProfileImage}
-                                                sx={{
-                                                    width: 42,
-                                                    height: 42,
-                                                    borderRadius: "50%",
-                                                    objectFit: "cover",
-                                                    display: "block",
-                                                }}
-                                            />
+                                            <Box component="img" src={user.profile_picture || BlankProfileImage} sx={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover", display: "block" }} />
                                         ) : (
-                                            <Box
-                                                sx={{
-                                                    width: 42,
-                                                    height: 42,
-                                                    borderRadius: "50%",
-                                                    backgroundColor: avatarColor.bg,
-                                                    color: avatarColor.color,
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    fontSize: "0.8rem",
-                                                    fontWeight: 600,
-                                                    flexShrink: 0,
-                                                }}
-                                            >
+                                            <Box sx={{ width: 42, height: 42, borderRadius: "50%", backgroundColor: avatarColor.bg, color: avatarColor.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", fontWeight: 600, flexShrink: 0 }}>
                                                 {initials}
                                             </Box>
                                         )}
                                         {isOnline && (
-                                            <Box
-                                                sx={{
-                                                    width: 10,
-                                                    height: 10,
-                                                    borderRadius: "50%",
-                                                    backgroundColor: (t) => t.palette.success.main,
-                                                    position: "absolute",
-                                                    bottom: 1,
-                                                    right: 1,
-                                                    border: "2px solid",
-                                                    borderColor: (t) => t.palette.background.paper,
-                                                }}
-                                            />
+                                            <Box sx={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: (t) => t.palette.success.main, position: "absolute", bottom: 1, right: 1, border: "2px solid", borderColor: (t) => t.palette.background.paper }} />
                                         )}
                                     </ListItemAvatar>
-
-                                    {/* Text */}
                                     <ListItemText
                                         disableTypography
                                         primary={
-                                            <Box
-                                                sx={{
-                                                    display: "flex",
-                                                    justifyContent: "space-between",
-                                                    alignItems: "baseline",
-                                                    gap: 1,
-                                                    mb: 0.25,
-                                                }}
-                                            >
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: "0.845rem",
-                                                        fontWeight: unreadCount > 0 ? 600 : 500,
-                                                        color: (t) => t.palette.text.primary,
-                                                        overflow: "hidden",
-                                                        textOverflow: "ellipsis",
-                                                        whiteSpace: "nowrap",
-                                                    }}
-                                                >
+                                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 1, mb: 0.25 }}>
+                                                <Typography sx={{ fontSize: "0.845rem", fontWeight: unreadCount > 0 ? 600 : 500, color: (t) => t.palette.text.primary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                                     {user.username}
                                                 </Typography>
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: "0.68rem",
-                                                        color: (t) => (unreadCount > 0 ? t.palette.primary.main : t.palette.text.disabled),
-                                                        flexShrink: 0,
-                                                        fontWeight: unreadCount > 0 ? 600 : 400,
-                                                    }}
-                                                >
+                                                <Typography sx={{ fontSize: "0.68rem", color: (t) => (unreadCount > 0 ? t.palette.primary.main : t.palette.text.disabled), flexShrink: 0, fontWeight: unreadCount > 0 ? 600 : 400 }}>
                                                     {timestamp}
                                                 </Typography>
                                             </Box>
                                         }
                                         secondary={
-                                            <Box
-                                                sx={{
-                                                    display: "flex",
-                                                    justifyContent: "space-between",
-                                                    alignItems: "center",
-                                                }}
-                                            >
+                                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                 <Box sx={{ minWidth: 0, flex: 1 }}>
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: "0.76rem",
-                                                        color: (t) => (unreadCount > 0 ? t.palette.text.secondary : t.palette.text.disabled),
-                                                        whiteSpace: "nowrap",
-                                                        overflow: "hidden",
-                                                        textOverflow: "ellipsis",
-                                                        fontWeight: unreadCount > 0 ? 500 : 400,
-                                                        maxWidth: isMuted || unreadCount > 0 ? "calc(100% - 28px)" : "100%",
-                                                    }}
-                                                >
-                                                    {user.latest_message}
-                                                </Typography>
-                                                {!isOnline && !hideActivity && formatLastSeen(user.last_seen, false) && (
-                                                    <Typography
-                                                        sx={{
-                                                            fontSize: "0.67rem",
-                                                            color: "text.disabled",
-                                                            whiteSpace: "nowrap",
-                                                            lineHeight: 1.3,
-                                                        }}
-                                                    >
-                                                        {formatLastSeen(user.last_seen, false)}
+                                                    <Typography sx={{ fontSize: "0.76rem", color: (t) => (unreadCount > 0 ? t.palette.text.secondary : t.palette.text.disabled), whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: unreadCount > 0 ? 500 : 400, maxWidth: isMuted || unreadCount > 0 ? "calc(100% - 28px)" : "100%" }}>
+                                                        {user.latest_message}
                                                     </Typography>
-                                                )}
+                                                    {!isOnline && !hideActivity && formatLastSeen(user.last_seen, false) && (
+                                                        <Typography sx={{ fontSize: "0.67rem", color: "text.disabled", whiteSpace: "nowrap", lineHeight: 1.3 }}>
+                                                            {formatLastSeen(user.last_seen, false)}
+                                                        </Typography>
+                                                    )}
                                                 </Box>
-
-                                                {/* Right-side indicator: muted bell OR unread count, never both */}
                                                 {isMuted ? (
-                                                    <NotificationsOffRoundedIcon
-                                                        sx={{
-                                                            ml: 1,
-                                                            flexShrink: 0,
-                                                            fontSize: "0.85rem",
-                                                            color: (t) => t.palette.text.disabled,
-                                                        }}
-                                                    />
+                                                    <NotificationsOffRoundedIcon sx={{ ml: 1, flexShrink: 0, fontSize: "0.85rem", color: (t) => t.palette.text.disabled }} />
                                                 ) : unreadCount > 0 ? (
-                                                    <Box
-                                                        sx={{
-                                                            ml: 1,
-                                                            flexShrink: 0,
-                                                            minWidth: 17,
-                                                            height: 17,
-                                                            borderRadius: "9px",
-                                                            backgroundColor: (t) => t.palette.primary.main,
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            justifyContent: "center",
-                                                            px: 0.5,
-                                                        }}
-                                                    >
-                                                        <Typography
-                                                            sx={{
-                                                                fontSize: "0.62rem",
-                                                                fontWeight: 600,
-                                                                color: "#fff",
-                                                                lineHeight: 1,
-                                                            }}
-                                                        >
+                                                    <Box sx={{ ml: 1, flexShrink: 0, minWidth: 17, height: 17, borderRadius: "9px", backgroundColor: (t) => t.palette.primary.main, display: "flex", alignItems: "center", justifyContent: "center", px: 0.5 }}>
+                                                        <Typography sx={{ fontSize: "0.62rem", fontWeight: 600, color: "#fff", lineHeight: 1 }}>
                                                             {unreadCount > 99 ? "99+" : unreadCount}
                                                         </Typography>
                                                     </Box>
@@ -437,6 +437,11 @@ const MessagesDrawer: React.FC<MessagesDrawerProps> = ({
                     </List>
                 )}
             </Box>
+            <CreateGroupDialog
+                open={createGroupOpen}
+                onClose={() => setCreateGroupOpen(false)}
+                onGroupCreated={(g) => { onGroupCreated(g); setCreateGroupOpen(false); }}
+            />
         </Box>
     );
 };

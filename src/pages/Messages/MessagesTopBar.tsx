@@ -14,6 +14,7 @@ import {
   Grid,
 } from "@mui/material";
 import { ChevronLeft, MoreVert, Videocam } from "@mui/icons-material";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import WallpaperRoundedIcon from "@mui/icons-material/WallpaperRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
@@ -76,8 +77,16 @@ type User = {
   unread_count: number;
 };
 
+type Group = {
+  id: number;
+  name: string;
+  profile_picture: string | null;
+  member_count: number;
+};
+
 interface MessagesTopBarProps {
   selectedUser: User | null;
+  selectedGroup?: Group | null;
   chatTheme: string;
   setChatTheme: (theme: string) => void;
   openVideoCall: () => void;
@@ -175,6 +184,7 @@ function DialogButton({
 // ── Main component ───────────────────────────────────────────────
 const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
   selectedUser,
+  selectedGroup,
   chatTheme,
   setChatTheme,
   openVideoCall,
@@ -273,76 +283,71 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
         height: 60,
       }}
     >
-      {/* Left: back + avatar + username */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          overflow: "hidden",
-        }}
-      >
+      {/* Left: back + avatar + name */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, overflow: "hidden" }}>
         <IconButton
-          onClick={() => {
-            navigate("/messages");
-            setMessages([]);
-          }}
+          onClick={() => { navigate("/messages"); setMessages([]); }}
           sx={{ ...iconButtonSx }}
         >
           <ChevronLeft fontSize="small" />
         </IconButton>
-        <Box sx={{ position: "relative", flexShrink: 0, ml: isMobile ? -1 : 0 }}>
-          <Avatar
-            sx={{
-              width: 36,
-              height: 36,
-              cursor: "pointer",
-              border: "2px solid",
-              borderColor: (t) => t.palette.divider,
-            }}
-            src={selectedUser?.profile_picture || BlankProfileImage}
-            onClick={() => navigate(`/profile/${selectedUser?.id}`)}
-          />
-          {selectedUser && !hideActivity && (
-            <Box sx={{
-              width: 10, height: 10, borderRadius: "50%", position: "absolute", bottom: 0, right: 0,
-              backgroundColor: selectedUser.isOnline ? "#22c55e" : "#9e9e9e",
-              border: "2px solid", borderColor: (t: any) => t.palette.background.paper,
-            }} />
-          )}
-        </Box>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography
-            onClick={() => navigate(`/profile/${selectedUser?.id}`)}
-            sx={{
-              cursor: "pointer",
-              color: (t) => t.palette.text.primary,
-              fontWeight: 500,
-              fontSize: "0.92rem",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              lineHeight: 1.25,
-              "&:hover": { color: (t) => t.palette.text.secondary },
-            }}
-          >
-            {selectedUser?.username}
-          </Typography>
-          {selectedUser && !hideActivity && !selectedUser.isOnline && formatLastSeen(selectedUser.last_seen, false) && (
-            <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3, whiteSpace: "nowrap" }}>
-              {formatLastSeen(selectedUser.last_seen, false)}
-            </Typography>
-          )}
-        </Box>
+
+        {selectedGroup ? (
+          <>
+            <Box sx={{ position: "relative", flexShrink: 0, ml: isMobile ? -1 : 0 }}>
+              {selectedGroup.profile_picture ? (
+                <Avatar src={selectedGroup.profile_picture} sx={{ width: 36, height: 36, border: "2px solid", borderColor: (t) => t.palette.divider }} />
+              ) : (
+                <Avatar sx={{ width: 36, height: 36, border: "2px solid", borderColor: (t) => t.palette.divider, bgcolor: "primary.light" }}>
+                  <GroupsRoundedIcon sx={{ fontSize: 20, color: "primary.main" }} />
+                </Avatar>
+              )}
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ color: (t) => t.palette.text.primary, fontWeight: 500, fontSize: "0.92rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.25 }}>
+                {selectedGroup.name}
+              </Typography>
+              <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3, whiteSpace: "nowrap" }}>
+                {selectedGroup.member_count} members
+              </Typography>
+            </Box>
+          </>
+        ) : (
+          <>
+            <Box sx={{ position: "relative", flexShrink: 0, ml: isMobile ? -1 : 0 }}>
+              <Avatar
+                sx={{ width: 36, height: 36, cursor: "pointer", border: "2px solid", borderColor: (t) => t.palette.divider }}
+                src={selectedUser?.profile_picture || BlankProfileImage}
+                onClick={() => navigate(`/profile/${selectedUser?.id}`)}
+              />
+              {selectedUser && !hideActivity && (
+                <Box sx={{ width: 10, height: 10, borderRadius: "50%", position: "absolute", bottom: 0, right: 0, backgroundColor: selectedUser.isOnline ? "#22c55e" : "#9e9e9e", border: "2px solid", borderColor: (t: any) => t.palette.background.paper }} />
+              )}
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                onClick={() => navigate(`/profile/${selectedUser?.id}`)}
+                sx={{ cursor: "pointer", color: (t) => t.palette.text.primary, fontWeight: 500, fontSize: "0.92rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.25, "&:hover": { color: (t) => t.palette.text.secondary } }}
+              >
+                {selectedUser?.username}
+              </Typography>
+              {selectedUser && !hideActivity && !selectedUser.isOnline && formatLastSeen(selectedUser.last_seen, false) && (
+                <Typography sx={{ fontSize: "0.7rem", color: "text.disabled", lineHeight: 1.3, whiteSpace: "nowrap" }}>
+                  {formatLastSeen(selectedUser.last_seen, false)}
+                </Typography>
+              )}
+            </Box>
+          </>
+        )}
       </Box>
 
       {/* Right: actions */}
-      <Box
-        sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}
-      >
-        <IconButton onClick={openVideoCall} sx={iconButtonSx}>
-          <Videocam sx={{ fontSize: 20 }} />
-        </IconButton>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
+        {!selectedGroup && (
+          <IconButton onClick={openVideoCall} sx={iconButtonSx}>
+            <Videocam sx={{ fontSize: 20 }} />
+          </IconButton>
+        )}
         <IconButton onClick={() => setOpenThemeDialog(true)} sx={iconButtonSx}>
           <MoreVert sx={{ fontSize: 20 }} />
         </IconButton>

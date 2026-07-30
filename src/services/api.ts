@@ -1145,6 +1145,31 @@ export const shareChatMedia = async (mediaMessageData: FormData): Promise<any> =
     }
 };
 
+// GROUP APIS
+export const createGroup = async (name: string, description: string, memberIds: number[]) => {
+    const response = await api.post("/api/groups/create", { name, description, memberIds });
+    return response.data;
+};
+
+export const getGroups = async () => {
+    const response = await api.get("/api/groups/list");
+    return response.data;
+};
+
+export const getGroupMessages = async (groupId: number, offset = 0, limit = 30) => {
+    const response = await api.get("/api/groups/messages", { params: { groupId, offset, limit } });
+    return response.data;
+};
+
+export const getGroupMembers = async (groupId: number) => {
+    const response = await api.get(`/api/groups/members/${groupId}`);
+    return response.data;
+};
+
+export const leaveGroup = async (groupId: number) => {
+    const response = await api.delete(`/api/groups/leave/${groupId}`);
+    return response.data;
+};
 
 ////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// STORIES APIS //////////////////////////////////

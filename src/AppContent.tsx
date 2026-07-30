@@ -507,6 +507,19 @@ const AppContent = () => {
             }
           />
           <Route
+            path="/messages/group/:groupId"
+            element={
+              <PrivateRoute>
+                <Messages
+                  onlineUsers={onlineUsers}
+                  selectedUser={selectedUser}
+                  setSelectedUser={setSelectedUser}
+                  handleVideoCall={handleVideoCall}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/notifications"
             element={
               <PrivateRoute>

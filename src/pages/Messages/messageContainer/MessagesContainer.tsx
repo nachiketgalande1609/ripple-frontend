@@ -105,12 +105,15 @@ interface MessagesContainerProps {
   handleReaction: (messageId: number, reaction: string | null) => void;
   typingUser: number | null;
   initialMessageLoading: boolean;
+  isGroup?: boolean;
 }
 
 type Message = {
   message_id: number;
   receiver_id: number;
   sender_id: number;
+  sender_username?: string;
+  sender_profile_picture?: string;
   message_text: string;
   timestamp: string;
   delivered?: boolean;
@@ -258,6 +261,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   handleReaction,
   typingUser,
   initialMessageLoading,
+  isGroup = false,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -511,9 +515,9 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
       {/* Scroll anchor */}
       <div ref={messagesEndRef} />
 
-      {selectedUser ? (
+      {selectedUser || isGroup ? (
         <>
-          {typingUser === selectedUser.id && (
+          {selectedUser && typingUser === selectedUser.id && (
             <TypingIndicator
               profilePicture={selectedUser.profile_picture || undefined}
               isDark={isDark}
@@ -549,7 +553,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                 {!self && (
                   <Box
                     component="img"
-                    src={selectedUser.profile_picture || BlankProfileImage}
+                    src={(isGroup ? msg.sender_profile_picture : selectedUser?.profile_picture) || BlankProfileImage}
                     sx={{
                       width: 26,
                       height: 26,
@@ -573,6 +577,12 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                     alignItems: self ? "flex-end" : "flex-start",
                   }}
                 >
+                  {/* Group sender name */}
+                  {isGroup && !self && msg.sender_username && (
+                    <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: "primary.main", mb: 0.25, px: 0.5 }}>
+                      {msg.sender_username}
+                    </Typography>
+                  )}
                   {/* ── Media attachment ── */}
                   {msg.file_url && (
                     <Box
