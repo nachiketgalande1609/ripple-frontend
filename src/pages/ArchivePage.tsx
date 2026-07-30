@@ -15,9 +15,9 @@ function PostGrid({ posts, onPostClick }: { posts: any[]; onPostClick: (id: numb
                     key={post.id}
                     onClick={() => onPostClick(post.id)}
                     sx={{
-                        aspectRatio: "1 / 1", overflow: "hidden", cursor: "pointer",
+                        aspectRatio: "4 / 5", overflow: "hidden", cursor: "pointer",
                         position: "relative", backgroundColor: "action.hover",
-                        borderRadius: "10px",
+                        borderRadius: { xs: "8px", sm: "14px" },
                         "&:hover .overlay": { opacity: 1 },
                     }}
                 >
@@ -49,9 +49,9 @@ function StoryGrid({ stories, onStoryClick }: { stories: any[]; onStoryClick: (i
                     key={story.id}
                     onClick={() => onStoryClick(index)}
                     sx={{
-                        aspectRatio: "9 / 16", overflow: "hidden", position: "relative",
+                        aspectRatio: "4 / 5", overflow: "hidden", position: "relative",
                         backgroundColor: "action.hover", cursor: "pointer",
-                        borderRadius: "10px",
+                        borderRadius: { xs: "8px", sm: "14px" },
                         "&:hover .story-overlay": { opacity: 1 },
                     }}
                 >
@@ -75,7 +75,7 @@ function GridSkeleton({ count = 9, aspect = "1/1" }: { count?: number; aspect?: 
     return (
         <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: { xs: "3px", sm: "8px" }, px: { xs: "3px", sm: "8px" } }}>
             {Array.from({ length: count }).map((_, i) => (
-                <Skeleton key={i} variant="rectangular" sx={{ aspectRatio: aspect, width: "100%", bgcolor: "action.hover", borderRadius: "10px" }} />
+                <Skeleton key={i} variant="rectangular" sx={{ aspectRatio: aspect, width: "100%", bgcolor: "action.hover", borderRadius: { xs: "8px", sm: "14px" } }} />
             ))}
         </Box>
     );

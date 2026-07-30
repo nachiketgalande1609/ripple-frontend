@@ -108,7 +108,7 @@ const StatCol = ({ value, label, onClick }: { value: number; label: string; onCl
 /* ─── Pinned Posts Section ──────────────────────────────────── */
 const pinnedCardCss = `
 .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px; padding-top: 0; }
-.pin-card { position: relative; aspect-ratio: 1; border-radius: 14px; overflow: hidden; cursor: pointer; background: rgba(100,116,139,0.08); }
+.pin-card { position: relative; aspect-ratio: 4/5; border-radius: 14px; overflow: hidden; cursor: pointer; background: rgba(100,116,139,0.08); }
 .pin-card img, .pin-card video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.32s ease; }
 .pin-card:hover img, .pin-card:hover video { transform: scale(1.04); }
 .pin-card .pin-ovl { position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s ease; background: linear-gradient(135deg,rgba(100,116,139,0.4) 0%,rgba(0,0,0,0.5) 100%); border-radius: 14px; }
@@ -181,15 +181,15 @@ const postCardCss = `
 .med { display:flex; align-items:center; gap:4px; }
 `;
 
-/* ─── Post Grid (masonry) ────────────────────────────────────── */
+/* ─── Post Grid ──────────────────────────────────────────────── */
 const masonryCss = `
-.masonry { columns: 3; column-gap: 8px; padding: 8px; padding-top: 0; }
-.masonry-item { break-inside: avoid; margin-bottom: 8px; border-radius: 14px; overflow: hidden; cursor: pointer; position: relative; }
+.masonry { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px; padding-top: 0; }
+.masonry-item { aspect-ratio: 4/5; border-radius: 14px; overflow: hidden; cursor: pointer; position: relative; }
 @media (max-width: 600px) {
-  .masonry { column-gap: 3px; padding: 3px; }
-  .masonry-item { margin-bottom: 3px; border-radius: 8px; }
+  .masonry { gap: 3px; padding: 3px; }
+  .masonry-item { border-radius: 8px; }
 }
-.masonry-item img, .masonry-item video { width: 100%; display: block; }
+.masonry-item img, .masonry-item video { width: 100%; height: 100%; display: block; object-fit: cover; }
 .masonry-item .ovl { position:absolute; inset:0; opacity:0; transition:opacity 0.22s ease;
   background:linear-gradient(135deg,rgba(100,116,139,0.45) 0%,rgba(0,0,0,0.55) 100%);
   display:flex; align-items:center; justify-content:center; gap:16px; border-radius:14px; }
@@ -335,7 +335,7 @@ const GridSkeleton = ({ count = 6 }: { count?: number }) => (
                 <div key={i} className="masonry-item">
                     <MuiSkeleton
                         variant="rectangular"
-                        sx={{ width: "100%", height: i % 3 === 0 ? 220 : i % 3 === 1 ? 160 : 280, bgcolor: (t: any) => t.palette.action.selected }}
+                        sx={{ width: "100%", height: "100%", bgcolor: (t: any) => t.palette.action.selected }}
                     />
                 </div>
             ))}
@@ -1417,10 +1417,10 @@ const ProfilePage = () => {
                                             onClick={() => navigate("/reels", { state: { startPostId: reel.id } })}
                                             sx={{
                                                 position: "relative",
-                                                aspectRatio: "9/16",
+                                                aspectRatio: "4/5",
                                                 cursor: "pointer",
                                                 overflow: "hidden",
-                                                borderRadius: "4px",
+                                                borderRadius: { xs: "8px", sm: "14px" },
                                                 bgcolor: "#000",
                                                 "&:hover .reel-overlay": { opacity: 1 },
                                             }}

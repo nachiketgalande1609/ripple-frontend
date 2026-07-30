@@ -197,7 +197,7 @@ const NotificationsPage = () => {
       sx={{
         maxWidth: "100%",
         width: isLarge ? "600px" : "525px",
-        mt: 4,
+        mt: { xs: 1.5, sm: 4 },
         px: { xs: 1.5, sm: 2 },
         pb: 6,
       }}

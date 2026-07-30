@@ -203,14 +203,13 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
                                         onClick={() => handleGroupClick?.(item.id)}
                                         sx={{
                                             px: 1.5, py: 1.6, mx: 1, mb: 0.75,
-                                            width: "calc(100% - 16px)", border: "none", cursor: "pointer",
-                                            backgroundColor: "var(--nav-bg)",
-                                            boxShadow: isSelected
-                                                ? "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)"
-                                                : "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                            width: "calc(100% - 16px)", cursor: "pointer",
+                                            backgroundColor: isSelected ? (theme.palette.action.selected) : "transparent",
+                                            border: "1px solid",
+                                            borderColor: (t) => t.palette.divider,
                                             borderRadius: "28px",
-                                            transition: "background-color 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
-                                            "&:hover": { backgroundColor: "transparent" },
+                                            transition: "background-color 0.2s",
+                                            "&:hover": { backgroundColor: (t) => t.palette.action.hover },
                                             "&:focus": { outline: "none" },
                                             display: "flex", alignItems: "center", gap: 0,
                                         }}
@@ -262,14 +261,13 @@ const MessagesUserList: React.FC<MessagesUserListProps> = ({
                                     onClick={() => handleUserClick(item.id)}
                                     sx={{
                                         px: 1.5, py: 1.6, mx: 1, mb: 0.75,
-                                        width: "calc(100% - 16px)", border: "none", cursor: "pointer",
-                                        backgroundColor: "var(--nav-bg)",
-                                        boxShadow: isSelected
-                                            ? "inset 3px 3px 10px var(--nav-neo-shadow1), inset -3px -3px 10px var(--nav-neo-shadow2)"
-                                            : "inset 2px 2px 8px var(--nav-neo-shadow1), inset -2px -2px 8px var(--nav-neo-shadow2)",
+                                        width: "calc(100% - 16px)", cursor: "pointer",
+                                        backgroundColor: isSelected ? (theme.palette.action.selected) : "transparent",
+                                        border: "1px solid",
+                                        borderColor: (t) => t.palette.divider,
                                         borderRadius: "28px",
-                                        transition: "background-color 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1)",
-                                        "&:hover": { backgroundColor: "transparent" },
+                                        transition: "background-color 0.2s",
+                                        "&:hover": { backgroundColor: (t) => t.palette.action.hover },
                                         "&:focus": { outline: "none" },
                                         display: "flex", alignItems: "center", gap: 0,
                                     }}
