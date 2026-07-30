@@ -144,9 +144,10 @@ interface ReelCardProps {
     onToggleMute: () => void;
     paused: boolean;
     onTogglePause: () => void;
+    actions?: React.ReactNode;
 }
 
-function ReelCard({ reel, videoRef, muted, onToggleMute, paused, onTogglePause }: ReelCardProps) {
+function ReelCard({ reel, videoRef, muted, onToggleMute, paused, onTogglePause, actions }: ReelCardProps) {
     const navigate = useNavigate();
 
     return (
@@ -301,6 +302,7 @@ function ReelCard({ reel, videoRef, muted, onToggleMute, paused, onTogglePause }
                         </Typography>
                     </Box>
                 </Box>
+                {actions}
             </Box>
         </Box>
     );
@@ -574,26 +576,15 @@ export default function ReelsPage() {
 
     const renderActionButtons = (reel: Reel, state: ReelState) => (
         <Box
-            sx={isMobile ? {
-                // Mobile: overlay on bottom-right of video
+            sx={{
                 position: "absolute",
-                bottom: "16px",
-                right: "14px",
+                bottom: 10,
+                right: 6,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 2,
                 zIndex: 10,
-            } : {
-                // Desktop: fixed to the right of the video
-                position: "fixed",
-                left: "calc(34px + 50vw + calc(100vh * 9 / 32) + 10px)",
-                bottom: "20px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 2.5,
-                zIndex: 100,
             }}
         >
             <ActionBtn
@@ -671,8 +662,8 @@ export default function ReelsPage() {
                                     }
                                 }
                             }}
+                            actions={activeIdx === idx && state ? renderActionButtons(reel, state) : null}
                         />
-                        {activeIdx === idx && state && renderActionButtons(reel, state)}
                     </Box>
                     );
                 })}
