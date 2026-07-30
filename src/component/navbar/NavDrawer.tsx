@@ -867,6 +867,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                         backgroundColor: (t) => t.palette.background.paper,
                         borderTop: "1px solid",
                         borderColor: (t) => t.palette.divider,
+                        borderRadius: "20px 20px 0 0",
                         display: "flex",
                         alignItems: "center",
                         px: 1,
