@@ -263,7 +263,7 @@ function ReelCard({ reel, videoRef, muted, onToggleMute, paused, onTogglePause }
                 <Box
                     sx={{
                         position: "absolute",
-                        bottom: { xs: "70px", sm: 24 },
+                        bottom: { xs: 16, sm: 24 },
                         left: 14,
                         right: { xs: "70px", sm: 14 }, // leave space for action buttons on mobile
                         zIndex: 2,
@@ -577,7 +577,7 @@ export default function ReelsPage() {
             sx={isMobile ? {
                 // Mobile: overlay on bottom-right of video
                 position: "absolute",
-                bottom: "70px", // above the bottom navbar
+                bottom: "16px",
                 right: "14px",
                 display: "flex",
                 flexDirection: "column",
@@ -635,7 +635,7 @@ export default function ReelsPage() {
                 ref={containerRef}
                 sx={{
                     width: "100%",
-                    height: { xs: "calc(100vh - 54px)", sm: "100vh" },
+                    height: { xs: "calc(100dvh - 54px)", sm: "100dvh" },
                     mt: 0,
                     overflowY: "scroll",
                     scrollSnapType: "y mandatory",
@@ -650,7 +650,7 @@ export default function ReelsPage() {
                     <Box
                         key={reel.id}
                         data-reel-index={idx}
-                        sx={{ position: "relative", width: "100%", height: { xs: "calc(100vh - 54px)", sm: "100vh" }, flexShrink: 0, scrollSnapAlign: "start", scrollSnapStop: "always" }}
+                        sx={{ position: "relative", width: "100%", height: { xs: "calc(100dvh - 54px)", sm: "100dvh" }, flexShrink: 0, scrollSnapAlign: "start", scrollSnapStop: "always" }}
                     >
                         <ReelCard
                             reel={reel}

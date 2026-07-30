@@ -755,7 +755,8 @@ export default function SearchPage() {
     <Container
       disableGutters
       sx={{
-        minHeight: "100vh",
+        height: isMobile ? "calc(100dvh - 52px - 54px)" : "100vh",
+        overflow: "auto",
         width: { xs: "100%", sm: "520px", lg: "600px" },
         maxWidth: "100%",
       }}
