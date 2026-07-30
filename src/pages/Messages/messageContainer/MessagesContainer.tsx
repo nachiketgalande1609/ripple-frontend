@@ -577,12 +577,6 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                     alignItems: self ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Group sender name */}
-                  {isGroup && !self && msg.sender_username && (
-                    <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: "primary.main", mb: 0.25, px: 0.5 }}>
-                      {msg.sender_username}
-                    </Typography>
-                  )}
                   {/* ── Media attachment ── */}
                   {msg.file_url && (
                     <Box
@@ -996,6 +990,11 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
                             : (t: any) => t.palette.divider,
                         }}
                       >
+                        {isGroup && !self && msg.sender_username && (
+                          <Box component="span" sx={{ display: "block", fontSize: "0.68rem", fontWeight: 600, color: "primary.main", mb: "3px" }}>
+                            {msg.sender_username}
+                          </Box>
+                        )}
                         <Box component="span" sx={{ display: "block" }}>
                           {msg.message_text}
                         </Box>

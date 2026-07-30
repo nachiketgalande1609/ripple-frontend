@@ -40,7 +40,6 @@ const dialogBackdrop = {
 const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({ open, onClose, onGroupCreated }) => {
   const [step, setStep] = useState<"members" | "details">("members");
   const [groupName, setGroupName] = useState("");
-  const [description, setDescription] = useState("");
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<FollowingUser[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
@@ -51,7 +50,6 @@ const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({ open, onClose, on
     if (!open) return;
     setStep("members");
     setGroupName("");
-    setDescription("");
     setSearch("");
     setSelected([]);
     setLoadingUsers(true);
@@ -72,7 +70,7 @@ const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({ open, onClose, on
     if (!groupName.trim()) return;
     setCreating(true);
     try {
-      const res = await createGroup(groupName.trim(), description.trim(), selected);
+      const res = await createGroup(groupName.trim(), selected);
       if (res.success) {
         onGroupCreated(res.data);
         onClose();
@@ -206,17 +204,6 @@ const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({ open, onClose, on
               onChange={(e) => setGroupName(e.target.value)}
               inputProps={{ maxLength: 100 }}
               size="small"
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
-            />
-            <TextField
-              fullWidth
-              label="Description (optional)"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              inputProps={{ maxLength: 300 }}
-              size="small"
-              multiline
-              rows={2}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
             />
             <Typography sx={{ fontSize: "0.78rem", color: "text.disabled" }}>

@@ -1146,8 +1146,8 @@ export const shareChatMedia = async (mediaMessageData: FormData): Promise<any> =
 };
 
 // GROUP APIS
-export const createGroup = async (name: string, description: string, memberIds: number[]) => {
-    const response = await api.post("/api/groups/create", { name, description, memberIds });
+export const createGroup = async (name: string, memberIds: number[]) => {
+    const response = await api.post("/api/groups/create", { name, memberIds });
     return response.data;
 };
 
@@ -1168,6 +1168,21 @@ export const getGroupMembers = async (groupId: number) => {
 
 export const leaveGroup = async (groupId: number) => {
     const response = await api.delete(`/api/groups/leave/${groupId}`);
+    return response.data;
+};
+
+export const updateGroup = async (groupId: number, fields: { name?: string; profile_picture?: string }) => {
+    const response = await api.patch(`/api/groups/update/${groupId}`, fields);
+    return response.data;
+};
+
+export const addGroupMember = async (groupId: number, userId: number) => {
+    const response = await api.post(`/api/groups/members/${groupId}`, { userId });
+    return response.data;
+};
+
+export const removeGroupMember = async (groupId: number, userId: number) => {
+    const response = await api.delete(`/api/groups/members/${groupId}/${userId}`);
     return response.data;
 };
 

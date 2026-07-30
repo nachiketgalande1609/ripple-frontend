@@ -23,6 +23,7 @@ import MessagesTopBar from "./MessagesTopBar";
 import MessagesDrawer from "./MessagesDrawer";
 import { useAppNotifications } from "../../hooks/useNotification";
 import MessagesUserList from "./mobileView/MessagesUserList";
+import GroupInfoDialog from "./GroupInfoDialog";
 
 type Message = {
   message_id: number;
@@ -151,6 +152,7 @@ const Messages: React.FC<MessageProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [initialMessageLoading, setInitialMessageLoading] = useState(false);
   const [isBlockedUser, setIsBlockedUser] = useState(false);
+  const [groupInfoOpen, setGroupInfoOpen] = useState(false);
 
   const handleReply = (msg: Message) => {
     setSelectedMessageForReply(msg);
@@ -445,6 +447,19 @@ const Messages: React.FC<MessageProps> = ({
   const handleGroupCreated = (group: Group) => {
     setGroups((prev) => [...prev, group]);
     handleGroupClick(group.id);
+  };
+
+  const handleGroupUpdated = (updatedGroup: Group) => {
+    setSelectedGroup(updatedGroup);
+    setGroups((prev) => prev.map((g) => g.id === updatedGroup.id ? { ...g, ...updatedGroup } : g));
+  };
+
+  const handleGroupLeft = () => {
+    setSelectedGroup(null);
+    setGroupMessages([]);
+    fetchedForGroupIdRef.current = null;
+    setGroups((prev) => prev.filter((g) => g.id !== selectedGroup?.id));
+    navigate("/messages");
   };
 
   const handleSendGroupMessage = async () => {
@@ -863,8 +878,11 @@ const Messages: React.FC<MessageProps> = ({
             >
               <MessagesUserList
                 users={users}
+                groups={groups}
                 onlineUsers={onlineUsers}
                 handleUserClick={handleUserClick}
+                handleGroupClick={handleGroupClick}
+                activeGroupId={selectedGroup?.id}
                 loading={loadingUsers}
                 mutedUserIds={mutedUserIds}
               />
@@ -880,6 +898,7 @@ const Messages: React.FC<MessageProps> = ({
               openVideoCall={handleVideoCall}
               setMessages={setMessages}
               onMuteToggle={fetchMutedUsers}
+              onGroupInfoClick={() => setGroupInfoOpen(true)}
             />
             <MessagesContainer
               selectedUser={null}
@@ -910,6 +929,16 @@ const Messages: React.FC<MessageProps> = ({
               cancelReply={cancelReply}
               selectedUser={null}
             />
+            {selectedGroup && (
+              <GroupInfoDialog
+                open={groupInfoOpen}
+                onClose={() => setGroupInfoOpen(false)}
+                group={selectedGroup}
+                currentUserId={currentUser.id}
+                onGroupUpdated={handleGroupUpdated}
+                onGroupLeft={handleGroupLeft}
+              />
+            )}
           </Box>
         ) : (
           <Box
@@ -1030,6 +1059,7 @@ const Messages: React.FC<MessageProps> = ({
                   openVideoCall={handleVideoCall}
                   setMessages={setMessages}
                   onMuteToggle={fetchMutedUsers}
+                  onGroupInfoClick={() => setGroupInfoOpen(true)}
                 />
                 <MessagesContainer
                   selectedUser={null}
@@ -1134,6 +1164,16 @@ const Messages: React.FC<MessageProps> = ({
             handleCloseDialog={handleCloseDialog}
             selectedImage={selectedImage}
           />
+          {selectedGroup && (
+            <GroupInfoDialog
+              open={groupInfoOpen}
+              onClose={() => setGroupInfoOpen(false)}
+              group={selectedGroup}
+              currentUserId={currentUser.id}
+              onGroupUpdated={handleGroupUpdated}
+              onGroupLeft={handleGroupLeft}
+            />
+          )}
         </>
       )}
     </Box>

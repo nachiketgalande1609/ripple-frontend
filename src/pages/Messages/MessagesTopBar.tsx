@@ -15,6 +15,17 @@ import {
 } from "@mui/material";
 import { ChevronLeft, MoreVert, Videocam } from "@mui/icons-material";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+
+const AVATAR_GROUP_COLORS = [
+  { bg: "#E8F5E9", color: "#2E7D32" },
+  { bg: "#EDE7F6", color: "#4527A0" },
+  { bg: "#FFF3E0", color: "#E65100" },
+  { bg: "#E3F2FD", color: "#1565C0" },
+];
+const getGroupAvatarColor = (name: string) => {
+  const idx = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_GROUP_COLORS.length;
+  return AVATAR_GROUP_COLORS[idx];
+};
 import WallpaperRoundedIcon from "@mui/icons-material/WallpaperRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
@@ -92,6 +103,7 @@ interface MessagesTopBarProps {
   openVideoCall: () => void;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   onMuteToggle: () => void;
+  onGroupInfoClick?: () => void;
 }
 
 // ── constants ────────────────────────────────────────────────────
@@ -190,6 +202,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
   openVideoCall,
   setMessages,
   onMuteToggle,
+  onGroupInfoClick,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -293,13 +306,16 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
         </IconButton>
 
         {selectedGroup ? (
-          <>
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer", borderRadius: "12px", px: 0.75, py: 0.25, transition: "background 0.15s", "&:hover": { bgcolor: (t) => t.palette.action.hover } }}
+            onClick={onGroupInfoClick}
+          >
             <Box sx={{ position: "relative", flexShrink: 0, ml: isMobile ? -1 : 0 }}>
               {selectedGroup.profile_picture ? (
                 <Avatar src={selectedGroup.profile_picture} sx={{ width: 36, height: 36, border: "2px solid", borderColor: (t) => t.palette.divider }} />
               ) : (
-                <Avatar sx={{ width: 36, height: 36, border: "2px solid", borderColor: (t) => t.palette.divider, bgcolor: "primary.light" }}>
-                  <GroupsRoundedIcon sx={{ fontSize: 20, color: "primary.main" }} />
+                <Avatar sx={{ width: 36, height: 36, border: "2px solid", borderColor: (t) => t.palette.divider, bgcolor: getGroupAvatarColor(selectedGroup.name).bg }}>
+                  <GroupsRoundedIcon sx={{ fontSize: 20, color: getGroupAvatarColor(selectedGroup.name).color }} />
                 </Avatar>
               )}
             </Box>
@@ -311,7 +327,7 @@ const MessagesTopBar: React.FC<MessagesTopBarProps> = ({
                 {selectedGroup.member_count} members
               </Typography>
             </Box>
-          </>
+          </Box>
         ) : (
           <>
             <Box sx={{ position: "relative", flexShrink: 0, ml: isMobile ? -1 : 0 }}>
