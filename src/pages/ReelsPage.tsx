@@ -269,7 +269,7 @@ function ReelCard({ reel, videoRef, muted, onToggleMute, paused, onTogglePause, 
                         right: { xs: "70px", sm: 14 }, // leave space for action buttons on mobile
                         zIndex: 2,
                         display: "flex",
-                        alignItems: "flex-end",
+                        alignItems: "flex-start",
                         gap: 1.5,
                     }}
                 >
@@ -277,7 +277,7 @@ function ReelCard({ reel, videoRef, muted, onToggleMute, paused, onTogglePause, 
                         src={reel.profile_picture || BlankProfileImage}
                         alt={reel.username}
                         onClick={() => navigate(`/profile/${reel.user_id}`)}
-                        sx={{ width: 42, height: 42, border: "2px solid #fff", cursor: "pointer", flexShrink: 0, mb: 0.25 }}
+                        sx={{ width: 42, height: 42, border: "2px solid #fff", cursor: "pointer", flexShrink: 0 }}
                     />
                     <Box sx={{ overflow: "hidden" }}>
                         <Typography
