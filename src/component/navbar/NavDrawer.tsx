@@ -921,6 +921,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                 onMouseDown={handleProfileLongPress}
                                 onMouseUp={handleProfilePressEnd}
                                 onMouseLeave={handleProfilePressEnd}
+                                onContextMenu={(e) => e.preventDefault()}
                             >
                                 <Box
                                     sx={{
@@ -936,7 +937,7 @@ export default function NavDrawer({ unreadMessagesCount, unreadNotificationsCoun
                                     <img
                                         src={currentUser?.profile_picture_url || BlankProfileImage}
                                         alt="Profile"
-                                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", WebkitTouchCallout: "none" as any, pointerEvents: "none" }}
                                     />
                                 </Box>
                             </Box>
